@@ -148,7 +148,7 @@ namespace DotRPG
                 {
                     var me = Game.Player;
                     var cls = CharacterClassInfo.Get(session.PlayerClass);
-                    s.stripe.color = session.PlayerClass == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
+                    s.stripe.color = CharacterClassInfo.ColorOf(session.PlayerClass);
                     s.portrait.enabled = true;
                     s.portrait.sprite = Game.Art.GetCharacter(CharacterPreviewCard.LookFor(session.PlayerClass), "down", "idle0");
                     int hp = me != null && me.Health != null ? me.Health.Max : CharacterStats.MaxHp;

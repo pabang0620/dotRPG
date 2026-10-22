@@ -18,6 +18,8 @@ namespace DotRPG
         public string AttackFrame => WarriorAttackMotion.Frame(AttackProgress, comboStage, recovering);
         CharacterAnimator characterAnimator;
         SpriteRenderer silverGrip;
+        /// <summary>[ROGUE] The second dagger (left hand); hidden for single-weapon classes.</summary>
+        SpriteRenderer weaponLeft;
         public float AttackProgress => IsAttacking ? Mathf.Clamp01((Time.time - attackStart) / Duration) : 0f;
         public SpriteRenderer WeaponRenderer => weapon;
         public SpriteRenderer GripRenderer => silverGrip;
@@ -25,10 +27,14 @@ namespace DotRPG
         void LateUpdate()
         {
             if (silverGrip == null || owner == null) return;
-            bool silver = owner.Class == CharacterClass.Warrior;
+            // [ROGUE] The rogue's body is the same sheet-drawn rig, so its daggers follow the drawing's hands too.
+            bool silver = owner.Class == CharacterClass.Warrior || owner.Class == CharacterClass.Rogue;
             silverGrip.enabled = silver && !owner.IsDead && weapon.sprite != null;
+            if (weaponLeft != null && !(silver && classInfo.dualWield)) weaponLeft.enabled = false;
             if (!silver) return;
-            SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, characterAnimator!=null?characterAnimator.PresentationFacing(owner.Facing):owner.Facing, !owner.IsDead);
+            var facing = characterAnimator!=null?characterAnimator.PresentationFacing(owner.Facing):owner.Facing;
+            SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, facing, !owner.IsDead);
+            if (weaponLeft != null && classInfo.dualWield) SilverWarriorPresentation.PoseLeft(weaponLeft, weapon, characterAnimator, facing, !owner.IsDead);
         }
 
         PlayerController owner;
@@ -54,16 +60,24 @@ namespace DotRPG
         Vector2 castAim = Vector2.down;
         bool Ranged => classInfo != null && classInfo.ranged;
 
-        /// <summary>Basic attacks hit 30% more often than before and each hit does 80% (slightly more damage per second, snappier).</summary>
-        public const float BasicHitScale = 0.8f;
+        /// <summary>Basic attacks hit 30% more often than before and each hit does 80% (slightly more damage per second, snappier).
+        /// [ROGUE] Per class now (CharacterClassInfo.basicHitScale): warrior and mage 0.8, rogue 0.65.</summary>
+        public float BasicHitScale => classInfo != null ? classInfo.basicHitScale : 0.8f;
         int BasicHitDamage => Mathf.Max(1, Mathf.RoundToInt(owner.Data.Stats.AttackDamage(owner.Class) * BasicHitScale));
+        // [ROGUE] Melee numbers per class; the warrior keeps PlayerStats (classInfo values below 0).
+        float MeleeInterval => classInfo != null && classInfo.meleeInterval > 0 ? classInfo.meleeInterval : stats.attackCooldown;
+        /// <summary>Swing stages scale with the strike interval (rogue 0.24 / 0.27 s), so the combo keeps its shape.</summary>
+        float SwingScale => classInfo != null && classInfo.meleeInterval > 0 ? classInfo.meleeInterval / stats.attackCooldown : 1f;
+        float MeleeReach => classInfo != null && classInfo.meleeReach > 0 ? classInfo.meleeReach : stats.attackReach;
+        float MeleeRadius => classInfo != null && classInfo.meleeRadius > 0 ? classInfo.meleeRadius : stats.attackRadius;
+        float MeleeKnockback => classInfo != null && classInfo.meleeKnockback > 0 ? classInfo.meleeKnockback : stats.attackKnockback;
         float Duration
         {
             get
             {
                 if (Ranged) return classInfo.castDuration;
-                if (recovering) return WarriorAttackMotion.RecoveryDuration;
-                return Mathf.Max(WarriorAttackMotion.StageDuration(comboStage), stats.attackDuration);
+                if (recovering) return WarriorAttackMotion.RecoveryDuration * SwingScale;
+                return Mathf.Max(WarriorAttackMotion.StageDuration(comboStage), stats.attackDuration) * SwingScale;
             }
         }
 
@@ -81,8 +95,16 @@ namespace DotRPG
             if (weapon == null || Game.Session == null || owner == null || owner.Data == null) return;
             // [MERGE] Each party member shows its own weapon (owner.Data), with the katana grip art for warriors.
             string weaponKey = owner.Data.Equipment[EquipSlot.Weapon];
-            weapon.sprite = classInfo.id == CharacterClass.Warrior ? Game.Art.GetWarriorWeapon(weaponKey) : Game.Art.Get(EquipmentDatabase.WeaponSprite(weaponKey, classInfo.id));
+            weapon.sprite = classInfo.id == CharacterClass.Warrior ? Game.Art.GetWarriorWeapon(weaponKey)
+                : classInfo.id == CharacterClass.Rogue ? Game.Art.GetRogueWeapon(weaponKey)
+                : Game.Art.Get(EquipmentDatabase.WeaponSprite(weaponKey, classInfo.id));
             weapon.enabled = !owner.IsDead && weapon.sprite != null;
+            if (weaponLeft != null)
+            {
+                weaponLeft.sprite = classInfo.dualWield ? weapon.sprite : null;
+                weaponLeft.enabled = classInfo.dualWield && weapon.enabled;
+                if (weaponLeft.enabled) HdMaterial.Apply(weaponLeft);
+            }
             if (silverGrip != null) silverGrip.enabled = !Ranged && weapon.enabled;
             HdMaterial.Apply(weapon);
         }
@@ -148,6 +170,10 @@ namespace DotRPG
             weapon.enabled = false;
             HdMaterial.Apply(weapon);
 
+            weaponLeft = new GameObject("WeaponLeft").AddComponent<SpriteRenderer>();
+            weaponLeft.transform.SetParent(visualRoot, false);
+            weaponLeft.enabled = false;
+
             slash = new GameObject("Slash").AddComponent<SpriteRenderer>();
             slash.transform.SetParent(visualRoot, false);
             slash.sprite = Game.Art.Get("fx_slash");
@@ -202,7 +228,7 @@ namespace DotRPG
             attackEnd = attackStart + Duration;
             // [MERGE] Combo timing from the warrior rework, attack speed of this member (not always the local one).
             float cooldownMultiplier = owner.Data.Stats.CooldownMultiplier;
-            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown * cooldownMultiplier : Mathf.Max(Duration, stats.attackCooldown * cooldownMultiplier));
+            nextAttackTime = attackStart + (Ranged ? classInfo.cooldown * cooldownMultiplier : Mathf.Max(Duration, MeleeInterval * cooldownMultiplier));
             attackFacing = owner.Facing;
             hitResolved = false;
             hitThisSwing.Clear();
@@ -360,9 +386,9 @@ namespace DotRPG
 
         void ResolveHits(Vector2 dir)
         {
-            Vector2 center = owner.Center + dir * stats.attackReach;
+            Vector2 center = owner.Center + dir * MeleeReach;
             overlap.Clear();
-            Physics2D.OverlapCircle(center, stats.attackRadius, filter, overlap);
+            Physics2D.OverlapCircle(center, MeleeRadius, filter, overlap);
 
             bool landed = false;
             foreach (var col in overlap)
@@ -374,7 +400,7 @@ namespace DotRPG
                 if (target is PlayerController) continue;
                 hitThisSwing.Add(target);
                 int basic = target is EnemyController boss && boss.IsBoss ? Mathf.RoundToInt(BasicHitDamage * owner.Data.Stats.BossMul) : BasicHitDamage; // [LEGEND] 토벌형
-                var info = new DamageInfo(basic, owner.Center, stats.attackKnockback, Team.Player, owner.gameObject);
+                var info = new DamageInfo(basic, owner.Center, MeleeKnockback, Team.Player, owner.gameObject);
                 bool hitIt = target.TakeDamage(info);
                 landed |= hitIt;
                 // Hit feel: sparks where the blow lands.
@@ -391,7 +417,7 @@ namespace DotRPG
         {
             if (owner == null || stats == null) return;
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(owner.Center + owner.Facing.ToVector() * stats.attackReach, stats.attackRadius);
+            Gizmos.DrawWireSphere(owner.Center + owner.Facing.ToVector() * MeleeReach, MeleeRadius);
         }
     }
 }

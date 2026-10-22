@@ -12,6 +12,9 @@ CharacterStatsCalc: MP = 40 + 4/Lv, 초당 회복 = 최대 MP의 5%. 범위 보�
 사용: python3 Tools/balance/theory_skills.py
 """
 import math
+import os
+import re
+import sys
 
 DENSITY, PACK = 0.25, 5
 LEVEL = 10
@@ -95,5 +98,58 @@ def main():
     print("- v2 제어: 일반 몬스터도 6초 안에 다시 걸리면 지속시간이 절반씩 준다. 보스는 x0.3 유지")
 
 
+# ---------------- [ROGUE 2026-10-23] Lv1~15 early hunting, PLAN_CLASS_ROGUE.md 3.3 ----------------
+# Current numbers read from SkillData.cs (the v2 tables above are history). Damage per second as a multiple of attack:
+# skill = damageMult / cooldown; in a 3-pack the warrior shockwave and mage lance spark hit 2, area skills hit 3.
+# Basic attack: warrior .8 / .27 s (pack x1.3), mage orb .8 / .38 s (x1.0), rogue dagger .65 / .24 s (x1.1) with the
+# Shadow Dash (4 x .2, every 1.6 s, .216 s of no stabbing, 2 monsters on its path in a pack).
+SKILLDATA = os.path.join(os.path.dirname(__file__), "..", "..", "Assets", "Scripts", "Runtime", "Progression", "SkillData.cs")
+EARLY_SLOTS = {"전사": ["crush", "whirl", "cry"], "마법사": ["lance", "frostorb", "nova"], "도적": ["stab", "leap", "backstab"]}
+PACK_TARGETS = {"crush": 2, "lance": 2, "whirl": 3, "frostorb": 3, "cry": 3, "nova": 3, "leap": 3, "stab": 1, "backstab": 1}
+DASH = dict(mult=.2 * 4, cd=1.6, busy=.216, pack=2)
+
+
+def early_gems():
+    src = open(SKILLDATA, encoding="utf-8-sig").read()
+    out = {}
+    for m in re.finditer(r'Active\("(\w+)",.*?damageMult = ([0-9.]+)f; g\.cooldown = ([0-9.]+)f', src):
+        out[m.group(1)] = (float(m.group(2)), float(m.group(3)))
+    return out
+
+
+def early_basic(cls):
+    if cls == "전사":
+        return .8 / .27, .8 / .27 * 1.3
+    if cls == "마법사":
+        return .8 / .38, .8 / .38
+    stab = .65 / .24 * (1 - DASH["busy"] / DASH["cd"])
+    dash = DASH["mult"] / DASH["cd"]
+    return stab + dash, stab * 1.1 + dash * DASH["pack"]
+
+
+def early_table():
+    g = early_gems()
+    print("\n## Lv1~15 초반 사냥 (공격력 배수 초당 피해, PLAN_CLASS_ROGUE 3.3)")
+    print("| 구간 | 열린 칸 | 전사 1마리 | 마법사 1마리 | 도적 1마리 | 전사 무리 | 마법사 무리 | 도적 무리 |")
+    print("|---|---|---|---|---|---|---|---|")
+    for label, n, keys in (("Lv2~5", 1, "Q"), ("Lv6~11", 2, "Q W"), ("Lv12~14", 3, "Q W E")):
+        one, pack = {}, {}
+        for cls, ids in EARLY_SLOTS.items():
+            s1, sp = early_basic(cls)
+            for gid in ids[:n]:
+                if gid not in g:
+                    s1 = sp = float("nan")
+                    break
+                dm, cd = g[gid]
+                s1 += dm / cd
+                sp += dm / cd * PACK_TARGETS[gid]
+            one[cls], pack[cls] = s1, sp
+        print(f"| {label} | {keys} | {one['전사']:.2f} | {one['마법사']:.2f} | {one['도적']:.2f} | {pack['전사']:.2f} | {pack['마법사']:.2f} | {pack['도적']:.2f} |")
+
+
 if __name__ == "__main__":
-    main()
+    if "--early" in sys.argv:
+        early_table()
+    else:
+        main()
+        early_table()

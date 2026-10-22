@@ -104,6 +104,12 @@ namespace DotRPG
             }
             if (careerSkill != null && !CareerCombat.For(owner).CanCast(careerSkill)) return; // e.g. all three shields still out
             var n = Numbers(slot);
+            // [ROGUE] 그림자 습격 needs a monster within its range; without one it is not cast (no MP, no cooldown).
+            if (gem.id == "raid" && RaidTarget(n) == null)
+            {
+                if (owner.IsLocal) { GameEvents.RaiseToast(L.T("가까이에 노릴 적이 없습니다.")); Game.Audio.PlaySfx("cancel"); }
+                return;
+            }
             if (!owner.TrySpend(n.manaCost, n.usesLife))
             {
                 if (!owner.IsLocal) return;
@@ -184,6 +190,12 @@ namespace DotRPG
                     case "nova": Nova(n); break;
                     case "frostorb": StartCoroutine(FrostOrb(n)); break;
                     case "meteor": yield return StartCoroutine(Meteor(n, i == 0)); break;
+                    // [ROGUE] SkillCaster.Rogue
+                    case "stab": Stab(n); break;
+                    case "leap": yield return StartCoroutine(Leap(n)); break;
+                    case "backstab": Backstab(n); break;
+                    case "raid": Raid(n); break;
+                    case "dance": yield return StartCoroutine(Dance(n, i == 0)); break;
                 }
                 if (i < n.repeats) yield return new WaitForSeconds(0.28f);
             }

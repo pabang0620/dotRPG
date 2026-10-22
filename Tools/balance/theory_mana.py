@@ -23,13 +23,17 @@ BEFORE = dict(war_bonus=10, war_lv=0, mage_bonus=40, mage_lv=3,
               spam={"fighter": 18, "guardian": 18, "arcanist": 18, "bishop": 3})
 # 2026-10-12: warrior MP 40 + 6/Lv, main hunting skills cost a share of max MP (CareerSkill.MainHunterMpShare)
 AFTER = dict(war_bonus=40, war_lv=2, mage_bonus=40, mage_lv=3,
-             share={"fighter": .0263, "guardian": .0199, "arcanist": .0333, "bishop": .0146})
+             share={"fighter": .0263, "guardian": .0199, "arcanist": .0333, "bishop": .0146,
+                    "assassin": .0228, "ninja": .0228})  # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 2.3/2.4
 
 CAREERS = {  # mage?, career MP x, spam skill, casts per second at full speed
     "fighter": (False, 1.0, "파쇄 검기", 1 / (.15 + .15 + .08)),
     "guardian": (False, 1.0, "회귀의 방패(2단계, 4개)", min(1 / (.08 + .14 - .04 + .08), 4 / 1.15)),
     "arcanist": (True, 1.2, "연쇄전격", 1 / (.25 + .15 + .08)),
     "bishop": (True, 1.25, "심판의 광창", 1 / (.04 + .09 + .08)),  # 2026-10-12: recovery .09 (0.21 s a shot)
+    # [ROGUE 2026-10-23] Rogue MP pool = warrior (40 + 40, 4 + 2 per level). Both main skills: cast .1 + recovery .15 + .08.
+    "assassin": (False, 1.0, "연환 베기", 1 / (.1 + .15 + .08)),
+    "ninja": (False, 1.0, "연발 쿠나이", 1 / (.1 + .15 + .08)),
 }
 
 
@@ -43,6 +47,8 @@ def table(p, title):
     print("| 직업 | Lv | 최대 MP | 회복/초 | 연사기 MP(1회) | 연사 MP/초 | 연사만 누를 때 바닥(초) | 보통 사냥 물약/분 |")
     print("|---|---|---|---|---|---|---|---|")
     for c, (mage, mul, name, rate) in CAREERS.items():
+        if "spam" in p and c not in p["spam"]:
+            continue  # careers that did not exist before the mana change
         for lv in (18, 20, 30, 40):
             m = max_mp(p, mage, mul, lv)
             cost = (m * p["share"][c] if "share" in p else max(1, round(p["spam"][c] * .65))) * SUPPORT

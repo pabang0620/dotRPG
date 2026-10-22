@@ -84,13 +84,13 @@ namespace DotRPG
         {
             var def = member != null && member.Data != null ? MercenaryDatabase.Get(member.Data.MercenaryId) : null;
             if (def != null) return def.color;
-            return member != null && member.Class == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
+            return CharacterClassInfo.ColorOf(member != null ? member.Class : CharacterClass.Warrior);
         }
 
         /// <summary>A party member who is not on this map: name, level and class, bars empty, where they are (same map, another map, offline).</summary>
         static void ShowAway(Frame frame, PartyMemberView v)
         {
-            Color classColor = v.cls == CharacterClass.Mage ? new Color32(160, 110, 240, 255) : new Color32(230, 110, 60, 255);
+            Color classColor = CharacterClassInfo.ColorOf(v.cls);
             frame.stripe.color = classColor;
             frame.shownMember = null;
             frame.shownLevel = -1;

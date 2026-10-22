@@ -25,7 +25,7 @@ namespace DotRPG
             int lv = EquipmentDatabase.LevelOfKey(key);
             sb.Append($"<b>{EquipmentDatabase.RichName(key)}</b>\n");
             sb.Append($"<color=#b8c4d8>[{L.T(EquipmentDatabase.RarityName(gear.rarity))}] {L.T(gear.CategoryName)}");
-            if (gear.classOnly.HasValue) sb.Append(L.F(" · {0} 전용", L.T(CharacterClassInfo.Get(gear.classOnly.Value).displayName)));
+            if (gear.classOnly.HasValue) sb.Append(L.F(" · {0} 전용", gear.ClassLabel));
             sb.Append("</color>\n");
             sb.Append(gear.reqLevel > Level ? L.F("<color=#ff7070>착용 Lv.{0} (현재 Lv.{1})</color>", gear.reqLevel, Level) : L.F("<color=#b8c4d8>착용 Lv.{0}</color>", gear.reqLevel));
             string lvText = lv > 0 ? EquipmentDatabase.LevelTag(lv) : "+0";

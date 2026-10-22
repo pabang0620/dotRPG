@@ -147,7 +147,7 @@ namespace DotRPG
             var armour = def.role == MercRole.Tank && grade < ItemRarity.Unique ? grade + 1 : grade;
             return new[]
             {
-                GearCatalog.Id(mage ? "staff" : "sword", lv, grade),
+                GearCatalog.Id(mage ? "staff" : def.cls == CharacterClass.Rogue ? "dagger" : "sword", lv, grade), // [ROGUE] dagger + plate + greaves
                 GearCatalog.Id(mage ? "robe" : "plate", lv, tier == 0 && armour > ItemRarity.Rare ? ItemRarity.Rare : armour),
                 GearCatalog.Id(mage ? "skirt" : "greaves", lv, grade),
                 GearCatalog.Id("neck", lv, ItemRarity.Rare),

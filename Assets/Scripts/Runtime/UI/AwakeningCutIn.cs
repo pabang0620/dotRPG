@@ -81,7 +81,7 @@ namespace DotRPG
             // A costume skin has its own illustration (Art/cutin_<skin id>), drawn in that outfit.
             if (!string.IsNullOrEmpty(player.Data.SkinId)) s = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "cutin_" + player.Data.SkinId);
             if (s == null && career != Career.None) s = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "cutin_" + career.ToString().ToLowerInvariant());
-            return s != null ? s : Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + (player.Class == CharacterClass.Mage ? "cutin_mage" : "cutin_warrior"));
+            return s != null ? s : Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "cutin_" + CharacterClassInfo.Get(player.Class).saveId); // cutin_warrior / cutin_mage / cutin_rogue
         }
 
         void Show(string skillName, Color color)

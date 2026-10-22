@@ -28,7 +28,7 @@ namespace DotRPG
         {
             var gear = EquipmentDatabase.Get(id);
             if (gear != null)
-                return $"[{L.T(EquipmentDatabase.RarityName(gear.rarity))}] {L.T(gear.CategoryName)}" + (gear.classOnly.HasValue ? " · " + L.F("{0} 전용", L.T(CharacterClassInfo.Get(gear.classOnly.Value).displayName)) : "");
+                return $"[{L.T(EquipmentDatabase.RarityName(gear.rarity))}] {L.T(gear.CategoryName)}" + (gear.classOnly.HasValue ? " · " + L.F("{0} 전용", gear.ClassLabel) : "");
             var mat = EquipmentDatabase.GetMaterial(id);
             if (mat != null) return L.F("[{0}] 강화 재료", L.T(EquipmentDatabase.RarityName(mat.rarity)));
             if (ConsumableDatabase.IsTicket(id)) return L.F("[{0}] 기타 · 강화 보호", L.T(EquipmentDatabase.RarityName(Grade(id) ?? ItemRarity.Common)));

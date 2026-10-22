@@ -203,7 +203,7 @@ namespace DotRPG
                 if(career!=null){slotInfo[s].text=L.F("<b>{0}</b>  <color=#ff9f43>전직 기술</color>\n{1}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>", L.T(gem.name), L.T(CareerNumbers.Summary(career,CharacterData.Session,n)));continue;}
                 var sb = new StringBuilder(L.F("<b>{0}</b>{1}\n", L.T(gem.name), (ult ? L.T("  <color=#ffd66e>[각성 기술]</color>") : "")));
                 // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
-                bool single = gem.id == "crush" || gem.id == "lance";
+                bool single = gem.id == "crush" || gem.id == "lance" || gem.id == "stab" || gem.id == "backstab" || gem.id == "raid";
                 if (n.guardPct > 0) sb.Append(L.F("받는 피해 <color=#ffe066>-{0}%</color> ({1:0}초)   {2} 소모 {3}   재사용 {4:0.##}초", n.guardPct, n.guardTime, (n.usesLife ? "HP" : "MP"), n.manaCost, n.cooldown));
                 else sb.Append(L.F("피해 <color=#ffe066>{0}</color>{1}   {2} 소모 {3}   재사용 {4:0.##}초", n.damage, (n.hits > 1 ? L.F(" × {0}회", n.hits) : ""), (n.usesLife ? "HP" : "MP"), n.manaCost, n.cooldown) + (single ? L.T("   단일 대상") : L.F("   범위 {0:0.#}", n.radius)));
                 if (n.chains > 0) sb.Append(L.F("   연쇄 {0}", n.chains));

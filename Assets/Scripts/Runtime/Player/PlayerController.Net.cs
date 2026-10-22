@@ -147,6 +147,12 @@ namespace DotRPG
                     if (cmd.move.sqrMagnitude > .01f) { AimDirection = SnapTo8(cmd.move); Facing = FacingExtensions.FromVector(AimDirection, Facing); }
                     skills.TryCastRush(out _);
                 }
+                // [ROGUE] A member's Shift 그림자 질주: its position comes from that PC; the host cuts the monsters on its path.
+                else if (cmd.mobility && Class == CharacterClass.Rogue)
+                {
+                    Vector2 dir = cmd.move.sqrMagnitude > .01f ? SnapTo8(cmd.move) : AimDirection;
+                    skills.ShadowDash(dir);
+                }
             }
             if (combat.IsAttacking || skills.IsCasting) animator.Play(CharacterAnim.Attack, Facing);
             else if (netMoving && (netTarget - Position).sqrMagnitude > 0.0025f) animator.Play(CharacterAnim.Walk, Facing);

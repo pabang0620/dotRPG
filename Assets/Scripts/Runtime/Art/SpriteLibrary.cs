@@ -88,6 +88,23 @@ namespace DotRPG
             return result;
         }
 
+        /// <summary>[ROGUE] Grip of the held dagger art (Art/PlayerWeapons/wpn_dagger_*): handle centre, pixels from the bottom.</summary>
+        public const float DaggerGripY = 12.5f;
+
+        /// <summary>[ROGUE] Dagger for the equipped tier, pivoted at the grip (one picture for both hands).</summary>
+        public Sprite GetRogueWeapon(string itemId)
+        {
+            var item = EquipmentDatabase.Get(itemId);
+            if (item == null || item.category != EquipCategory.Weapon || !item.UsableBy(CharacterClass.Rogue)) return null;
+            string key = "rogue_held_" + itemId;
+            if (cache.TryGetValue(key, out var ready)) return ready;
+            var original = Resources.Load<Sprite>(PlayerWeaponArt.ResourceFolder + EquipmentDatabase.WeaponSprite(itemId, CharacterClass.Rogue));
+            if (original == null) return null;
+            var result = Sprite.Create(original.texture, original.rect, new Vector2(.5f, DaggerGripY / original.rect.height), original.pixelsPerUnit, 0, SpriteMeshType.FullRect);
+            result.name = key; cache[key] = result;
+            return result;
+        }
+
         Sprite ToSprite(string key, PixelCanvas canvas)
         {
             // High-resolution art (density 2) is drawn through the sharp-scaling material, which needs

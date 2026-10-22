@@ -307,9 +307,9 @@ namespace DotRPG
         InputField nameField;
         CharacterClass cls = CharacterClass.Warrior;
         string requestId, requestFor;
-        // [UI] The two classes as cards: the chosen one walks, the other idles. A click picks the class.
-        static readonly CharacterClass[] Classes = { CharacterClass.Warrior, CharacterClass.Mage };
-        readonly CharacterPreviewCard[] cards = new CharacterPreviewCard[2];
+        // [UI] The classes as cards: the chosen one walks, the others idle. A click picks the class.
+        static readonly CharacterClass[] Classes = CharacterClassInfo.All;
+        readonly CharacterPreviewCard[] cards = new CharacterPreviewCard[Classes.Length];
         float animTimer;
 
         protected override bool AnyFieldFocused => nameField.isFocused;
@@ -322,18 +322,22 @@ namespace DotRPG
             // Ten empty body lines reserve room for the cards (to -292), the name box and the status line (to -384).
             screen.BuildPanel(root, L.T("새 온라인 캐릭터"), 640, new string('\n', 9), 20);
             screen.panel.Find("Body").GetComponent<Text>().text = "";
+            // [ROGUE] Two cards keep 260 px at +-150; three cards are 196 px wide, 204 px apart (panel 640).
+            bool two = Classes.Length == 2;
+            float cardWidth = two ? 260f : 196f, spacing = two ? 300f : 204f;
             for (int i = 0; i < Classes.Length; i++)
             {
                 var c = Classes[i];
                 var info = CharacterClassInfo.Get(c);
-                var card = CharacterPreviewCard.Create(screen.panel, "Card_" + info.saveId, new Vector2(i == 0 ? -150f : 150f, -92f), new Vector2(260f, 200f), 144f, 26);
+                var card = CharacterPreviewCard.Create(screen.panel, "Card_" + info.saveId, new Vector2((i - (Classes.Length - 1) * .5f) * spacing, -92f), new Vector2(cardWidth, 200f), 144f, 26);
                 card.OnClick(() => { if (screen.cls != c) Game.Audio.PlaySfx("select"); screen.PickClass(c); });
                 screen.cards[i] = card;
             }
             screen.nameField = screen.Field(L.T("이름"), -302f, L.T("한글·영문·숫자 2~8자"), 8, false);
             screen.Status(-350f);
-            screen.menu.AddOption(L.T("직업"), () => screen.cls == CharacterClass.Mage ? L.T("마법사") : L.T("전사"),
-                d => screen.PickClass(screen.cls == CharacterClass.Mage ? CharacterClass.Warrior : CharacterClass.Mage));
+            // [ROGUE] Left / right cycles through the classes (was a two-value toggle).
+            screen.menu.AddOption(L.T("직업"), () => CharacterClassInfo.NameOf(screen.cls),
+                d => screen.PickClass(Classes[(System.Array.IndexOf(Classes, screen.cls) + (d < 0 ? Classes.Length - 1 : 1)) % Classes.Length]));
             screen.menu.AddButton(L.T("만들기"), () => screen.Submit());
             screen.menu.AddButton(L.T("돌아가기"), () => ui.Pop());
             screen.menu.OnCancel = () => ui.Pop();

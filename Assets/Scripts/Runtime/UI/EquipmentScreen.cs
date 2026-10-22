@@ -273,7 +273,7 @@ namespace DotRPG
                 {
                     // [SERVER] A mage always holds a staff (FixSlots); online the server refuses an empty weapon slot.
                     Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast(L.T("마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다."));
+                    GameEvents.RaiseToast(Class == CharacterClass.Rogue ? L.T("도적은 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다.") : L.T("마법사는 무기를 뺄 수 없습니다. 다른 무기를 장착하면 바뀝니다."));
                     return;
                 }
                 var wornBefore = OnlineEconomy.WornSnapshot();
@@ -313,7 +313,7 @@ namespace DotRPG
             if (!gear.UsableBy(Class))
             {
                 Game.Audio.PlaySfx("cancel");
-                GameEvents.RaiseToast(L.F("{0} 전용 장비입니다.", L.T(CharacterClassInfo.Get(gear.classOnly.Value).displayName)));
+                GameEvents.RaiseToast(L.F("{0} 전용 장비입니다.", gear.ClassLabel));
                 return;
             }
             if (gear.reqLevel > Game.Session.Progression.Level)

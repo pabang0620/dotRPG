@@ -139,9 +139,29 @@ CD = read(RT, "Progression", "CareerData.cs")
 _m = re.search(r"Mathf\.Min\(([0-9.]+)f, 1f \+ \.?([0-9.]+)f \* cd\)", CD)
 CD_CAP = arg("--cd-cap", float(_m.group(1)) if _m else 2.5)
 CD_SLOPE = arg("--cd-slope", float("0." + _m.group(2).lstrip(".")) if _m and not _m.group(2).startswith("0") else (float(_m.group(2)) if _m else .15))
-HEAL, BUFF = {"heal", "bloom", "cleanse"}, {"guard", "oath", "bless", "counter", "frenzy"}
+HEAL, BUFF = {"heal", "bloom", "cleanse"}, {"guard", "oath", "bless", "counter", "frenzy", "venom", "clone", "stealth"}
+# [ROGUE 2026-10-23] Assassin (a) and ninja (n) rows from Docs/PLAN_CLASS_ROGUE.md 2.3/2.4 in the CareerData S() format.
+# Used only until CareerData.cs carries them (7절 5단계); once it does, the rows are read from the code like the others.
+ROGUE_ROWS = """
+S(a,1,"a_twin","쌍인참","","twin",1.0f,10,3,1.6f,0,.08f,0,4),
+S(a,2,"a_veil","연막 도약","","veil",1.7f,14,12,4,2.5f,.05f,2),
+S(a,3,"a_venom","맹독 도포","","venom",20,20,62,0,0,.1f,120),
+S(a,5,"a_rend","연환 베기","","rend",.8f,18,0,2,.9f,.1f,0,2),
+S(a,6,"a_rupture","급소 파열","","rupture",1.2f,22,10,2,0,.2f),
+S(a,7,"a_assassinate","암살","","assassinate",1.85f,26,12,1.8f,0,.2f),
+S(a,8,"a_awake","천영참","","shadowdance",.8f,60,48,0,5.4f,0f,2,12),
+S(a,9,"a_stealth","은신","","stealth",50,20,20,0,0,.1f,6),
+S(n,1,"n_kunai","쿠나이 순간이동","","kunai",1.6f,14,8,10,.4f,.08f),
+S(n,2,"n_clone","분신술","","clone",25,20,24,0,0,.1f,8),
+S(n,3,"n_recall","회수","","recall",.6f,16,8,8,0,.15f),
+S(n,5,"n_volley","연발 쿠나이","","volley",.75f,18,0,8,.35f,.1f,0,2),
+S(n,6,"n_fuma","풍마 수리검","","fuma",.55f,22,9,7,.7f,.2f,0,6),
+S(n,7,"n_bomb","기폭 쿠나이","","bomb",1.4f,26,12,7,1.2f,.25f,0,5),
+S(n,8,"n_awake","분신 난무","","clonestorm",.55f,60,48,0,6.2f,0f,2,16),
+"""
 SK = {}
-for m in re.finditer(r'S\(([fgmb]),(\d+),"(\w+)","([^"]+)","[^"]*","(\w+)",([^)]*)\)', CD):
+_ROWS = CD if 'S(a,1,"a_twin"' in CD else CD + ROGUE_ROWS
+for m in re.finditer(r'S\(([fgmban]),(\d+),"(\w+)","([^"]+)","[^"]*","(\w+)",([^)]*)\)', _ROWS):
     nums = [x.strip().rstrip("f") for x in m.group(6).split(",")]
     i, eff = int(m.group(2)), m.group(5)
     if i in (0, 4):
@@ -150,7 +170,7 @@ for m in re.finditer(r'S\(([fgmb]),(\d+),"(\w+)","([^"]+)","[^"]*","(\w+)",([^)]
     hits = int(nums[7]) if len(nums) > 7 and nums[7].isdigit() else 1
     awaken = i == 8
     mp = max(1, round(mp * (.75 if awaken else .65)))
-    signature = cd <= 0 or eff == "frenzy"
+    signature = cd <= 0 or eff in ("frenzy", "venom")
     if not signature:
         cd = max(.5, round(cd * (1.25 if awaken else 1.6 if eff in ("guard", "oath", "bless", "counter") else .7) * 2) / 2)
     if eff in HEAL:
@@ -167,6 +187,10 @@ RECOVERY = {"cross": .1, "light": .09, "heal": .1, "guard": .1, "blink": .1, "fr
 RANK3 = 1.24
 MP_SHARE = {k: float(v) for k, v in re.findall(r'id == "(\w+)" \? \.?([0-9.]+)f', CD)} if "MainHunterMpShare" in CD else {}
 MP_SHARE = {k: (v if v < 1 else v / 10000) for k, v in MP_SHARE.items()}
+MP_SHARE.setdefault("a_rend", .0228)  # [ROGUE] PLAN_CLASS_ROGUE 2.3: .09 / 1.3 / 3.03 per second at full speed
+MP_SHARE.setdefault("n_volley", .0228)
+# [ROGUE] Rupture and assassinate are counted with every condition met (5 marks, from behind): 3.47 and 7.86 (2.3절).
+COND_MUL = {"a_rupture": 2.0, "a_assassinate": 1.5 * 1.8}
 
 # spam skill, its single-target hits per cast, average targets in a 3-pack, extra cooldown skills on keys
 CAREERS = {
@@ -180,7 +204,17 @@ CAREERS = {
                  cds=["m_ice", "m_orbit", "m_rift", "m_veil"], cd_hits={"m_ice": 1, "m_orbit": 2.2, "m_rift": 6}, cd_splash=2.4, more=1.0, dr=0, shield=.35),
     "비숍": dict(cls="m", hpmul=1.05, mpcls="m", spam="b_light", spam_hits=1, splash=2.0,
                 cds=["b_cleanse"], cd_hits={}, cd_splash=2.0, more=1.18, dr=0, shield=0),
+    # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 3절: assassin more = venom 1.2 x marks 1.15 x ambush 1.05, ninja = clones 1.235 x .96.
+    "어쌔신": dict(cls="r", hpmul=1.15, mpcls="r", spam="a_rend", spam_hits=2, splash=1.4,
+                 cds=["a_twin", "a_veil", "a_rupture", "a_assassinate"], cd_hits={"a_twin": 4}, cd_splash=1.0, more=1.2 * 1.15 * 1.05, dr=0, shield=0,
+                 basic=(.24, 1.1)),
+    "닌자": dict(cls="r", hpmul=1.0, mpcls="r", spam="n_volley", spam_hits=2, splash=1.6,
+                cds=["n_kunai", "n_fuma", "n_bomb", "n_recall"], cd_hits={"n_fuma": 6, "n_bomb": 3, "n_recall": 6}, cd_splash=2.0, more=1.235 * .96, dr=0, shield=0,
+                basic=(.3, 1.0)),
 }
+# --old-mp: the warrior MP formula this tool used before 2026-10-23 (40 + 10, 4 per level). The code (CharacterStatsCalc) is
+# 40 + 40, 4 + 2 per level for warriors and rogues; the 3.1 table in PLAN_CLASS_ROGUE.md was made with the old one.
+OLD_MP = "--old-mp" in sys.argv
 TRAVEL = 4.0
 # EnemyController.LevelGapMul: player damage on monsters this many levels below (+15%/level beyond 3, max x3). --before = off.
 def gap_mul(gap):
@@ -191,9 +225,13 @@ def player(lv, c):
     atk, ghp = gear(lv)
     inc = (lv - 1) / 2 * 5.5 / 100 + (.05 if c["cls"] == "w" else 0)
     A = (10 + atk) * (1 + inc)
-    warrior = c["cls"] == "w"
-    hp = (60 + (50 if warrior else 0) + (lv - 1) * (8 + (6 if warrior else 0)) + ghp) * c["hpmul"]
-    mp = (40 + (10 if warrior else 40) + (lv - 1) * (4 + (0 if warrior else 3))) * ({"비숍": 1.25, "메이지": 1.2}.get(next(k for k, v in CAREERS.items() if v is c), 1))
+    warrior, rogue = c["cls"] == "w", c["cls"] == "r"
+    hp = (60 + (50 if warrior else 25 if rogue else 0) + (lv - 1) * (8 + (6 if warrior else 3 if rogue else 0)) + ghp) * c["hpmul"]
+    if rogue or (warrior and not OLD_MP):
+        mp_base = 40 + 40 + (lv - 1) * (4 + 2)
+    else:
+        mp_base = 40 + (10 if warrior else 40) + (lv - 1) * (4 + (0 if warrior else 3))
+    mp = mp_base * ({"비숍": 1.25, "메이지": 1.2}.get(next(k for k, v in CAREERS.items() if v is c), 1))
     return A, hp, mp
 
 
@@ -212,7 +250,7 @@ def rotation(lv, c, window):
         n = window / k["cd"]
         busy += n * (k["cast"] + RECOVERY.get(k["eff"], .15) + .08)
         budget -= n * k["mp"]
-        d = n * A * k["power"] * RANK3 * c["more"] * c["cd_hits"].get(cid, 1)
+        d = n * A * k["power"] * COND_MUL.get(cid, 1) * RANK3 * c["more"] * c["cd_hits"].get(cid, 1)
         single += d
         pack += d * c["cd_splash"]
     left = max(0.0, window - busy)
@@ -222,6 +260,11 @@ def rotation(lv, c, window):
     single += casts * per_cast
     pack += casts * per_cast * c["splash"]
     basic_time = left - casts * cycle
+    if "basic" in c:  # [ROGUE] dagger .65 / .24 s (pack x1.1), ninja kunai .65 / .3 s
+        basic = A * .65 / c["basic"][0] * basic_time
+        single += basic
+        pack += basic * c["basic"][1]
+        return single, pack
     basic = A * .8 / (.3 if c["cls"] == "w" else .38) * basic_time * (1.0 if c is not CAREERS["비숍"] else 1)
     single += basic
     pack += basic * (1.3 if c["cls"] == "w" else 1.0)
@@ -247,6 +290,31 @@ def pre_clear(lv, hp):
     return hp / (A * (2.5 * 1.5 + slots))
 
 
+def career_table():
+    """[ROGUE 2026-10-23] PLAN_CLASS_ROGUE 3.1/3.2: per-career averages over the Lv15+ grounds and the Lv40 boss model."""
+    print("\n## 전직 6종 사냥 평균 (Lv15+ 사냥터, PLAN_CLASS_ROGUE 3.1)" + (" [--old-mp]" if OLD_MP else ""))
+    print("| 직업 | 1마리 평균(초) | 1마리 범위 | 무리 3마리 평균(초) | 범위 | 버팀(초) |")
+    print("|---|---|---|---|---|---|")
+    zs = [z for z in ZONES if z["mlv"] >= 15]
+    for name, c in CAREERS.items():
+        ones, clears, survs = [], [], []
+        for z in zs:
+            lv = z["mlv"]
+            hps = [mon_hp(m, lv) * zone_mul(z) for m in z["mons"]]
+            incoming = sum(mon_dps(m, lv) for m in z["mons"]) * .9 * (1 - c["dr"] / 100)
+            ones.append((sum(hps) / len(hps)) / (rotation(lv, c, 3.0)[0] / 3.0))
+            clears.append(solve_clear(lv, c, sum(hps)))
+            survs.append(player(lv, c)[1] * (1 + c["shield"]) / incoming)
+        avg = lambda v: sum(v) / len(v)
+        print(f"| {name} | {avg(ones):.2f} | {min(ones):.1f}~{max(ones):.1f} | {avg(clears):.2f} | {min(clears):.1f}~{max(clears):.1f} | {min(survs):.0f}~{max(survs):.0f} |")
+    print("\n## Lv40 보스 1체 60초 피해 (파이터 = 1, 이동 없음, PLAN_CLASS_ROGUE 3.2)")
+    base = rotation(40, CAREERS["파이터"], 60.0)[0]
+    print("| 직업 | 모델 |")
+    print("|---|---|")
+    for name, c in CAREERS.items():
+        print(f"| {name} | {rotation(40, c, 60.0)[0] / base:.2f} |")
+
+
 def summary():
     print("\n## 요약 (같은 레벨 사냥터, 직업 4종 기하평균)")
     print("| 사냥터 | 몹Lv | 무리 정리(초) | 1마리(초) | 파이터 버팀(초) | 메이지 버팀(초) | 수호자 버팀(초) | +10Lv 캐릭터 1마리(초) |")
@@ -262,10 +330,12 @@ def summary():
             def base_hp(warrior):
                 atk, ghp = gear(lv)
                 return 60 + (50 if warrior else 0) + (lv - 1) * (8 + (6 if warrior else 0)) + ghp
-            surv = [f"{base_hp(True) / incoming:.0f}(전사)", f"{base_hp(False) / incoming:.0f}(마법사)", "-"]
+            rogue_hp = 60 + 25 + (lv - 1) * (8 + 3) + gear(lv)[1]  # [ROGUE] HP +25, +3 per level
+            surv = [f"{base_hp(True) / incoming:.1f}(전사)", f"{base_hp(False) / incoming:.1f}(마법사)", f"{rogue_hp / incoming:.1f}(도적)"]
         else:
             cl, ones, lows = [], [], []
-            for c in CAREERS.values():
+            for n4 in ("파이터", "수호자", "메이지", "비숍"):  # [ROGUE] the summary stays the 4-career baseline
+                c = CAREERS[n4]
                 cl.append(solve_clear(lv, c, sum(hps)))
                 d = rotation(lv, c, 3.0)[0] / 3.0
                 ones.append(sum(hps) / 3 / d)
@@ -305,3 +375,4 @@ if __name__ == "__main__":
     if "--detail" in sys.argv:
         report()
     summary()
+    career_table()

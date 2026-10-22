@@ -92,7 +92,7 @@ namespace DotRPG
                         maxMembers = MiniJson.Int(o, "max_members", 4),
                         minPower = MiniJson.Int(o, "min_power"),
                         leaderName = MiniJson.Str(leader, "name", ""),
-                        leaderClass = MiniJson.Str(leader, "class") == "mage" ? CharacterClass.Mage : CharacterClass.Warrior,
+                        leaderClass = CharacterClassInfo.Parse(MiniJson.Str(leader, "class")),
                         leaderLevel = MiniJson.Int(leader, "level", 1),
                         message = MiniJson.Str(o, "message", ""),
                         mine = Flag(o, "mine"),

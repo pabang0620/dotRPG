@@ -88,6 +88,8 @@ namespace DotRPG
 
         /// <summary>Warrior: always % increased damage (the war cry buff, now a passive).</summary>
         public const int WarriorDamagePassive = 5;
+        /// <summary>[ROGUE] Class passive: +5% movement speed (no effect on kill speed, Docs/PLAN_CLASS_ROGUE.md 1.4).</summary>
+        public const int RogueSpeedPassive = 5;
         /// <summary>Both classes: always % less damage taken (철벽 / 마나 보호막, now passives).</summary>
         public const int GuardPassive = 10;
 

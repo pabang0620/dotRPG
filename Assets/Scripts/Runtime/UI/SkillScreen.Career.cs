@@ -56,6 +56,12 @@ namespace DotRPG
             else if(browsing==Career.None||CareerCatalog.Base(browsing)!=Game.Session.PlayerClass)browsing=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist;
             CareerText(careerRoot,"CareerTitle",L.F("<b>{0}</b>  Lv.{1}  ·  전직 포인트 <color=#ffe0a0>{2}</color>{3}", L.T(p.ClassLabel), p.Level, p.CareerPoints, (p.IsPromoted?$"  ·  <color=#9fe8ff>{L.T(Progression.StyleName(p.ActiveStyle))}</color>":"")),24,12,4,780,32);
             CareerText(careerRoot,"PointRule",p.IsPromoted?(p.Level>=22?L.T("새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)"):L.F("전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림", p.RefundedPoints)):L.T("15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능"),16,12,40,780,28);
+            // [ROGUE] The rogue careers (assassin, ninja) come with Docs/PLAN_CLASS_ROGUE.md step 5: until then the page only says so.
+            if(!p.IsPromoted&&Game.Session.PlayerClass==CharacterClass.Rogue)
+            {
+                CareerText(careerRoot,"RogueCareerSoon",L.T("도적 전직(어쌔신·닌자)은 준비 중입니다. 기본 스킬은 레벨만 충족하면 사용 가능"),18,12,80,780,28);
+                return;
+            }
             if(!p.IsPromoted)
             {
                 Career a=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Fighter:Career.Arcanist,b=Game.Session.PlayerClass==CharacterClass.Warrior?Career.Guardian:Career.Bishop;

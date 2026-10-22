@@ -65,7 +65,7 @@ namespace DotRPG
             if (!Game.Saves.HasSave(slot)) return L.F("슬롯 {0}   <color=#8a94a8>비어 있음</color>", slot + 1);
             var d = Game.Saves.Read(slot);
             if (d == null) return L.F("슬롯 {0}   <color=#ff8080>손상된 저장</color>", slot + 1);
-            string cls = d.playerClass == "mage" ? L.T("마법사") : L.T("전사");
+            string cls = CharacterClassInfo.NameOf(CharacterClassInfo.Parse(d.playerClass));
             if (d.career != null && d.career.career != Career.None && d.level >= 15)
                 cls = L.T(CareerCatalog.Name(d.career.career));
             if (SaveSystem.SlotCount == 4 && SaveSystem.DirectoryOverride != null)

@@ -66,8 +66,11 @@ namespace DotRPG
         public string name;
         public EquipCategory category;
         public ItemRarity rarity;
-        /// <summary>Null = any class.</summary>
+        /// <summary>Null = any class. [ROGUE] With <see cref="classes"/> set it is the first of them (data export, promote and
+        /// inherit families); who may wear it is decided by <see cref="classes"/>.</summary>
         public CharacterClass? classOnly;
+        /// <summary>[ROGUE] Every class that can wear it (null = classOnly decides): plate and greaves are warrior and rogue.</summary>
+        public CharacterClass[] classes;
         public int attack;
         public int maxHealth;
         public int block;
@@ -102,7 +105,22 @@ namespace DotRPG
         /// <summary>Instance key per level (index 0 = the bare id), filled by the database.</summary>
         internal string[] keys;
 
-        public bool UsableBy(CharacterClass cls) => classOnly == null || classOnly == cls;
+        public bool UsableBy(CharacterClass cls) => classes != null ? System.Array.IndexOf(classes, cls) >= 0 : classOnly == null || classOnly == cls;
+
+        /// <summary>[ROGUE] "전사·도적" for shared gear, the one class name otherwise (null for gear any class can wear).</summary>
+        public string ClassLabel
+        {
+            get
+            {
+                if (classes != null && classes.Length > 0)
+                {
+                    var parts = new string[classes.Length];
+                    for (int i = 0; i < classes.Length; i++) parts[i] = L.T(CharacterClassInfo.Get(classes[i]).displayName);
+                    return string.Join("·", parts);
+                }
+                return classOnly.HasValue ? L.T(CharacterClassInfo.Get(classOnly.Value).displayName) : null;
+            }
+        }
 
         public string CategoryName => EquipmentDatabase.CategoryName(category);
 

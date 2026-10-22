@@ -209,7 +209,7 @@ namespace DotRPG
                 {
                     characterId = MiniJson.Str(m, "character_id"),
                     name = MiniJson.Str(m, "name", ""),
-                    cls = MiniJson.Str(m, "class") == "mage" ? CharacterClass.Mage : CharacterClass.Warrior,
+                    cls = CharacterClassInfo.Parse(MiniJson.Str(m, "class")),
                     level = MiniJson.Int(m, "level", 1),
                     power = MiniJson.Int(m, "power"),
                     ready = Flag(m, "ready"),
@@ -225,7 +225,7 @@ namespace DotRPG
                 {
                     id = MiniJson.Str(a, "id"),
                     name = MiniJson.Str(c, "name", ""),
-                    cls = MiniJson.Str(c, "class") == "mage" ? CharacterClass.Mage : CharacterClass.Warrior,
+                    cls = CharacterClassInfo.Parse(MiniJson.Str(c, "class")),
                     level = MiniJson.Int(c, "level", 1),
                     power = MiniJson.Int(c, "power"),
                 });
