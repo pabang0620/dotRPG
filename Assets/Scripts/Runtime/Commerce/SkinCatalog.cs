@@ -189,6 +189,16 @@ namespace DotRPG
                 l.bottomTier = -1;
                 return l;
             }
+            if (cls == CharacterClass.Rogue)
+            {
+                // [ROGUE] Same rogue body, cloth recoloured per career (RoguePalette): "rogue_career_assassin" / "_ninja".
+                var r = CharacterLook.Rogue.Clone();
+                r.id = "rogue_" + id;
+                r.skinSheet = id;
+                r.armor = ArmorStyle.None;
+                r.bottomTier = -1;
+                return r;
+            }
             var m = CharacterLook.Mage.Clone();
             m.id = id;
             return m;

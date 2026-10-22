@@ -132,6 +132,10 @@ namespace DotRPG
                 if (c.InvulnerableLeft > 0f) Put(ref n, "buff_shield", L.F("무적 {0:0.0}초", c.InvulnerableLeft), L.T("무적"), L.T("받는 피해 0."));
                 if (c.StanceOn) Put(ref n, "buff_focus", L.T("검기 태세 ON"), L.T("검기 태세"), L.T("기본 공격마다 관통 검기 발사(3타째 3줄). 검기마다 MP 소모."));
                 if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", L.F("검귀 {0}", Sec(c.FrenzyLeft)), L.T("검귀 해방"), L.F("모든 공격 피해 +{0}%.", c.FrenzyPct));
+                // [ROGUE] 맹독 도포 · 은신 · 분신술 (existing icons)
+                if (c.VenomLeft > 0f) Put(ref n, "buff_burn", L.F("맹독 {0}", Sec(c.VenomLeft)), L.T("맹독 도포"), L.F("직접 공격 피해의 {0}%만큼 독(3초, 방어 무시).", c.VenomPct));
+                if (c.StealthLeft > 0f) Put(ref n, "buff_focus", L.F("은신 {0}", Sec(c.StealthLeft)), L.T("은신"), L.T("일반 몬스터가 추적을 멈춘다. 첫 공격은 피해 증가·등 뒤 판정, 공격하면 풀린다."));
+                if (c.ClonesLeft > 0f) Put(ref n, "buff_power", L.F("분신 {0}", Sec(c.ClonesLeft)), L.T("분신술"), L.T("분신 둘이 쿠나이 투척을 따라 한다. 다시 누르면 분신과 자리 바꾸기."));
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", L.F("검기 {0}/3", c.ComboStacks), L.T("검기 연성"), L.T("3개일 때 다음 전직 스킬 피해 +20%."));
                 if (c.ShieldLeft > 0f) Put(ref n, "buff_shield", c.ShieldCareer == Career.Arcanist ? L.F("배리어 {0}", Sec(c.ShieldLeft)) : L.F("보호막 {0}", Sec(c.ShieldLeft)), c.ShieldCareer == Career.Arcanist ? L.T("매직 배리어") : L.T("보호막"), L.F("피해 흡수 {0} 남음.", c.Shield));
                 if (c.GuardLeft > 0f) Put(ref n, "buff_guard", L.F("보루 {0}", Sec(c.GuardLeft)), L.T("강철의 보루"), L.T("받는 피해 -30%."));

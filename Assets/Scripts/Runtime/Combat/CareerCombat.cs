@@ -141,10 +141,11 @@ namespace DotRPG
             broken.Clear();
             lastElement = "";
             aura?.Clear();
+            RogueReset(); // [ROGUE] marks, venom, stealth, kunai, clones
         }
 
         /// <summary>Curses slow; only the 강철의 보루 stance itself slows the guardian.</summary>
-        public float MoveScale => Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : 1f;
+        public float MoveScale => Time.time < SlowUntil ? .6f : Time.time < guardSlowEnd ? .7f : Stealthed ? StealthSpeed : 1f; // [ROGUE] 은신 +30%
 
         /// <summary>Damage the owner takes, after guard, 강철의 심장 and shields. Also arms 수호의 반향 and 응보의 방진.</summary>
         public int Absorb(int damage)
@@ -178,6 +179,7 @@ namespace DotRPG
             if (counterEnd > 0 && Time.time >= counterEnd) { counterEnd = 0; StartCoroutine(CounterBlast(.7f)); }
             if (OathRadius > 0 && Time.time >= oathEnd) OathRadius = 0;
             StanceTick();
+            RogueTick();
         }
 
         /// <summary>Outgoing damage of the owner on <paramref name="enemy"/> (all hits, basic attacks included).</summary>
@@ -191,6 +193,7 @@ namespace DotRPG
             if (Time.time < retalEnd) { mult *= 1 + (20 + 5 * (Prog.Rank("g_retal") - 1)) / 100f; retalEnd = 0; }
             int edge = Prog.Rank("f_edge");
             if (edge > 0 && enemy.Health.Current >= enemy.Health.Max * .8f) mult *= 1 + (15 + 5 * (edge - 1)) / 100f;
+            if (CareerCatalog.Base(Mine) == CharacterClass.Rogue && Prog.IsPromoted) mult *= RogueDamageMul(enemy, Mathf.RoundToInt(amount * mult)); // [ROGUE]
             return Mathf.Max(1, Mathf.RoundToInt(amount * mult));
         }
 
@@ -209,6 +212,7 @@ namespace DotRPG
                 }
             }
             CareerTrials.Record(owner, "hit", 1);
+            if (CareerCatalog.Base(Mine) == CharacterClass.Rogue && Prog.IsPromoted) RogueLanded(enemy); // [ROGUE]
         }
 
         /// <summary>검기 연성: three charges make the next Fighter skill stronger, and are spent by it.</summary>
@@ -245,6 +249,8 @@ namespace DotRPG
                 case Career.Guardian: yield return Guardian(run); break;
                 case Career.Arcanist: yield return Arcanist(run); break;
                 case Career.Bishop: yield return Bishop(run); break;
+                case Career.Assassin: yield return Assassin(run); break;
+                case Career.Ninja: yield return Ninja(run); break;
             }
         }
 
@@ -284,7 +290,7 @@ namespace DotRPG
                 SkillVisuals.CastCircle(owner.Position, color);
                 SkillVisuals.StaffFlash(owner.Center + dir * .35f, color);
             }
-            Sound(s.career == Career.Fighter ? "c_dash" : s.career == Career.Guardian ? "swing" : s.career == Career.Arcanist ? "c_arcane" : "magic", .55f);
+            Sound(s.career == Career.Fighter || s.career == Career.Assassin ? "c_dash" : s.career == Career.Guardian || s.career == Career.Ninja ? "swing" : s.career == Career.Arcanist ? "c_arcane" : "magic", .55f);
         }
 
         void Awaken(CareerSkill s)

@@ -211,6 +211,8 @@ namespace DotRPG
             {
                 // [PARTY] Threat-based pick among the alive party members (just the local player without companions).
                 var p = Game.Party != null ? Game.Party.SelectTarget(this) : Game.Player;
+                // [ROGUE] 은신: ordinary monsters lose a hidden assassin (bosses still see her).
+                if (p != null && !IsBoss && CareerCombat.HiddenFromMonsters(p)) return null;
                 return p != null && !p.IsDead && Game.IsWorldRunning ? p : null;
             }
         }

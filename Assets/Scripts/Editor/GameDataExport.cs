@@ -32,7 +32,10 @@ namespace DotRPG.EditorTools
                 "\"1\":{\"minSeconds\":4,\"requiredNodes\":[]}," +
                 "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
                 "\"3\":{\"minSeconds\":4,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
-                "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}}";
+                "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}," +
+                // [ROGUE] 어쌔신: 5 back hits in a row + 암살 on 5 marks; 닌자: 3 moves to the kunai with clones out (5.5 s apart) + 4 roots.
+                "\"5\":{\"minSeconds\":4,\"requiredNodes\":[\"a_veil\",\"a_assassinate\"]}," +
+                "\"6\":{\"minSeconds\":11,\"requiredNodes\":[\"n_clone\",\"n_bomb\"]}}";
             return json.Substring(0, json.Length - 1) + trials + "}";
         }
 

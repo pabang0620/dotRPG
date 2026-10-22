@@ -223,7 +223,7 @@ namespace DotRPG
             for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
             {
                 var p = src[y * Size + (flip ? Size - 1 - x : x)];
-                if (p.a > 0) oriented.Set(x, y, FemaleWarriorPalette.Apply(p, look.skinSheet));
+                if (p.a > 0) oriented.Set(x, y, RoguePalette.Handles(look.skinSheet) ? RoguePalette.Apply(p, look.skinSheet) : FemaleWarriorPalette.Apply(p, look.skinSheet)); // [ROGUE] career recolour
             }
             return oriented;
         }

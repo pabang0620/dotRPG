@@ -92,6 +92,9 @@ namespace DotRPG
                 Game.Audio.PlaySfx("cancel");
                 return;
             }
+            // [NINJA] 쿠나이 순간이동 / 분신술: pressing the key again while the kunai or the clones are out is the follow-up
+            // (move to the kunai / swap with a clone): no MP, no cooldown, also mid-cast.
+            if (CareerCombat.For(owner).TryFollowUp(gem.id)) return;
             if (Time.time < ReadyAt(slot) || IsCasting) return;
             var careerSkill = CareerCatalog.Get(gem.id);
             // [FIGHTER] 검기 태세 is a toggle: pressing it while on turns it off for free.

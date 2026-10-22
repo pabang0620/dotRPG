@@ -104,6 +104,24 @@ namespace DotRPG
         }
 
         /// <summary>
+        /// [NINJA] 쿠나이 순간이동 / 분신술 swap: put the body straight on <paramref name="destination"/> (the caller has checked
+        /// the spot is free; walls between do not matter), like the teleport. No mobility cooldown.
+        /// </summary>
+        public bool SkillTeleportTo(Vector2 destination, Vector2 faceTo)
+        {
+            if (IsDead) return false;
+            CancelMobility();
+            desiredVelocity = Vector2.zero;
+            body.SetVelocity(Vector2.zero);
+            body.position = destination;
+            transform.position = destination;
+            Physics2D.SyncTransforms();
+            Vector2 look = faceTo - Position;
+            if (look.sqrMagnitude > .0001f) { Facing = FacingExtensions.FromVector(look, Facing); AimDirection = look.normalized; }
+            return true;
+        }
+
+        /// <summary>
         /// [SKILL] 돌진 베기: a skill-driven dash of up to <paramref name="distance"/> along <paramref name="direction"/>
         /// (stops at walls, no mobility cooldown). Returns the distance it will cover.
         /// </summary>

@@ -32,6 +32,8 @@ namespace DotRPG
             Career.Guardian => 1.4f,
             Career.Arcanist => 1.3f,
             Career.Bishop => 2.2f,
+            Career.Assassin => .95f, // [ROGUE] PLAN_CLASS_ROGUE 3.2: model 1.04 x 0.95 = 0.99 of a fighter
+            Career.Ninja => 1.15f,   // model 0.71 x 1.15 = 0.82 (the arcanist's place)
             _ => 1f,
         };
         /// <summary>Waits before the boss wakes up (the hero gets into place, the HUD clock starts with the boss).</summary>

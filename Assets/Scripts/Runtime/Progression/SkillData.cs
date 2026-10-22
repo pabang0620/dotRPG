@@ -215,7 +215,7 @@ namespace DotRPG
         public const int WarriorHpBonus = 50, WarriorHpPerLevel = 6, WarriorMpBonus = 40, WarriorMpPerLevel = 2, MageMpBonus = 40, MageMpPerLevel = 3; // [BALANCE 2026-10-12] warrior MP 10 + 4/Lv -> 40 + 6/Lv: room for the cooldown skills
         /// <summary>[ROGUE] HP halfway between warrior and mage (+25, +3 per level); MP is the warrior's pool (Docs/PLAN_CLASS_ROGUE.md 1.4).</summary>
         public const int RogueHpBonus = 25, RogueHpPerLevel = 3;
-        public static float CareerHp(Career c) => c == Career.Guardian ? 1.3f : c == Career.Fighter ? 1.1f : c == Career.Bishop ? 1.05f : 1f;
+        public static float CareerHp(Career c) => c == Career.Guardian ? 1.3f : c == Career.Fighter ? 1.1f : c == Career.Bishop ? 1.05f : c == Career.Assassin ? 1.15f : 1f; // [ROGUE] assassin 1.15, ninja 1.0 (PLAN_CLASS_ROGUE 3.1)
         public static float CareerMp(Career c) => c == Career.Bishop ? 1.25f : c == Career.Arcanist ? 1.2f : 1f;
 
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>

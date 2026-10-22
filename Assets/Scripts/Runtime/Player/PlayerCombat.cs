@@ -96,7 +96,7 @@ namespace DotRPG
             // [MERGE] Each party member shows its own weapon (owner.Data), with the katana grip art for warriors.
             string weaponKey = owner.Data.Equipment[EquipSlot.Weapon];
             weapon.sprite = classInfo.id == CharacterClass.Warrior ? Game.Art.GetWarriorWeapon(weaponKey)
-                : classInfo.id == CharacterClass.Rogue ? Game.Art.GetRogueWeapon(weaponKey)
+                : classInfo.id == CharacterClass.Rogue ? Game.Art.GetRogueWeapon(weaponKey, owner.Data.Progression.IsPromoted && owner.Data.Progression.Career == Career.Ninja) // [NINJA] kunai in hand
                 : Game.Art.Get(EquipmentDatabase.WeaponSprite(weaponKey, classInfo.id));
             weapon.enabled = !owner.IsDead && weapon.sprite != null;
             if (weaponLeft != null)
@@ -200,6 +200,7 @@ namespace DotRPG
         {
             if (owner.IsDashing) return;
             AttackPressed?.Invoke(owner);
+            if (GetComponent<CareerCombat>()?.TryNinjaBasic() == true) return; // [NINJA] 투척술: the basic attack is a kunai throw
             if (!Ranged && meleeActive)
             {
                 // Each key-down buys exactly one additional strike; holding the key does not repeat.
