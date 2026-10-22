@@ -262,6 +262,15 @@ export const POLICY: PolicyEntry[] = [
   { table: 'account_withdrawals', t1: 'keep', t2: 'shell', note: '익명화 작업이 completed 로 바꾸고, 파기 작업이 마지막에 삭제한다' },
   { table: 'withdrawn_identities', t1: 'keep', t2: 'schedule', note: 'expires_at 뒤 purge-daily 가 지운다(최대 3년)' },
   { table: 'account_destruction_log', t1: 'keep', t2: 'forever', note: '파기 관리대장. PII 없음' },
+  // ---------- 길드·보스·랭킹 (0047, 2026-10-20). 길드 탈퇴·위임·해체는 익명화 시작 때 guildService.detachCharacter(auto)가 먼저 처리한다 ----------
+  delT1('guild_members', `DELETE FROM guild_members WHERE character_id ${CHR}`, 'schedule', 'detachCharacter가 먼저 빼고 인원을 맞춘다. 남은 행이 있으면 지운다'),
+  delT1('guild_applications', `DELETE FROM guild_applications WHERE character_id ${CHR}`),
+  delT1('guild_cooldowns', `DELETE FROM guild_cooldowns WHERE character_id ${CHR}`),
+  delT1('rank_titles', `DELETE FROM rank_titles WHERE character_id ${CHR}`, 'schedule', '랭킹 칭호·이름 색. 지나간 주 랭킹 화면은 boss_attempts로 다시 계산되며 이름은 자리표시가 된다'),
+  keepOwn('boss_attempts', `character_id ${CHR}`, '보스 도전 기록(피해량·시각). 랭킹·이상 탐지 근거라 파기 때까지 보관(개인정보처리방침 보스 도전 기록)'),
+  forever('guilds', '길드 자체. 길드장 캐릭터는 익명화 때 위임되거나 혼자면 해체된다. 해체된 길드 행은 이름만 남고 개인정보가 없다(길드장 참조는 캐릭터 껍데기)'),
+  forever('guild_boss_scores', '길드 단위 주간 점수. 개인정보 없음'),
+  forever('boss_seasons', '주간 시즌. 개인정보 없음'),
   // ---------- 껍데기(맨 마지막) ----------
   { table: 'characters', t1: 'anonymize', t2: 'shell', note: '모든 캐릭터 deleted_at + 자리표시 이름. 파기 때 참조가 없으면 삭제' },
   { table: 'accounts', t1: 'anonymize', t2: 'shell', note: 'anonymized_at, 접속 시각 NULL. 파기 때 참조가 없으면 삭제' },
@@ -269,7 +278,7 @@ export const POLICY: PolicyEntry[] = [
 
 /** 파기 순서(자식 -> 부모, FK 기준). destroyWhere 가 있는 모든 표가 여기 한 번씩 있어야 한다(테스트가 확인) */
 export const DESTROY_ORDER: string[] = [
-  'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'dungeon_entry_resets', 'dungeon_unique_pity', 'gacha_gear_credits', 'exchange_purchases', 'gear_codex', 'sweep_ticket_ledger',
+  'boss_attempts', 'anomaly_log', 'drops', 'kill_log', 'kill_stats', 'raid_claims', 'party_run_members', 'dungeon_sweeps', 'dungeon_entry_resets', 'dungeon_unique_pity', 'gacha_gear_credits', 'exchange_purchases', 'gear_codex', 'sweep_ticket_ledger',
   'sweep_ticket_lots', 'dungeon_runs', 'revive_log', 'character_achievements', 'character_career', 'character_career_trials',
   'character_chests', 'character_enhance_pity', 'character_state', 'quest_claims', 'daily_quests', 'mini_dungeon_kills', 'mini_dungeon_runs', 'mini_dungeon_days',
   'character_items', 'gold_ledger', 'item_ledger', 'xp_ledger', 'enhance_log', 'account_level_rewards', 'star_pass_daily', 'star_pass_grants', 'account_star_pass', 'account_pass_claims',
