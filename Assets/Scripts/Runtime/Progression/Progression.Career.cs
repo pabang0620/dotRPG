@@ -119,6 +119,7 @@ namespace DotRPG
                     }
                 }
             }
+            careerState.specs = CleanSpecs(this, old?.specs); // [CH3 SPEC] after the career, which decides what may be specialized
             Allocated.Clear(); Allocated.Add(PassiveTree.Start);
         }
         public CareerSave CaptureCareer() { SyncActiveStyle(); return JsonUtility.FromJson<CareerSave>(JsonUtility.ToJson(careerState)); }

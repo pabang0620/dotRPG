@@ -16,6 +16,11 @@ namespace DotRPG
         public static readonly Color Life = new Color(0.6f, 1f, 0.6f, 0.9f);
 
         public static Color Main(Career c) => c == Career.Fighter ? Steel : c == Career.Guardian ? Teal : c == Career.Arcanist ? Violet : Holy;
+        /// <summary>[CH3 SPEC] Main colour of a career cast: the specialization's crimson / silver when one is chosen, else
+        /// the career colour. Career cast functions pass this where they passed <see cref="Main"/>.</summary>
+        public static Color SkillColor(Career c, SkillNumbers n) => SkillSpecs.Tint(n, Main(c));
+        /// <summary>[CH3 SPEC] Rim / trail colour: the career colour stays here (silver B gets its own slate rim).</summary>
+        public static Color Rim(Career c, SkillNumbers n) => SkillSpecs.Rim(n, Main(c));
         static Color A(Color c, float a) => new Color(c.r, c.g, c.b, a);
         public static float Angle(Vector2 dir) => Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 

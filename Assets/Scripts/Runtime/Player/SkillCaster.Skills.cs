@@ -65,10 +65,33 @@ namespace DotRPG
             }
             SkillVisuals.Thunder(target.Position);
             CareerFx.Clip("m_spark", target.Center, Vector2.zero, 1.3f, 30f, VfxLayer.Top, false);
-            CareerFx.Clip("impact", target.Position, Vector2.zero, 0.55f, 26f, VfxLayer.Ground, false, CareerFx.Violet);
+            // [CH3 SPEC] Worked example for the other cast functions: the spec colour via SkillSpecs.Tint, the behaviour
+            // via n.spec / n.specExtra / n.targets (numbers such as damage already came through SkillSpecs.Apply).
+            CareerFx.Clip("impact", target.Position, Vector2.zero, 0.55f, 26f, VfxLayer.Ground, false, SkillSpecs.Tint(n, CareerFx.Violet));
             Hit(target, n, from, 4f);
-            // Splash: the bolt's electricity hits every monster around the impact point too, at full damage.
             Vector2 at = target.Center;
+            if (n.HasExtra("focus_no_splash")) // A 뇌창 집속: all the power in the one bolt (x1.5), no splash
+            {
+                Shake(0.08f, 0.14f);
+                return;
+            }
+            if (n.HasExtra("branch_25")) // B 분기 뇌창: the bolt forks to the n.targets nearest within n.radius, 25% each
+            {
+                var branch = n;
+                branch.damage = Mathf.Max(1, Mathf.RoundToInt(n.damage * 0.25f));
+                int forks = 0;
+                foreach (var e in EnemiesInRadius(at, n.radius))
+                {
+                    if (e == target) continue;
+                    SkillVisuals.ArcBolt(at, e.Center, false);
+                    CareerFx.Clip("impact", e.Position, Vector2.zero, 0.35f, 26f, VfxLayer.Ground, false, SkillSpecs.Tint(n, CareerFx.Violet));
+                    Hit(e, branch, at, 2f);
+                    if (++forks >= Mathf.Max(1, n.targets)) break;
+                }
+                Shake(0.06f, 0.12f);
+                return;
+            }
+            // Splash: the bolt's electricity hits every monster around the impact point too, at full damage.
             foreach (var e in EnemiesInRadius(at, n.radius))
             {
                 if (e == target) continue;

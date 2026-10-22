@@ -1,21 +1,28 @@
 import { z } from 'zod';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
+import { chapter3Open, CHAPTER2_LEVEL_CAP, levelCap } from '../../gamedata/chapterGate';
+import { getGameData } from '../../gamedata/loader';
 
 const nodeList = z.array(z.strictObject({ id: z.string().max(64), rank: z.number().int().min(1).max(3) })).max(9);
+/** 챕터 3 특화 선택(Docs/ch3/SKILL_SPECIALIZATION.md 6절): 스킬마다 a 또는 b 하나 */
+const specList = z.array(z.strictObject({ skill: z.string().max(64), side: z.enum(['a', 'b']) })).max(48);
 /** 스킬 스타일 하나(Docs/PLAN_SKILL_STYLES.md 3절): 전직 배분, 스킬 키·보조 젬(슬롯 x (주 1 + 보조 2), 빈칸 ""), 패시브 */
 const styleSchema = z.strictObject({
   nodes: nodeList,
   gems: z.array(z.string().max(64)).max(24), // 8 keys x (skill + 2 supports)
   passives: z.array(z.string().max(64)).max(200),
+  specs: specList.optional(),
 });
 export const careerSchema = z.strictObject({
-  schema: z.literal(1), career: z.number().int().min(0).max(4),
+  // 옛 클라이언트(schema 1, specs 없음)도 그대로 받는다
+  schema: z.union([z.literal(1), z.literal(2)]), career: z.number().int().min(0).max(4),
   nodes: nodeList,
   training: z.array(z.string().max(64)).max(200), refunded: z.number().int().min(0).max(39),
   questStage: z.number().int().min(0).max(5), awakened: z.boolean(),
   activeStyle: z.number().int().min(0).max(2).optional(),
   styles: z.array(styleSchema).max(3).optional(),
+  specs: specList.optional(),
 });
 export type CareerStyle = z.infer<typeof styleSchema>;
 export type CareerState = z.infer<typeof careerSchema>;
@@ -55,6 +62,9 @@ export function validateCareer(next: CareerState | undefined | null, prev: Caree
   checkNodes(next.nodes, c, character.level, next.refunded);
   // 스킬 스타일(Docs/PLAN_SKILL_STYLES.md): 저장된 스타일마다 같은 규칙(레벨·선행·예산)으로 본다
   for(const st of next.styles ?? []) checkNodes(st.nodes, c, character.level, next.refunded);
+  // 챕터 3 특화: 쓰고 있는 것과 스타일마다 저장한 것 모두 같은 규칙
+  checkSpecs(next.specs, c, character, next.awakened);
+  for(const st of next.styles ?? []) checkSpecs(st.specs, c, character, next.awakened);
   if((next.activeStyle ?? 0) >= Math.max(1, next.styles?.length ?? 0) && next.styles?.length) reject('BAD_STYLE');
 }
 
@@ -89,4 +99,42 @@ export function validCareerActive(id:string, state:CareerState|null|undefined, s
   if(index===8)return slot===4&&state.awakened&&state.questStage===5;
   // 8 keys: career actives go on any key but T (slot 4, the awakening); slots 5-7 are A S D
   return slot>=0&&slot<8&&slot!==4&&index>=0&&index%4!==0&&state.nodes.some(x=>x.id===id&&x.rank>0);
+}
+
+/** 기본 스킬(클래스마다 5개). 미전직도 이것만은 특화할 수 있다 */
+export const BASE_SKILLS: Record<string, string[]> = {
+  warrior: ['crush', 'whirl', 'cry', 'charge', 'blades'],
+  mage: ['lance', 'frostorb', 'nova', 'firefield', 'meteor'],
+};
+/** 특화 포인트: Lv41부터 레벨당 1(최대 10). 레벨은 지금 상한(levelCap)까지만 센다 */
+export const specPoints = (level: number, cap: number = levelCap()): number =>
+  Math.max(0, Math.min(10, Math.min(level, cap) - CHAPTER2_LEVEL_CAP));
+
+/** 특화 한 벌 검증: 스킬이 그 캐릭터 것인지, 중복 없음, 정의 존재, 포인트 합, 챕터 3 열림 */
+function checkSpecs(list: { skill: string; side: 'a' | 'b' }[] | undefined, c: number,
+  character: { level: number; class: string }, awakened: boolean): void {
+  if (!list || list.length === 0) return;
+  if (!chapter3Open()) throw new AppError(422, '아직 열리지 않은 콘텐츠입니다.', 'CHAPTER_LOCKED', { kind: 'spec' });
+  const defs = getGameData().economy.skillSpecs;
+  const base = BASE_SKILLS[character.class] ?? [];
+  const ids = careerIds[c] ?? [];
+  const seen = new Set<string>();
+  let spent = 0;
+  for (const x of list) {
+    if (seen.has(x.skill)) reject('SPEC_DUPLICATE');
+    seen.add(x.skill);
+    const idx = ids.indexOf(x.skill);
+    if (!base.includes(x.skill) && idx < 0) reject('SPEC_WRONG_SKILL');
+    if (idx === 8 && !awakened) reject('SPEC_NOT_AWAKENED');
+    const def = defs.get(`${x.skill}:${x.side}`);
+    if (!def) reject('SPEC_UNKNOWN');
+    spent += (def as { cost: number }).cost;
+  }
+  if (spent > specPoints(character.level)) reject('SPEC_OVER_BUDGET');
+}
+
+/** 확산형 특화(집중·확산 축의 b)가 하나라도 있으면 true: 다중 적중 상한(AOE_CAP)을 넓힌다 */
+export function hasSpreadSpec(state: CareerState | null | undefined): boolean {
+  const defs = getGameData().economy.skillSpecs;
+  return (state?.specs ?? []).some((x) => defs.get(`${x.skill}:${x.side}`)?.axis === 'spread');
 }

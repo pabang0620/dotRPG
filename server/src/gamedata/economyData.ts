@@ -435,6 +435,8 @@ export interface EconomyData {
   };
   /** 챕터 태그: "kind:id" -> 챕터 번호(3만 들어 있다). chapterGate가 읽는다 */
   chapterTags: Map<string, number>;
+  /** 챕터 3 특화: "skill:side" -> 정의. 파일이 없으면 빈 맵 */
+  skillSpecs: Map<string, SkillSpecInfo>;
   items: Map<string, ItemInfo>;
   quests: Map<string, QuestRule>;
   mapExtra: Map<string, MapExtra>;
@@ -457,6 +459,23 @@ export interface EconomyData {
     mercenary: { damageScale: number; maxCompanions: number };
   };
 }
+
+// 챕터 3 특화(skill_specs.json, Docs/ch3/SKILL_SPECIALIZATION.md 4절). 파일이 없으면 특화 없음
+const skillSpecsSchema = z.looseObject({
+  schema: z.literal(1),
+  points: z.looseObject({ from: z.number().int(), to: z.number().int(), active: z.number().int().positive(), passive: z.number().int().positive() }),
+  specs: z.array(
+    z.looseObject({
+      id: z.string().min(1),
+      skill: z.string().min(1),
+      side: z.enum(['a', 'b']),
+      axis: z.string().min(1),
+      cost: z.number().int().positive(),
+      chapter: z.number().int().optional(),
+    }),
+  ),
+});
+export interface SkillSpecInfo { id: string; skill: string; side: 'a' | 'b'; axis: string; cost: number }
 
 function readJson<T extends z.ZodType>(dir: string, file: string, schema: T): z.infer<T> {
   let raw: unknown;
@@ -592,6 +611,16 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
   for (const m of maps.maps) tag('map', m.id, (m as { chapter?: unknown }).chapter);
   for (const d of dng.dungeons) tag('dungeon', d.id, (d as { chapter?: unknown }).chapter);
   for (const m of mon.monsters) tag('monster', m.id, (m as { chapter?: unknown }).chapter);
+  const skillSpecs = new Map<string, SkillSpecInfo>();
+  if (fs.existsSync(path.join(dir, 'skill_specs.json'))) {
+    const sp = readJson(dir, 'skill_specs.json', skillSpecsSchema);
+    for (const x of sp.specs) {
+      const key = `${x.skill}:${x.side}`;
+      if (skillSpecs.has(key)) throw new Error(`게임 데이터 검증 실패: skill_specs ${key} 중복`);
+      skillSpecs.set(key, { id: x.id, skill: x.skill, side: x.side, axis: x.axis, cost: x.cost });
+      tag('spec', x.id, x.chapter);
+    }
+  }
   for (const id of [enh.materials.bone, enh.materials.ore, enh.materials.essence]) needItem(id, 'enhance.materials');
 
   for (const u of config.usableItems) needItem(u.id, 'gameconfig.usableItems');
@@ -686,6 +715,7 @@ export function loadEconomyData(dir: string, mapIds: Set<string>): EconomyData {
       inherit,
     },
     chapterTags,
+    skillSpecs,
     items: itemMap,
     quests: questMap,
     mapExtra,

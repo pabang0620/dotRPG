@@ -11,7 +11,8 @@ import * as econRepo from '../economy/economyRepository';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './killRepository';
 import { parseItemKey } from '../../utils/itemKey';
-import { attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops } from './killRules';
+import { aoeCapFor, attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops } from './killRules';
+import { hasSpreadSpec, type CareerState } from '../characters/careerRules';
 import { rejected, resolveFieldTarget, type KillTarget } from './killTarget';
 import { assertKillPresence } from '../antiabuse/killPresence';
 import type { KillBody } from './killValidation';
@@ -102,7 +103,13 @@ async function processKill(ctx: EconCtx, body: KillBody) {
   const thisHp = hpOf(body.monster_id, target.level, target.hpMul);
   const worn = await econRepo.listWornKeys(ctx.client, ctx.char.id);
   const cap = target.powerCap ?? attackCap(eco, pol, ctx.level, worn);
-  if (!powerAllows(eco, pol, cap, target.powerWindowSeconds, [...rowHp, thisHp])) {
+  // 챕터 3: Lv41+ 확산형 특화는 한 창의 다중 적중이 많다. 그 캐릭터만 AOE_CAP을 넓힌다(Lv40 이하는 조회도 안 한다)
+  let aoePol = pol;
+  if (ctx.level > 40) {
+    const st = await ctx.client.query<{ career: CareerState | null }>('SELECT career FROM character_state WHERE character_id = $1', [ctx.char.id]);
+    aoePol = { ...pol, powerAoeCap: aoeCapFor(pol, ctx.level, hasSpreadSpec(st.rows[0]?.career)) };
+  }
+  if (!powerAllows(eco, aoePol, cap, target.powerWindowSeconds, [...rowHp, thisHp])) {
     throw rejected('kill_power', target.nonHost ? 1 : 2, {
       monster_id: body.monster_id,
       window_seconds: target.powerWindowSeconds,

@@ -64,6 +64,7 @@ namespace DotRPG.EditorTools
                 ["auction.json"] = AuctionJson(), // [SERVER 6] auction house rules
                 ["sweep.json"] = SweepJson(), // [SWEEP] clear ticket rules (phase10 10)
                 ["raid_shop.json"] = RaidShopJson(), // [RAID] raid shop products (phase13 5.4)
+                ["skill_specs.json"] = SkillSpecsJson(), // [CH3 SPEC] specializations (Docs/ch3/SKILL_SPECIALIZATION.md 4)
             };
 
             using (var sha = SHA256.Create())

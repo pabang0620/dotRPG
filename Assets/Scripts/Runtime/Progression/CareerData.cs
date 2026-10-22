@@ -13,6 +13,8 @@ namespace DotRPG
         public List<CareerRank> nodes = new List<CareerRank>();
         public List<string> gems = new List<string>();
         public List<string> passives = new List<string>();
+        /// <summary>[CH3 SPEC] The style's specialization choices.</summary>
+        public List<SpecChoice> specs = new List<SpecChoice>();
     }
     [Serializable] public sealed class CareerSave
     {
@@ -26,6 +28,8 @@ namespace DotRPG
         /// <summary>[STYLE] Which saved build is in use (0..2) and the saved builds (empty = styles never used).</summary>
         public int activeStyle;
         public List<CareerStyle> styles = new List<CareerStyle>();
+        /// <summary>[CH3 SPEC] Specialization choices in use (save v8; missing in older saves = none).</summary>
+        public List<SpecChoice> specs = new List<SpecChoice>();
     }
     [Serializable] public sealed class CareerSkill
     {

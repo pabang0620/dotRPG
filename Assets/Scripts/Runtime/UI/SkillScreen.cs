@@ -16,14 +16,14 @@ namespace DotRPG
     /// </summary>
     public partial class SkillScreen : WindowScreen
     {
-        enum TabId { Tree, Gems }
+        enum TabId { Tree, Gems, Specs }
 
         // [SKILL 8] Eight compact rows (Q W E R A S D T) fit where five tall ones were (was 92 / 6).
         const float RowHeight = 58f, RowGap = 4f;
 
         TabId tab = TabId.Tree;
         RectTransform treePage, gemPage;
-        readonly Image[] tabBg = new Image[2];
+        readonly Image[] tabBg = new Image[3];
 
         // Gems.
         sealed class SocketView { public int slot, socket; public Image bg, icon; public Text label; }
@@ -58,14 +58,15 @@ namespace DotRPG
             w.BuildCareer();
             w.BuildGems();
             w.BuildGemGuide();
+            w.BuildSpecs(); // [CH3 SPEC]
             w.BuildTooltip();
             return w;
         }
 
         void BuildTabs()
         {
-            string[] names = { L.T("전직 · 스킬 노드"), L.T("기본 · 장착 스킬") };
-            for (int i = 0; i < 2; i++)
+            string[] names = { L.T("전직 · 스킬 노드"), L.T("기본 · 장착 스킬"), L.T("특화") };
+            for (int i = 0; i < 3; i++)
             {
                 int index = i;
                 var bg = Panel(content, "Tab" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(i * 210f, 0f), new Vector2(200f, 48f), Color.clear);
@@ -74,7 +75,7 @@ namespace DotRPG
                 Label(bg.transform, "Text", names[i], 24, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 48f), TextAnchor.MiddleCenter);
                 tabBg[i] = bg;
             }
-            tabKeyHint = Label(content, "TabHint", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(430f, 0f), new Vector2(500f, 48f), TextAnchor.MiddleLeft);
+            tabKeyHint = Label(content, "TabHint", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(640f, 0f), new Vector2(400f, 48f), TextAnchor.MiddleLeft);
 
             treePage = UIFactory.Stretch(UIFactory.Rect(content, "TreePage"), 0f, 0f, 0f, 56f);
             gemPage = UIFactory.Stretch(UIFactory.Rect(content, "GemPage"), 0f, 0f, 0f, 56f);
@@ -245,7 +246,10 @@ namespace DotRPG
 
         protected override void Refresh()
         {
-            for (int i = 0; i < 2; i++)
+            // [CH3 SPEC] The 특화 tab exists only while chapter 3 is open.
+            tabBg[2].gameObject.SetActive(Chapter3.Enabled);
+            if (tab == TabId.Specs && !Chapter3.Enabled) tab = TabId.Gems;
+            for (int i = 0; i < 3; i++)
             {
                 bool on = (int)tab == i;
                 tabBg[i].sprite = UiTheme.Tab(on);
@@ -254,8 +258,10 @@ namespace DotRPG
             }
             treePage.gameObject.SetActive(tab == TabId.Tree);
             gemPage.gameObject.SetActive(tab == TabId.Gems);
+            specPage.gameObject.SetActive(tab == TabId.Specs);
             RefreshCareer();
             RefreshGems();
+            if (tab == TabId.Specs) RefreshSpecs();
         }
 
         protected override bool UsesTabKey => true;
@@ -271,7 +277,7 @@ namespace DotRPG
             if (TakesInput) // [UX] not under a confirm (전직 기술 초기화, 추천 배치, 전직 선택) drawn over this window
             {
                 // [UX] Tab (or the shoulder buttons) switches pages; the skill keys stay free in this window.
-                if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) { tab = tab == TabId.Tree ? TabId.Gems : TabId.Tree; Game.Audio.PlaySfx("select"); Refresh(); }
+                if (UnityEngine.Input.GetKeyDown(KeyCode.Tab) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton4) || UnityEngine.Input.GetKeyDown(KeyCode.JoystickButton5)) { tab = tab == TabId.Tree ? TabId.Gems : tab == TabId.Gems && Chapter3.Enabled ? TabId.Specs : TabId.Tree; Game.Audio.PlaySfx("select"); Refresh(); }
                 var nav = input.NavigateStep;
                 if (nav != Vector2Int.zero)
                 {

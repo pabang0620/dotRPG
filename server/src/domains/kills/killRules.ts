@@ -44,6 +44,13 @@ export function attackCap(eco: EconomyData, pol: PowerPolicy, level: number, wor
   return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1)) * (1 + (COSMETIC_DAMAGE_MAX + COLLECTION_ATTACK_MAX) / 100);
 }
 
+/** 챕터 3 확산형 특화가 있는 Lv41+ 캐릭터의 다중 적중 상한(Docs/ch3/SKILL_SPECIALIZATION.md 1절) */
+export const SPREAD_AOE_CAP = 8;
+/** 그 캐릭터에 쓸 AOE_CAP: Lv41 이상이고 확산형 특화가 있으면 8, 그 밖에는 설정값(기본 5) */
+export function aoeCapFor(pol: PowerPolicy, level: number, spread: boolean): number {
+  return level > 40 && spread ? Math.max(pol.powerAoeCap, SPREAD_AOE_CAP) : pol.powerAoeCap;
+}
+
 /** 창 안 실효 HP 합이 화력 상한 x 창 길이 x AOE_CAP + 가장 큰 몬스터 HP 이하이면 true */
 export function powerAllows(
   eco: EconomyData,

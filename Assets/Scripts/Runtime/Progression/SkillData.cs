@@ -41,6 +41,8 @@ namespace DotRPG
         public int bossDamage;        // [SKILL v2] % more damage against bosses
 
         public bool IsUltimate => slot == SkillGems.UltimateSlot;
+        /// <summary>[CH3 SPEC] A shallow copy (a specialization changes the copy, never the catalog gem).</summary>
+        public SkillGem Clone() => (SkillGem)MemberwiseClone();
         public bool UsableBy(CharacterClass cls) => classOnly == null || classOnly == cls;
     }
 
@@ -131,6 +133,13 @@ namespace DotRPG
         public int damage, manaCost, chains, repeats, leechPct, hits, buffPct, guardPct, bossPct;
         public float cooldown, radius, range, freeze, stun, buffTime, guardTime;
         public bool usesLife;
+        /// <summary>[CH3 SPEC] Chosen side ('a' crimson, 'b' silver, '\0' none) and its behaviour fields for the cast
+        /// functions (SkillSpecs.Stamp). Counts are -1 / spreadDeg NaN when the spec keeps the skill's own value.</summary>
+        public char spec;
+        public string specExtra;
+        public int projectiles, targets, pierce;
+        public float spreadDeg, duration;
+        public bool HasExtra(string tag) => !string.IsNullOrEmpty(specExtra) && specExtra == tag;
     }
 
     // =============================== Aggregated character stats ===============================
@@ -249,9 +258,13 @@ namespace DotRPG
         /// <summary>A slotted skill's final numbers (supports + global and per-slot passives applied).</summary>
         public SkillNumbers Skill(CharacterClass cls, int slot, SkillGem active, IEnumerable<SkillGem> supports)
         {
+            // [CH3 SPEC] The chosen specialization overrides the skill's numbers here, once, before everything else.
+            var spec = SkillSpecs.Find(active.id, Prog.SpecOf(active.id));
+            if (spec != null) active = SkillSpecs.Apply(active, spec);
             float more = 1f, moreAoe = 1f, mana = 1f;
             var n = new SkillNumbers
             {
+                projectiles = -1, targets = -1, pierce = -1, spreadDeg = float.NaN, duration = float.NaN,
                 chains = active.chains, freeze = active.freeze, stun = active.stun, range = active.range,
                 hits = active.hits, buffPct = active.buffPct, buffTime = active.buffTime,
                 guardPct = active.guardPct, guardTime = active.guardTime,
@@ -300,6 +313,7 @@ namespace DotRPG
                 n.repeats=0; n.leechPct=0; n.bossPct=0;
                 if(Prog.Rank("m_flow")>0) n.manaCost=Mathf.Max(1,Mathf.RoundToInt(n.manaCost*(1-(10+3*(Prog.Rank("m_flow")-1))/100f)));
             }
+            SkillSpecs.Stamp(ref n, spec);
             return n;
         }
     }

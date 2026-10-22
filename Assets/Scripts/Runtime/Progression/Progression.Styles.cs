@@ -42,6 +42,7 @@ namespace DotRPG
             if (s.nodes != null) foreach (var n in s.nodes) if (n != null) c.nodes.Add(new CareerRank { id = n.id, rank = n.rank });
             if (s.gems != null) c.gems.AddRange(s.gems);
             if (s.passives != null) c.passives.AddRange(s.passives);
+            c.specs = CopySpecs(s.specs);
             return c;
         }
 
@@ -53,6 +54,7 @@ namespace DotRPG
                 for (int k = 0; k <= SkillGems.SupportsPerSlot; k++)
                     s.gems.Add(k == 0 ? slots[slot, 0] ?? "" : slots[slot, k] ?? "");
             foreach (var id in Allocated) if (id != PassiveTree.Start) s.passives.Add(id);
+            s.specs = CopySpecs(careerState.specs);
             return s;
         }
 
@@ -80,6 +82,7 @@ namespace DotRPG
                     var n = s.nodes.Find(x => x.id == skill.id);
                     for (int i = 0; i < Math.Min(3, n?.rank ?? 0); i++) if (!Learn(skill.id)) break;
                 }
+            careerState.specs = CleanSpecs(this, s.specs); // [CH3 SPEC] each style keeps its own specializations
             // Skill keys and supports.
             for (int slot = 0; slot < SkillGems.Slots; slot++)
                 for (int k = 0; k <= SkillGems.SupportsPerSlot; k++) slots[slot, k] = null;
