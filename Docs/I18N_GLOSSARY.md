@@ -257,7 +257,7 @@
 | 발체 | Balche | 사얍의 아이 |
 | 지바크 | Xibak | 공허 침식체(3장 중간 레이드) |
 | 카마츠 | Kamatz | 잿빛 손 지휘관(3장 최종 레이드) |
-| 잿빛 손 | the Grey Hand | 대사제 직속 비밀 부대 |
+| 잿빛 손 | the Ashen Hand | 대사제 직속 비밀 부대. 출시 번역 전부가 Ashen Hand 계열(러시아어 Пепельная рука)이라 그쪽으로 고정(2026-10-23) |
 | 메말라 가는 협곡 | the Withering Canyon | 3장 사냥터 지역 |
 | 공허 침식체 | Void Blight | 깨진 수호석에서 번진 것 |
 | 공허 정수 | Void Essence | 3-4 수집물 |
