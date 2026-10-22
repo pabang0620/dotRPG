@@ -23,7 +23,7 @@
 | 장비 | `GearCatalog` TierLevels 45·50, WeaponBase·HealthBase·BlockBase, 이름 80개, 레전더리 Lv50, 아이콘 밴드 8~9 |
 | 강화 | `EnhanceRules.GoldByTier` 8,690·10,000. `GearSell`은 공식 자동 |
 | 계승 | 출시용 `InheritRules` 경로표에 40→50 한 칸(유니크·레전더리만, 공통 공식 골드 + 핵·침식 결정·잿빛 인장, `MaterialCost`), 결과 키 `eq_{kind}_50_{grade}+N^k`·원본 소비·`enhancePity` 이전·경매 가격 키 분리. 서버 `inherit` 도메인(`POST /characters/:uuid/inherit`, `assertOpen`, 원장 `inherit`). 옛 `PromoteRules.InheritCost`·`/promote/inherit`는 2026-10-22 wonho 병합 때 없앴다 |
-| 아카브 교환 | 상점 데이터에 교환 품목(침식 결정 5 + 20,000 → 잿빛 인장 1, 주 2회) |
+| 아카브 교환 | 상점 데이터에 교환 품목(침식 결정 5 + 10,000 → 잿빛 인장 1, 주 2회(7단계에서 20,000 → 10,000)) |
 | 밴드·보상 | `income_caps.json`(theory_income.py), `daily_quests.json` 두 밴드 + 리아의 약초밭 템플릿, `level_rewards.json` 45·50, `achievementDefs.ts` level_40 문구·level_50·spec_first·spec_all |
 | 태그 | `economyData`에 chapter:3 태그(장비·재료·상점·레이드 id·맵 id·몬스터 id·특화) |
 | 마이그레이션 | 0049_gear_inherit(출시용): `gold_ledger`·`item_ledger` 사유 `inherit`, 경매 키 `^k`. 0051_chapter3_seal_exchange(도적 병합 때 0050에서 옮김): `gold_ledger` 사유 `seal_exchange`, 주간 카운터 `seal_exchange` |
@@ -85,7 +85,7 @@
 | 의뢰 | 주간 템플릿 2개 |
 | 해금·안내 | `ContentUnlocks` Chapter3·Specialization, 할 일 줄 3개, 성장 추천 |
 | 소유 | 서버 1명, 클라 1명 |
-| 테스트 | `miniDungeon.test.ts` 티어 40·10분, `bossRush.test.ts` Lv50 시즌·Lv40 참가, `dailies.test.ts` 밴드 |
+| 테스트 | `miniDungeon.test.ts` 티어 40·4분(7단계에서 10분 → 4분), `bossRush.test.ts` Lv50 시즌·Lv40 참가, `dailies.test.ts` 밴드 |
 | 완료 기준 | Lv41 캐릭터로 할 일 창에 특화·군주·사냥터 줄이 뜨고 이동이 동작(DevCapture) |
 
 ## 6단계: 잠금·스포일러

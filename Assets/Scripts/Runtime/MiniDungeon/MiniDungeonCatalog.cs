@@ -17,8 +17,9 @@ namespace DotRPG
     {
         /// <summary>Longest daily allowance (tiers 10~30). The seconds used today are shared by every tier.</summary>
         public const int DailySeconds = 30 * 60;
-        /// <summary>[CH3] Tier 40 gets 10 minutes a day: catch-up is on almost every day there (Docs/ch3/LIVE_CONTENT.md 1).</summary>
-        public const int DailySecondsTier40 = 10 * 60;
+        /// <summary>[CH3] Tier 40 gets 4 minutes a day: catch-up is on almost every day there (Docs/ch3/LIVE_CONTENT.md 1).
+        /// 2026-10-23 stage 7: 10 minutes put Lv40-50 at 20.8 h (target 22-27), 4 minutes at 23.5 h (theory_progress.py --measured --mini 20 --to 50).</summary>
+        public const int DailySecondsTier40 = 4 * 60;
         public const int Chapter3Tier = 40;
         public const int SpawnCount = 6;
         public const float RespawnSeconds = 5f;

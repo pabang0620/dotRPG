@@ -21,6 +21,13 @@ Lv1~40 동안 무자본으로 버는 골드와 비교한다. 수입이 필요 �
       python3 Tools/balance/theory_gold.py --mini [분당 처치]   미니 던전을 매일 30분 하는 경로(기본 20마리)
       python3 Tools/balance/theory_gold.py --search   강화 골드 배율 후보를 훑어 목표 비율에 맞는 값을 찾는다
       --max-level N 을 붙이면 만렙 N 기준(theory_progress.MAX_LEVEL, 챕터 3은 50)
+      python3 Tools/balance/theory_gold.py --to 50 --mini 20 [--after-days N] [--window-days 60] [--career fighter]
+          챕터 3 수지(2026-10-23, ch3 7단계). 1~40 구간은 위 계산 그대로(만렙 40 시뮬)이고, 3장 구간은 Lv40 + c2_end부터 Lv50까지.
+          비율 = (3장 공개 시점 잔고 + 3장 수입) / (Lv50 한 벌 + 계승 +12 무기 + 아카브 교환 4회)  (ROADMAP 3절 경제)
+          3장 공개 시점 잔고 = 1~40 수입 - 1~40 한 벌 지출 + (공개까지 남은 날 x Lv40 만렙 일상 하루 수입)
+          4장 공개 시점 잔고 = 3장 공개 시점 잔고 + 3장 수입 - 3장 지출 + (--after-days, 기본 = 창 60일 - 3장 날짜) x Lv50 만렙 일상 하루 수입
+          만렙 일상 = 요일 던전 3판 + 일일 의뢰 만렙 골드 3개 + 주간 의뢰 만렙 골드 3개 + 그 장 레이드 두 곳 + 월드·길드보스(주 80,000). 사냥은 넣지 않는다(보수)
+          1인 결정론 값이다(20명 시뮬 중앙값이 아니다)
 """
 import json
 import os
@@ -48,7 +55,7 @@ BUY = {s["id"]: s["buyPrice"] for s in SHOP["stock"]}
 SELL = {m["id"]: m["sellPrice"] for m in SHOP["materials"]}
 SELL.update({s["id"]: s["sellPrice"] for s in SHOP["sellPrices"]})
 MAT = {m["id"]: m for m in SHOP["materials"]}
-TIERS = [1, 10, 15, 20, 25, 30, 35, 40]
+TIERS = [1, 10, 15, 20, 25, 30, 35, 40, 45, 50]  # levelTier 인덱스(8 = Lv45, 9 = Lv50은 챕터 3)
 
 HOURS_PER_DAY = 2.0
 POTIONS_PER_MIN = 1.0          # 실측 평균(사냥 1분당 HP+MP 물약)
@@ -129,7 +136,7 @@ def enh_scale_by_tier():
         tiers = [float(x) for x in re.search(r"GoldByTier\s*=\s*\{([^}]*)\}", text).group(1).split(",")]
         mul0 = float(re.search(r"GoldMul\s*=\s*\{\s*([^,]*),", text).group(1))
     except (OSError, AttributeError, ValueError):
-        return [1.0] * 8
+        return [1.0] * len(TIERS)
     scale = []
     for i, lv in enumerate(TIERS):
         step = next((s for s in ENH["steps"] if s["id"] == f"eq_sword_{lv}_r"), None)
@@ -202,11 +209,15 @@ def raid_gold(rid):
     return (rr["goldMin"] + rr["goldMax"]) / 2
 
 
+LAST = {}
+
+
 def budget(gold_scale=1.0, potion_price=None, verbose=True):
     # 2026-10-16: 실측 속도(자동 사냥, Lv16+ 분당 20~25)가 있으면 그것으로, 없으면 설계값 15
     tp.TRAVEL, tp.FIXED_KPM = 4.0, 15
     tp.MEASURED_KPM = tp.measured_kpm()
     reached, events, claimed, days, st = tp.simulate(0.35, HOURS_PER_DAY, True, True)
+    LAST.update(reached=reached, events=events, st=st)
     hours = reached[tp.MAX_LEVEL]
     potion_price = BUY["potion_hp"] if potion_price is None else potion_price
 
@@ -298,6 +309,128 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
     return ti, ts, inc, spend
 
 
+# ---------------- 챕터 3 (--to 50) ----------------
+# Lv50 한 벌: Lv40 한 벌(KIT 마지막 5줄)과 같은 부위·목표를 티어 10으로(PROGRESSION_AND_GEAR 5절 "Lv40 한 벌 x GoldByTier 비")
+KIT50 = [(50, "eq_sword_50_e", 11), (50, "eq_plate_50_e", 10), (50, "eq_greaves_50_e", 10), (50, "eq_neck_50_r", 8), (50, "eq_ring_50_r", 8)]
+INHERIT_PLUS = 12            # 계승하는 무기 강화(ROADMAP 3절 "계승 +12 무기")
+EXCHANGES = 4                # 아카브 교환(주 2회 x 2주)
+WORLD_GUILD_PER_WEEK = 80000  # 월드보스 참가 30,000 + 격파 30,000 + 길드보스 20,000(PLAN_GUILD_WORLDBOSS 3·4절, Lv40 입장)
+WINDOW_DAYS = 60             # 장 공개부터 다음 장 공개까지(약 2달, ROADMAP 3절)
+BAL40_SIM = 910000           # 옛 기준: 출시 20명 시뮬 Lv40 잔고 중앙값(BALANCE_MEASURE_2026-10-16 5절)
+CH4_TARGET = (1329500, 1444100)  # PLAN_CHAPTER4 9.3절: 이 범위면 4장 비율 0.85~0.90
+LIFE_RAIDS = {40: ("raid_skeleton_king", 3, "raid_grah", 1), 50: ("raid_xibak", 3, "raid_kamatz", 1)}
+
+
+def seal_exchange_gold():
+    import re
+    try:
+        with open(os.path.join(DATA, "..", "src", "domains", "shop", "sealExchange.ts"), encoding="utf-8") as f:
+            return int(re.search(r"gold:\s*([\d_]+)", f.read()).group(1).replace("_", ""))
+    except (OSError, AttributeError):
+        return 20000
+
+
+def max_level_day(level):
+    """만렙(서버 상한)에서 하루 일상 골드: 요일 던전 3판 + 일일 의뢰 만렙 골드 + 주간 의뢰/7 + 레이드/7 + 월드·길드보스/7."""
+    r1, n1, r2, n2 = LIFE_RAIDS[level]
+    return (3 * dungeon_gold(level) + DAILY["perDay"] * DAILY["maxLevelGold"] + DAILY["weekly"]["perWeek"] * DAILY["weekly"]["maxLevelGold"] / 7
+            + (n1 * raid_gold(r1) + n2 * raid_gold(r2)) / 7 + WORLD_GUILD_PER_WEEK / 7)
+
+
+def chapter3(after_days=None, window=WINDOW_DAYS, verbose=True):
+    import math
+    import theory_inherit as ti
+    max_level = tp.MAX_LEVEL
+    # 1~40: 만렙 40 시뮬 그대로(챕터 3 시뮬도 c2_end 전까지는 40에 멈춰 같은 길을 간다)
+    tp.MAX_LEVEL, tp.END_QUEST = tp.CH2_CAP, tp.CH2_END
+    inc_a, sp_a, _, _ = budget(verbose=False)
+    tp.MAX_LEVEL, tp.END_QUEST = max_level, "c3_end"
+    tp.TRAVEL, tp.FIXED_KPM = 4.0, 15
+    tp.MEASURED_KPM = tp.measured_kpm()
+    reached, events, claimed, days, st = tp.simulate(0.35, HOURS_PER_DAY, True, True)
+    t0, t1 = tp.ch3_start(reached, events), reached[max_level]
+    hours = t1 - t0
+    days_b = hours / HOURS_PER_DAY
+
+    def level_at(h):
+        return max([L for L, t in reached.items() if t <= h] or [1])
+
+    # ---- 3장 수입 ----
+    kills = {}
+    for t, ml, n in st["kills_t"]:
+        if t0 < t <= t1:
+            kills[tier_of(ml)] = kills.get(tier_of(ml), 0) + n
+    total_kills = sum(kills.values())
+    inc = {"처치 골드": total_kills * base_pile(), "장비 판매": sum(n * gold_per_kill_gear(t) for t, n in kills.items())}
+    drops = {m: total_kills * MAT[m]["dropChance"] * (MAT[m]["minDrop"] + MAT[m]["maxDrop"]) / 2 for m in MAT}
+    dng = dly = wk = 0.0
+    for d in range(math.ceil(days_b)):
+        frac = min(1.0, days_b - d)
+        lv = level_at(t0 + d * HOURS_PER_DAY)
+        dng += 3 * dungeon_gold(lv) * frac
+        dly += 3 * daily_gold(lv) * frac
+        if d % 7 == 0:
+            wk += 3 * weekly_gold(lv)
+    raid = sum(raid_gold(rid) for t, rid in st["raid_t"] if t0 < t <= t1)
+    fb = [m for m in MONSTERS["monsters"] if m["id"].startswith("fboss_")]
+    fboss = hours * FIELD_BOSS_PER_HOUR * sum((m["goldMin"] + m["goldMax"]) / 2 for m in fb) / len(fb)
+    qgold = {q["id"]: q["reward"]["gold"] for q in tp.QUESTS}
+    quest = sum(qgold.get(qid, 0) * QUEST_GOLD_SCALE for h, _, _, qid, _, _ in events if t0 < h <= t1)
+    inc.update({"요일 던전(군주)": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "월드·길드보스": WORLD_GUILD_PER_WEEK * days_b / 7,
+                "필드 보스": fboss, "퀘스트 골드": quest, "미니 던전 40 처치 골드": st.get("mini_kills_ch3", 0) * MINI_GOLD_PER_KILL})
+    # ---- 3장 지출 ----
+    enh_gold, need, rows = 0.0, {"bone": 0.0, "ore": 0.0, "essence": 0.0}, []
+    for lv, item, target in KIT50:
+        g, mats, tries = enhance_cost(item, target)
+        enh_gold += g
+        for k in need:
+            need[k] += mats[k]
+        rows.append((item, target, g, tries))
+    kill_min = sum(m for t, m in st["kill_min_t"] if t0 < t <= t1)
+    mat_buy = mat_sell = 0.0
+    for m in MAT:
+        short = need[m.replace("mat_", "")] - drops[m]
+        if short > 0:
+            mat_buy += short * BUY[m]
+        else:
+            mat_sell += -short * SELL[m] * MAT_SELL_SCALE * MAT_SELL_SCALE_BY_MAT.get(m, 1.0)
+    inc["재료 판매(남는 것)"] = mat_sell
+    spend = {"Lv50 한 벌 강화 골드": enh_gold, "재료 구매(모자란 것)": mat_buy, f"계승 +{INHERIT_PLUS} 무기": ti.inherit_gold(50, INHERIT_PLUS),
+             f"아카브 교환 {EXCHANGES}회": EXCHANGES * seal_exchange_gold(),
+             "물약": kill_min * POTIONS_PER_MIN * BUY["potion_hp"], "귀환 주문서": hours * SCROLLS_PER_HOUR * BUY["scroll_town"]}
+    ib, sb = sum(inc.values()), sum(spend.values())
+    # ---- 공개 시점 잔고 ----
+    life40, life50 = max_level_day(tp.CH2_CAP), max_level_day(max_level)
+    days_a = t0 / HOURS_PER_DAY
+    after_a = max(0.0, window - days_a)
+    after_b = max(0.0, window - days_b) if after_days is None else after_days
+    bal40 = inc_a - sp_a
+    open3 = bal40 + after_a * life40
+    open4 = open3 + ib - sb + after_b * life50
+    res = {"hours": hours, "days": days_b, "income": ib, "spend": sb, "bal40": bal40, "open3": open3, "open4": open4,
+           "ratio": (open3 + ib) / sb, "ratio_old": (BAL40_SIM + ib) / sb, "life40": life40, "life50": life50, "after_a": after_a, "after_b": after_b}
+    if verbose:
+        print(f"## 챕터 3 골드 (Lv40+c2_end {t0:.1f}h -> Lv{max_level} {t1:.1f}h = {hours:.1f}시간, {days_b:.1f}일, 직업 {tp.CAREER or '4직업 합산'})")
+        print("| 3장 수입 | 골드 |\n|---|---|")
+        for k, v in inc.items():
+            print(f"| {k} | {v:,.0f} |")
+        print(f"| 합계 | {ib:,.0f} |\n\n| 3장 지출 | 골드 |\n|---|---|")
+        for k, v in spend.items():
+            print(f"| {k} | {v:,.0f} |")
+        print(f"| 합계 | {sb:,.0f} |")
+        print("\n| Lv50 한 벌 | 목표 | 기대 골드 | 기대 시도 |\n|---|---|---|---|")
+        for item, target, g, tries in rows:
+            print(f"| {item} | +{target} | {g:,.0f} | {tries:.1f} |")
+        print(f"\n1~40: 수입 {inc_a:,.0f} / 지출 {sp_a:,.0f} = {inc_a / sp_a:.2f}, Lv40 잔고 {bal40:,.0f}")
+        print(f"만렙 일상 하루: Lv40 {life40:,.0f}, Lv50 {life50:,.0f}")
+        print(f"3장 공개 시점 잔고 = {bal40:,.0f} + {after_a:.1f}일 x {life40:,.0f} = {open3:,.0f}")
+        print(f"3장 비율(공개 시점 기준) = ({open3:,.0f} + {ib:,.0f}) / {sb:,.0f} = {res['ratio']:.3f} (목표 {TARGET_RATIO[0]:.2f}~{TARGET_RATIO[1]:.2f})")
+        print(f"3장 비율(옛 기준, Lv40 잔고 {BAL40_SIM:,}) = {res['ratio_old']:.3f}")
+        print(f"4장 공개 시점 잔고 = {open3:,.0f} + {ib:,.0f} - {sb:,.0f} + {after_b:.1f}일 x {life50:,.0f} = {open4:,.0f} "
+              f"(4장 0.85~0.90 범위 {CH4_TARGET[0]:,}~{CH4_TARGET[1]:,})")
+    return res
+
+
 if __name__ == "__main__":
     if "--mini" in sys.argv:
         i = sys.argv.index("--mini")
@@ -308,5 +441,9 @@ if __name__ == "__main__":
             GEAR_SELL_SCALE, MAT_SELL_SCALE = gs, ms
             ti, ts, _, _ = budget(es, verbose=False)
             print(f"장비판매 x{gs} 재료판매 x{ms} 강화골드 x{es}: 수입 {ti:,.0f} / 지출 {ts:,.0f} = {ti / ts:.2f}")
+    elif tp.MAX_LEVEL > tp.CH2_CAP:
+        ad = float(sys.argv[sys.argv.index("--after-days") + 1]) if "--after-days" in sys.argv else None
+        wd = float(sys.argv[sys.argv.index("--window-days") + 1]) if "--window-days" in sys.argv else WINDOW_DAYS
+        chapter3(ad, wd)
     else:
         budget()

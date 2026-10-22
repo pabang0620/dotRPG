@@ -55,7 +55,7 @@ async function snapshot(ctx: EconCtx, endedRun?: repo.MiniRun) {
   if (run) await settle(ctx.client, run, ctx.now);
   const used = await repo.day(ctx.client, ctx.char.id, new Date(reset.dailyStartAt));
   const ended = endedRun && endedRun.state !== 'playing' ? endedRun : run && run.state !== 'playing' ? run : null;
-  // 하루 상한은 지금 들어갈 티어(진행 중이면 그 판의 티어) 기준. 티어 40은 10분, 나머지는 30분
+  // 하루 상한은 지금 들어갈 티어(진행 중이면 그 판의 티어) 기준. 티어 40은 4분, 나머지는 30분
   const limit = dailyLimitMs(run?.state === 'playing' ? run.tier : tierOf(ctx.level, levelCap()) ?? 0);
   const open = chapter3Open();
   return {

@@ -18,7 +18,15 @@ dotRPG 진행 시뮬레이션 (게임을 돌리지 않는 이론 계산).
 - 미니 던전(--mini): 하루 30분, 메인 1-11(c1s_depths) 완료 후 Lv10~39. 처치당 입장 레벨 막대 / 8000, 다음 메인 퀘스트가
   레벨 때문에 막혔으면 / 800(따라잡기 x10). 막힘은 처치마다 다시 판정한다(서버 miniDungeonRules.ts와 같은 규칙)
 
-사용: python3 Tools/balance/theory_progress.py [--measured] [--mini [분당 처치, 기본 20]] [--pace Lv16+ 배율] [--max-level 40]
+- 챕터 3(--to 50, 2026-10-23 7단계): Lv40에서 c2_end를 끝내기 전에는 40에 멈춘다(CHAPTER3_OPEN 전 서버 levelCap 40, 넘친 XP는 버린다).
+  3장 시작 = Lv40 + c2_end. 미니 던전 티어 40은 하루 10분(miniDungeonRules DAILY_LIMIT_MS_TIER40). 지바크(c3_xibak 수락 = c3_record 완료 + Lv45)
+  수·토·일 보상 하루 1회, 카마츠(c3_kamatz 수락 = c3_trace 완료 + Lv50) 일요일 열쇠 60. 요일 던전 군주(권장 45)는 floor 칸이 있는 던전만.
+  Lv41+ 실측 속도: 지상(dry_*) = 그 직업 Lv36~40 실측 중앙값, 지하(hollow_*) = Lv40 캐릭터의 지하 실측 중앙값(장비 티어 8 기준이라 보수적).
+  고유 몬스터(사냥터에 없는 정찰대장 등)는 1마리 2분.
+- --career <id>: 실측 속도를 그 직업 행만으로 낸다(fighter·guardian·arcanist·bishop). assassin·ninja는 실측이 없어 theory_combat.py 무리 3마리
+  처치 시간 비로 실측 4직업에서 환산한다(PLAN_CLASS_ROGUE 3.1).
+
+사용: python3 Tools/balance/theory_progress.py [--measured] [--mini [분당 처치, 기본 20]] [--pace Lv16+ 배율] [--max-level 40 | --to 50] [--career fighter]
 """
 import json
 import math
@@ -35,7 +43,13 @@ def load(name):
 
 PROG = load("progression.json")["xpToNext"]
 # 만렙(챕터 3: --max-level 50). 기본 40. progression.json 이 그만큼 칸을 가져야 한다(xpToNext 길이 >= MAX_LEVEL-1)
-MAX_LEVEL = int(sys.argv[sys.argv.index("--max-level") + 1]) if "--max-level" in sys.argv else 40
+_LV_ARG = "--to" if "--to" in sys.argv else "--max-level"
+MAX_LEVEL = int(sys.argv[sys.argv.index(_LV_ARG) + 1]) if _LV_ARG in sys.argv else 40
+CH2_CAP, CH2_END = 40, "c2_end"  # 3장 문이 열리기 전 상한과 그 문을 여는 퀘스트
+END_QUEST = "c3_end" if MAX_LEVEL > CH2_CAP else CH2_END
+CAREER = sys.argv[sys.argv.index("--career") + 1] if "--career" in sys.argv else None
+# theory_combat.py "전직 6종 사냥 평균" 무리 3마리 평균(초). 도적 두 전직의 실측 대용 환산에만 쓴다
+PACK_SECONDS = {"fighter": 4.09, "guardian": 7.24, "arcanist": 4.96, "bishop": 5.87, "assassin": 5.88, "ninja": 5.54}
 assert len(PROG) >= MAX_LEVEL - 1, f"progression.json xpToNext {len(PROG)}칸, --max-level {MAX_LEVEL}에 모자람"
 MON = {m["id"]: m for m in load("monsters.json")["monsters"]}
 MON["skeleton"] = load("monsters.json")["fieldSkeleton"]
@@ -83,6 +97,19 @@ def field_hp_mul(level):
 QUEST_SCALE = 1.0
 MINI_KPM = 0  # 미니 던전 분당 처치(0 = 안 함). 서버 상한은 2초에 1마리 = 분당 30
 MINI_MINUTES, MINI_BASE, MINI_STUCK, MINI_UNLOCK = 30, 8000, 800, "c1s_depths"
+
+
+def _mini_tier40_minutes():
+    """3장 티어 40(Lv40~49) 하루 상한(분): 서버 miniDungeonRules.ts DAILY_LIMIT_MS_TIER40을 읽는다. 그날 쓴 시간은 티어 공통."""
+    import re
+    try:
+        with open(os.path.join(DATA, "..", "src", "domains", "minidungeon", "miniDungeonRules.ts"), encoding="utf-8") as f:
+            return int(re.search(r"DAILY_LIMIT_MS_TIER40\s*=\s*([\d_]+)", f.read()).group(1).replace("_", "")) / 60000
+    except (OSError, AttributeError):
+        return 10
+
+
+MINI_MINUTES_TIER40 = _mini_tier40_minutes()
 MIN_LEVEL = {}
 XP_MUL = {}
 FIXED_KPM = None
@@ -92,20 +119,40 @@ MEASURED_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "..", "analy
 MEASURED_KPM = None
 
 
+def _career_rows(rows, career):
+    """그 직업의 실측 행. 도적 전직(실측 없음)은 실측 4직업 행의 속도를 무리 처치 시간 비로 환산해 만든다."""
+    if career is None:
+        return rows
+    own = [r for r in rows if r.get("career") == career]
+    if own or career not in PACK_SECONDS:
+        return own
+    return [dict(r, kills_per_min=r["kills_per_min"] * PACK_SECONDS[r["career"]] / PACK_SECONDS[career])
+            for r in rows if r.get("career") in PACK_SECONDS]
+
+
+MEASURED_UNDER = None  # Lv41+ 지하(hollow_*) 분당 처치(실측 중앙값). measured_kpm()이 채운다
+
+
 def measured_kpm(path=None):
-    """{레벨: 분당 처치}: 실측 사냥 행(driver auto, 몬스터 Lv40 이하)을 5레벨 구간 중앙값으로 묶고, Lv1~15는 15로 둔다."""
+    """{레벨: 분당 처치}: 실측 사냥 행(driver auto, 몬스터 Lv40 이하)을 5레벨 구간 중앙값으로 묶고, Lv1~15는 15로 둔다.
+    Lv41+(챕터 3)는 Lv36~40 구간 값을 지상에 쓰고, 지하는 몬스터 Lv40 초과 행의 중앙값을 MEASURED_UNDER에 둔다."""
+    global MEASURED_UNDER
     path = path or MEASURED_FILE
     if not os.path.exists(path):
         return None
     with open(path, encoding="utf-8") as f:
-        rows = json.load(f).get("hunting", [])
-    bands = {}
+        rows = _career_rows(json.load(f).get("hunting", []), CAREER)
+    bands, under = {}, []
     for r in rows:
-        if r.get("kills_per_min", 0) <= 0 or r.get("driver") != "auto" or r.get("mlv", 0) > 40:
+        if r.get("kills_per_min", 0) <= 0 or r.get("driver") != "auto":
+            continue
+        if r.get("mlv", 0) > 40:
+            under.append(r["kills_per_min"])
             continue
         bands.setdefault(min(8, (r["level"] - 1) // 5), []).append(r["kills_per_min"])
     med = {k: sorted(v)[len(v) // 2] for k, v in bands.items()}
-    return {lv: 15.0 if lv <= 15 else med.get(min(8, (lv - 1) // 5), 15.0) for lv in range(1, MAX_LEVEL + 1)}
+    MEASURED_UNDER = sorted(under)[len(under) // 2] if under else None
+    return {lv: 15.0 if lv <= 15 else med.get(min(8, (lv - 1) // 5), med.get(7, 15.0)) for lv in range(1, MAX_LEVEL + 1)}
 
 
 def zone_xp_per_min(zone, level, eff):
@@ -118,12 +165,17 @@ def zone_xp_per_min(zone, level, eff):
     dps = player_attack(level) * pack_rate(level) * eff
     seconds = 3 * ehp / dps + TRAVEL
     kills_per_min = (MEASURED_KPM[level] if MEASURED_KPM else None) or FIXED_KPM or 3 * 60 / seconds
+    # 3장 구간(Lv41+)만. Lv40 이하 결과(1~40 수지·시간)는 2026-10-16 기준 그대로 둔다
+    if MEASURED_KPM and MEASURED_UNDER and level > CH2_CAP and mlevel > CH2_CAP and zone.startswith("hollow_"):
+        kills_per_min = MEASURED_UNDER
     return kills_per_min * xp, kills_per_min, mlevel
 
 
 def kill_cost(mid, count, level, eff):
     """퀘스트 처치 목표: 그 몬스터가 나오는 사냥터 중 가장 높은 곳(레벨+2 이하)에서 잡는 시간(분)과 그동안 얻는 처치 XP."""
     zones = [z for z in ZONES if z[1] == mid and z[3] <= level + 2] or [z for z in ZONES if z[1] == mid]
+    if not zones:  # 사냥터에 없는 고유 몬스터(3-11 정찰대장 등): 찾아가 잡는 데 1마리 2분, 처치 XP는 무시
+        return 2.0 * count, 0.0
     zid = max(zones, key=lambda z: z[3])[0]
     rows = [z for z in ZONES if z[0] == zid]
     share = sum(z[2] for z in rows if z[1] == mid) / sum(z[2] for z in rows)
@@ -145,7 +197,7 @@ def best_zone(level, eff):
 
 def monster_zone_level(mid):
     levels = [z[3] for z in ZONES if z[1] == mid]
-    return min(levels) if levels else 1
+    return min(levels) if levels else MON.get(mid, {}).get("level", 1)
 
 
 def dungeon_run(day, level, done_counts):
@@ -157,7 +209,7 @@ def dungeon_run(day, level, done_counts):
         if day not in d["openDays"] and not (DNG["weekendOpensAll"] and day in ("Saturday", "Sunday")):
             continue
         for tier, diff in enumerate(DNG["difficulties"]):
-            if level < diff["recommendedLevel"] - 2:
+            if tier >= len(d["clearXpFloor"]) or level < diff["recommendedLevel"] - 2:  # 군주(3장)는 요일 던전만 칸이 있다
                 continue
             base = max(d["clearXp"] * diff["rewardMul"], d["clearXpFloor"][tier])
             xp = base * XP_MUL.get(d["id"], d["xpMul"]) * 1.2  # A등급 보너스 20%
@@ -198,12 +250,18 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
     stats = {"quest_xp": 0, "quest_kill_min": 0.0, "dungeon_xp": 0, "dungeon_min": 0.0, "raid_xp": 0, "hunt_xp": 0, "hunt_min": 0.0, "daily_xp": 0,
              # 골드 계산용(theory_gold.py): 몬스터 레벨별 처치 수, 던전 판(id, 난이도), 보상 받은 레이드(id), 일일·주간 의뢰 청구(레벨)
              "kills": {}, "kills_t": [], "dungeon_runs": [], "raid_rewards": [], "daily_claims": [], "weekly_claims": [],
-             "mini_xp": 0, "mini_days": 0, "mini_stuck_days": 0, "mini_stuck_kills": 0, "mini_kills": 0}
+             "mini_xp": 0, "mini_days": 0, "mini_stuck_days": 0, "mini_stuck_kills": 0, "mini_kills": 0,
+             # 챕터 3 골드 구간 나누기용: (시각, 레이드 id), (시각, 처치 분)
+             "raid_t": [], "kill_min_t": []}
 
     def gain(amount):
         nonlocal level, xp
         xp += amount
-        while level < MAX_LEVEL and xp >= PROG[level - 1]:
+        cap = MAX_LEVEL if MAX_LEVEL <= CH2_CAP or CH2_END in claimed else CH2_CAP
+        if level >= cap:
+            xp = 0  # 서버 levelCap에서 멈춘다(넘친 XP는 쌓이지 않는다)
+            return
+        while level < cap and xp >= PROG[level - 1]:
             xp -= PROG[level - 1]
             level += 1
             reached[level] = total_min / 60
@@ -219,6 +277,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 gain(6728 * 1.2)
                 stats["raid_xp"] += 6728 * 1.2
                 stats["raid_rewards"].append("raid_skeleton_king")
+                stats["raid_t"].append((total_min / 60, "raid_skeleton_king"))
                 keys += 35
             try_quests()
         if level >= 40 and "c2_north" in claimed and weekday == "Sunday" and done_raid.get("grah") != day // 7:
@@ -230,6 +289,31 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 keys -= 60
                 gain(27900 * 1.2)
                 stats["raid_rewards"].append("raid_grah")
+                stats["raid_t"].append((total_min / 60, "raid_grah"))
+            try_quests()
+        if MAX_LEVEL <= CH2_CAP:
+            return
+        # 챕터 3: 지바크(중간, 수·토·일, 보상 하루 1회, 열쇠 조각 20~50), 카마츠(최종, 일요일, 열쇠 60)
+        if level >= 45 and "c3_record" in claimed and weekday in ("Wednesday", "Saturday", "Sunday") and done_raid.get("xibak") != day:
+            done_raid["xibak"] = day
+            total_min += 11
+            raid_clears["raid_xibak"] = raid_clears.get("raid_xibak", 0) + 1
+            if friend:
+                gain(30892 * 1.2)
+                stats["raid_xp"] += 30892 * 1.2
+                stats["raid_rewards"].append("raid_xibak")
+                stats["raid_t"].append((total_min / 60, "raid_xibak"))
+                keys += 35
+            try_quests()
+        if level >= 50 and "c3_trace" in claimed and weekday == "Sunday" and done_raid.get("kamatz") != day // 7:
+            done_raid["kamatz"] = day // 7
+            total_min += 12
+            raid_clears["raid_kamatz"] = raid_clears.get("raid_kamatz", 0) + 1
+            if friend and keys >= 60:
+                keys -= 60
+                gain(42956 * 1.2)
+                stats["raid_rewards"].append("raid_kamatz")
+                stats["raid_t"].append((total_min / 60, "raid_kamatz"))
             try_quests()
 
     # 퀘스트 처치 목표의 남은 수. 처치는 하루 예산 안에서만 하고 모자라면 다음 날 이어 잡는다
@@ -257,6 +341,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 minutes, xp_gain = kill_cost(mid, n, level, eff)
             total_min += minutes
             stats["quest_kill_min"] += minutes
+            stats["kill_min_t"].append((total_min / 60, minutes))
             ml = monster_zone_level(mid)
             stats["kills"][ml] = stats["kills"].get(ml, 0) + n
             stats["kills_t"].append((total_min / 60, ml, n))
@@ -299,7 +384,7 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                 events.append((total_min / 60, day, level, q["id"], q["reward"]["xp"], q["kind"]))
                 progress = True
 
-    while day < 400 and not ("c2_end" in claimed and level >= MAX_LEVEL):
+    while day < 400 and not (END_QUEST in claimed and level >= MAX_LEVEL):
         weekday = DAYS[day % 7]
         budget = day_budget
         day_start = start = total_min
@@ -323,20 +408,24 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
                     gain(DAILY["weekly"]["xpShare"] * PROG[level - 1])
                 try_quests()
         # 미니 던전 하루 30분 (입장 1분 포함). 처치마다 막힘을 다시 본다
-        if MINI_KPM > 0 and MINI_UNLOCK in claimed and 10 <= level < MAX_LEVEL:
+        mini_open = level < CH2_CAP or (level < MAX_LEVEL and CH2_END in claimed)
+        if MINI_KPM > 0 and MINI_UNLOCK in claimed and 10 <= level < MAX_LEVEL and mini_open:
             entry, stuck_today = level, False
+            minutes = MINI_MINUTES_TIER40 if level >= CH2_CAP else MINI_MINUTES
             total_min += 1
-            for _ in range(int(MINI_KPM * MINI_MINUTES)):
+            for _ in range(int(MINI_KPM * minutes)):
                 if level >= MAX_LEVEL:
                     break
                 stuck = main_level_gate(level, claimed) > 0
                 amount = math.ceil(PROG[entry - 1] / (MINI_STUCK if stuck else MINI_BASE))
                 stats["mini_xp"] += amount
                 stats["mini_kills"] += 1
+                if entry >= CH2_CAP:
+                    stats["mini_kills_ch3"] = stats.get("mini_kills_ch3", 0) + 1
                 stats["mini_stuck_kills"] += stuck
                 stuck_today = stuck_today or stuck
                 gain(amount)
-            total_min += MINI_MINUTES
+            total_min += minutes
             stats["mini_days"] += 1
             stats["mini_stuck_days"] += stuck_today
             try_quests()
@@ -368,12 +457,19 @@ def simulate(eff=0.35, hours_per_day=2.0, friend=True, quests=True):
             if level < MAX_LEVEL:
                 stats["hunt_xp"] += zone[1] * step * 0.8
                 stats["hunt_min"] += step
+            stats["kill_min_t"].append((total_min / 60, step))
             try_quests()
             raids()
-            if level >= MAX_LEVEL and "c2_end" in claimed:
+            if level >= MAX_LEVEL and END_QUEST in claimed:
                 break
         day += 1
     return reached, events, claimed, day, stats
+
+
+def ch3_start(reached, events):
+    """3장 시작 시각: Lv40 도달과 c2_end 완료 중 늦은 쪽(그 전에는 서버 상한 40)."""
+    t_end = next((h for h, _, _, qid, *_ in events if qid == CH2_END), 0.0)
+    return max(reached.get(CH2_CAP, 0.0), t_end)
 
 
 def report(eff, hours, friend, quests=True):
@@ -382,7 +478,7 @@ def report(eff, hours, friend, quests=True):
     print(f"\n## {tag}")
     print("| 레벨 | 플레이 시간 |")
     print("|---|---|")
-    for lv in (5, 10, 15, 20, 22, 25, 30, 35, 40) + tuple(range(45, MAX_LEVEL + 1, 5)):
+    for lv in (5, 10, 15, 20, 22, 25, 30, 35, 40) + tuple(range(41, MAX_LEVEL + 1)):
         if lv in reached:
             h = reached[lv]
             print(f"| {lv} | {h:.1f}시간 |")
@@ -390,8 +486,13 @@ def report(eff, hours, friend, quests=True):
             print(f"| {lv} | 도달 못 함 | |")
     print("\n주요 메인 퀘스트 완료:")
     for h, d, lv, qid, x, kind in events:
-        if qid in ("c1_stronger", "c1_fortress", "c1_road", "c2_trial", "c2_growth", "c2_golem", "c2_north", "c2_grah", "c2_end"):
+        if qid in ("c1_stronger", "c1_fortress", "c1_road", "c2_trial", "c2_growth", "c2_golem", "c2_north", "c2_grah", "c2_end") or (kind == "main" and qid.startswith("c3")):
             print(f"- {qid}: {h:.1f}시간 ({DAYS[d % 7]}), Lv{lv}")
+    if MAX_LEVEL > CH2_CAP and MAX_LEVEL in reached:
+        t0 = ch3_start(reached, events)
+        print(f"\n챕터 3: 시작(Lv{CH2_CAP} + {CH2_END}) {t0:.1f}시간 -> Lv{MAX_LEVEL} {reached[MAX_LEVEL]:.1f}시간 = {reached[MAX_LEVEL] - t0:.1f}시간 (목표 22~27), "
+              f"미니 티어 40 처치 {st.get('mini_kills_ch3', 0):,}마리, 직업 {CAREER or '4직업 합산'}"
+              + (f", 지하 실측 분당 {MEASURED_UNDER:.1f}" if MEASURED_UNDER else ""))
     if st["mini_days"]:
         print(f"미니 던전: {st['mini_days']}일, 따라잡기 받은 날 {st['mini_stuck_days']}일, 처치 {st['mini_kills']:,}마리 중 따라잡기 {st['mini_stuck_kills']:,}마리, 경험치 {st['mini_xp']:,.0f}")
     print(f"XP 출처(Lv40까지 대략): 퀘스트 {st['quest_xp']:,.0f} / 사냥 {st['hunt_xp']:,.0f} ({st['hunt_min'] / 60:.1f}시간) / 퀘스트 처치 {st['quest_kill_min'] / 60:.1f}시간 / 던전 {st['dungeon_xp']:,.0f} ({st['dungeon_min'] / 60:.1f}시간) / 레이드 {st['raid_xp']:,.0f} / 일일·주간 의뢰 {st['daily_xp']:,.0f}")

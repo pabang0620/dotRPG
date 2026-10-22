@@ -1,7 +1,8 @@
 /** 하루 이용 시간의 최댓값(티어 10·20·30). 하루 사용량(mini_dungeon_days.used_ms)은 모든 티어가 함께 쓴다 */
 export const DAILY_LIMIT_MS = 1_800_000;
-/** 챕터 3 티어 40은 하루 10분(Docs/ch3/LIVE_CONTENT.md 1절): 따라잡기가 거의 매일 켜지므로 시간을 짧게 둔다 */
-export const DAILY_LIMIT_MS_TIER40 = 600_000;
+/** 챕터 3 티어 40은 하루 4분(Docs/ch3/LIVE_CONTENT.md 1절): 따라잡기가 거의 매일 켜지므로 시간을 짧게 둔다.
+ * 2026-10-23 7단계: 10분이면 40→50이 20.8시간(목표 22~27)이라 4분으로 줄였다(theory_progress.py --measured --mini 20 --to 50 → 23.5시간) */
+export const DAILY_LIMIT_MS_TIER40 = 240_000;
 export const KILL_INTERVAL_MS = 2_000;
 export const CREDIT_CAP_MS = 6 * KILL_INTERVAL_MS;
 // Match MiniDungeonDirector.SpawnAt: training monsters retain 45% of normal HP.

@@ -361,7 +361,7 @@ describe('daily XP-only mini dungeon HTTP', () => {
   });
 });
 
-// 챕터 3 5단계(Docs/ch3/LIVE_CONTENT.md 1절): 티어 40 잿빛 수련의 협곡(Lv40~49), 하루 10분, 막대/8,000·따라잡기/800
+// 챕터 3 5단계(Docs/ch3/LIVE_CONTENT.md 1절): 티어 40 잿빛 수련의 협곡(Lv40~49), 하루 4분(7단계에서 10분 → 4분), 막대/8,000·따라잡기/800
 describe('chapter 3 mini dungeon tier 40', () => {
   const openApp = () => buildApp({ PRESENCE_KILL_MODE: 'off', CHAPTER3_OPEN: 'true' });
   afterEach(() => { buildApp({ PRESENCE_KILL_MODE: 'off' }); });
@@ -383,16 +383,16 @@ describe('chapter 3 mini dungeon tier 40', () => {
     expect((await get(app, h, '/mini-dungeon')).body.data.tiers.map((t: { tier: number }) => t.tier)).toEqual([10, 20, 30]);
   });
 
-  test('open: Lv40 enters tier 40 with void hounds and a 10 minute day', async () => {
+  test('open: Lv40 enters tier 40 with void hounds and a 4 minute day', async () => {
     openApp();
     const h = await hero(40);
     const s = await get(app, h, '/mini-dungeon');
-    expect(s.body.data).toMatchObject({ daily_limit_seconds: 600, remaining_seconds: 600 });
+    expect(s.body.data).toMatchObject({ daily_limit_seconds: 240, remaining_seconds: 240 });
     expect(s.body.data.tiers.map((t: { tier: number }) => t.tier)).toEqual([10, 20, 30, 40]);
     const r = await enter(h, 40);
     expect(r.status).toBe(201);
     expect(r.body.data.active_run).toMatchObject({ tier: 40, map_id: 'mini_dungeon_40', monster_id: 'void_hound', entry_level: 40 });
-    expect(Date.parse(r.body.data.active_run.ends_at) - Date.parse(r.body.data.active_run.started_at)).toBe(600_000);
+    expect(Date.parse(r.body.data.active_run.ends_at) - Date.parse(r.body.data.active_run.started_at)).toBe(240_000);
     advance(5);
     const k = await kill(h, r.body.data.active_run.id);
     expect(k.status).toBe(200);
@@ -404,16 +404,16 @@ describe('chapter 3 mini dungeon tier 40', () => {
     expect(again.body.errors.code).toBe('MINI_TIME_EXHAUSTED');
   });
 
-  test('open: time used in a lower tier the same day counts against the 10 minutes', async () => {
+  test('open: time used in a lower tier the same day counts against the 4 minutes', async () => {
     openApp();
     const h = await hero(39);
     const first = await enter(h, 30);
-    advance(400);
+    advance(160);
     await leave(h, first.body.data.active_run.id);
     await seedLevel(h, 40);
     const r = await enter(h, 40);
     expect(r.status).toBe(201);
-    expect(r.body.data.remaining_seconds).toBe(200);
+    expect(r.body.data.remaining_seconds).toBe(80);
   });
 
   test('open: Lv49 enters tier 40, the Lv50 cap cannot', async () => {

@@ -1,4 +1,5 @@
-// 아카브 교환(챕터 3, Docs/ch3/PROGRESSION_AND_GEAR.md): 침식 결정 5 + 골드 20,000 -> 잿빛 인장 1, 계정당 주 2회.
+// 아카브 교환(챕터 3, Docs/ch3/PROGRESSION_AND_GEAR.md): 침식 결정 5 + 골드 10,000 -> 잿빛 인장 1, 계정당 주 2회.
+// 2026-10-23 7단계: 20,000이면 3장 무자본 비율(공개 시점 잔고 기준)이 0.838이라 10,000으로 내렸다(theory_gold.py --to 50 --mini 20 → 0.854).
 // 무자본 플레이어가 카마츠 레이드 없이도 계승 재료를 천천히 모으는 길이고, 쌓인 골드를 흡수하는 싱크다.
 import { randomUUID } from 'node:crypto';
 import { assertOpen } from '../../gamedata/chapterGate';
@@ -9,7 +10,7 @@ import { runEconomy, type StoredResult } from '../economy/economyService';
 import { weekStartOf } from '../sweep/weeklyCounter';
 import type { ExchangeBody } from './shopValidation';
 
-export const SEAL_EXCHANGE = { id: 'akab_seal', shards: 5, gold: 20_000, seals: 1, weeklyLimit: 2 } as const;
+export const SEAL_EXCHANGE = { id: 'akab_seal', shards: 5, gold: 10_000, seals: 1, weeklyLimit: 2 } as const;
 
 export function exchange(accountId: number, characterUuid: string, body: ExchangeBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;

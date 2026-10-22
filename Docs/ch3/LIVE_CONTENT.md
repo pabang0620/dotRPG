@@ -8,9 +8,9 @@
 |---|---|
 | 정의 | `MiniDungeonCatalog.All`에 Tier 40, MinLevel 40, MaxLevel 49, 이름 "잿빛 수련의 협곡", MapId `mini_dungeon_40`, MonsterId void_hound, Theme DryCanyon, Music `music_sayab` |
 | 서버 | `MINI_TIERS = [10, 20, 30, 40]`, `tierOf`는 `level < levelCap`만 본다(직접 40 삭제) |
-| 경험치·골드 | 막대/8,000, 따라잡기 /800(기존 비율 그대로), 처치 골드 36. 티어 40만 하루 10분(`DailySeconds` 티어별: 10·20·30은 1,800, 40은 600). 하루 200마리, 따라잡기가 거의 매일 켜지므로 11일 2,200마리 = 2.75막대, xpToNext 41~49 평균 700,000으로 1,900,000(40→50 전체 6,872,974의 28%) |
+| 경험치·골드 | 막대/8,000, 따라잡기 /800(기존 비율 그대로), 처치 골드 36. 티어 40만 하루 4분(`DailySeconds` 티어별: 10·20·30은 1,800, 40은 240). 하루 80마리(분당 20), 따라잡기가 거의 매일 켜진다. 7단계(2026-10-23)에서 10분 → 4분: 10분이면 `theory_progress.py --measured --mini 20 --to 50`이 40→50을 20.8시간(목표 22~27)으로 내서 줄였고, 4분이면 23.5시간·12일 960마리다(`PROGRESSION_AND_GEAR.md` 1.4절) |
 | 열림 | Lv40이고 `CHAPTER3_OPEN=1`일 때. 닫혀 있으면 Lv40은 지금처럼 미니 던전 없음 |
-| 테스트 | `miniDungeon.test.ts`에 티어 40 입장·10분 상한·만렙 50 경계·닫힌 상태 거부 |
+| 테스트 | `miniDungeon.test.ts`에 티어 40 입장·4분 상한·만렙 50 경계·닫힌 상태 거부 |
 
 ## 2. 월드보스·길드보스
 
