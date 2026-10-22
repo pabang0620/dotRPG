@@ -83,7 +83,7 @@ namespace DotRPG
         {
             if (target == null) return;
             int spam = SpamSlot(p);
-            float reach = p.Class == CharacterClass.Mage ? MageReach : AttackReach;
+            float reach = BasicReach(p);
             if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * .85f, 6f));
             if (Vector2.Distance(p.Position, target.Position) > reach) return;
             input.next.aim = (target.Center - p.Center).normalized;

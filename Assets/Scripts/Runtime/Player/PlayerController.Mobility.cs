@@ -80,6 +80,17 @@ namespace DotRPG
         /// [ROGUE] 연쇄 도약 / 그림자 습격: jump straight to <paramref name="destination"/>, stopping before walls (monsters and
         /// players do not block), facing <paramref name="faceTo"/>. No mobility cooldown. Returns false when it cannot move.
         /// </summary>
+        /// <summary>
+        /// [ROGUE PARTY NET] The host copy of a member made a skill move (쿠나이 순간이동, 분신 자리 바꾸기, 연쇄 도약, 그림자 습격,
+        /// 그림자 질주): the host banks that distance so the member's next position reports are not cut by the move limit.
+        /// </summary>
+        public static event System.Action<PlayerController, float> NetSkillMoved;
+
+        internal void ReportSkillMove(float distance)
+        {
+            if (NetDriven && !NetPuppet && distance > .05f) NetSkillMoved?.Invoke(this, distance);
+        }
+
         public bool SkillLeapTo(Vector2 destination, Vector2 faceTo)
         {
             if (IsDead) return false;
@@ -97,6 +108,7 @@ namespace DotRPG
                 body.position = to;
                 transform.position = to;
                 Physics2D.SyncTransforms();
+                ReportSkillMove(clear);
             }
             Vector2 look = faceTo - Position;
             if (look.sqrMagnitude > .0001f) { Facing = FacingExtensions.FromVector(look, Facing); AimDirection = look.normalized; }
@@ -110,6 +122,7 @@ namespace DotRPG
         public bool SkillTeleportTo(Vector2 destination, Vector2 faceTo)
         {
             if (IsDead) return false;
+            ReportSkillMove(Vector2.Distance(Position, destination));
             CancelMobility();
             desiredVelocity = Vector2.zero;
             body.SetVelocity(Vector2.zero);

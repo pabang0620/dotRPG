@@ -78,6 +78,16 @@ namespace DotRPG
             castEnd = 0f;
         }
 
+        /// <summary>[PARTY NET] A second press of a slot was used as its follow-up (쿠나이 순간이동 / 분신 자리 바꾸기).</summary>
+        public static event System.Action<PlayerController, int> FollowedUp;
+
+        /// <summary>[PARTY NET] A puppet replays the follow-up of the skill on <paramref name="slot"/> (looks only).</summary>
+        public void NetFollowUp(int slot)
+        {
+            var gem = slot >= 0 && slot < SkillGems.Slots ? Prog.Active(slot) : null;
+            if (gem != null && !owner.IsDead) CareerCombat.For(owner).TryFollowUp(gem.id);
+        }
+
         public void TryCast(int slot)
         {
             if (slot<0 || slot>=SkillGems.Slots || owner.IsDead || owner.IsDashing) return;
@@ -94,7 +104,7 @@ namespace DotRPG
             }
             // [NINJA] 쿠나이 순간이동 / 분신술: pressing the key again while the kunai or the clones are out is the follow-up
             // (move to the kunai / swap with a clone): no MP, no cooldown, also mid-cast.
-            if (CareerCombat.For(owner).TryFollowUp(gem.id)) return;
+            if (CareerCombat.For(owner).TryFollowUp(gem.id)) { FollowedUp?.Invoke(owner, slot); return; }
             if (Time.time < ReadyAt(slot) || IsCasting) return;
             var careerSkill = CareerCatalog.Get(gem.id);
             // [FIGHTER] 검기 태세 is a toggle: pressing it while on turns it off for free.

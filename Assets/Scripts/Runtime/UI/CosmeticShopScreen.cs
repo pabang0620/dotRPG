@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 namespace DotRPG
 {
     /// <summary>
-    /// 캐시샵 · 옷장. Three tabs (오라 / 전사 스킨 / 마법사 스킨); the list on the left scrolls on its own and the preview
+    /// 캐시샵 · 옷장. Four tabs (오라 / 전사 스킨 / 마법사 스킨 / 도적 스킨); the list on the left scrolls on its own and the preview
     /// on the right always stays in view: the character wearing the selected look (a skin turns through every
     /// direction), its grade, attack bonus, price and the buy / wear button.
     /// </summary>
@@ -14,8 +14,8 @@ namespace DotRPG
     {
         static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         const float ListW = 430f, RowH = 72f, TabH = 46f;
-        enum Tab { Aura, WarriorSkin, MageSkin }
-        static readonly string[] TabNames = { L.T("오라"), L.T("전사 스킨"), L.T("마법사 스킨") };
+        enum Tab { Aura, WarriorSkin, MageSkin, RogueSkin }
+        static readonly string[] TabNames = { L.T("오라"), L.T("전사 스킨"), L.T("마법사 스킨"), L.T("도적 스킨") };
 
         sealed class Row { public CosmeticProduct product; public RectTransform rt; public Text label; public Image thumb; }
 
@@ -43,7 +43,7 @@ namespace DotRPG
             for (int i = 0; i < TabNames.Length; i++)
             {
                 var t = (Tab)i;
-                s.tabs.Add(StoreButton(s.layout, "Tab_" + t, TabNames[i], TopLeft, TopLeft, new Vector2(i * 146f, 0f), new Vector2(138f, TabH), () => s.SelectTab(t), 19));
+                s.tabs.Add(StoreButton(s.layout, "Tab_" + t, TabNames[i], TopLeft, TopLeft, new Vector2(i * 128f, 0f), new Vector2(122f, TabH), () => s.SelectTab(t), 19));
             }
             s.gacha = StoreButton(s.layout, "Gacha", L.T("캐시샵 (뽑기)"), new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(200f, TabH), s.OpenGacha, 19);
             s.wallet = Label(s.layout, "Wallet", "", 19, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-212f, 0f), new Vector2(400f, TabH), TextAnchor.MiddleRight);
@@ -116,12 +116,13 @@ namespace DotRPG
             base.Show();
             Reflow();
             // Open on the skins of my class when I'm wearing one, else on the auras.
-            if (Game.Player != null && store.SkinFor(Game.Player.Class) != null) SelectTab(Game.Player.Class == CharacterClass.Mage ? Tab.MageSkin : Tab.WarriorSkin);
+            if (Game.Player != null && store.SkinFor(Game.Player.Class) != null) SelectTab(TabOf(Game.Player.Class));
             StarPassClient.Refresh();
             await store.RefreshAsync();
         }
 
-        static Tab TabOf(CosmeticProduct p) => !p.IsSkin ? Tab.Aura : p.Skin.cls == CharacterClass.Mage ? Tab.MageSkin : Tab.WarriorSkin;
+        static Tab TabOf(CosmeticProduct p) => !p.IsSkin ? Tab.Aura : TabOf(p.Skin.cls);
+        static Tab TabOf(CharacterClass cls) => cls == CharacterClass.Mage ? Tab.MageSkin : cls == CharacterClass.Rogue ? Tab.RogueSkin : Tab.WarriorSkin;
 
         List<Row> Visible()
         {

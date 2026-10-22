@@ -109,7 +109,7 @@ namespace DotRPG
             }
         }
 
-        /// <summary>A puppet repeats an action the host saw (0 attack, 1 skill slot).</summary>
+        /// <summary>A puppet repeats an action the host saw (0 attack, 1 skill slot, 2 second press of a skill slot).</summary>
         public void NetAct(int kind, int skillSlot, Facing facing)
         {
             if (IsDead) return;
@@ -127,6 +127,8 @@ namespace DotRPG
                 skills.NetResetCooldown(skillSlot);
                 skills.TryCast(skillSlot);
             }
+            // [NINJA] 쿠나이 순간이동 / 분신술 second press: the kunai vanishes, smoke, clones move (position comes from the snapshot).
+            else if (kind == 2 && skillSlot >= 0 && skillSlot < SkillGems.Slots) skills.NetFollowUp(skillSlot);
         }
 
         /// <summary>Update for a network-driven member: no own movement, actions from the command (host copy).</summary>
@@ -152,6 +154,7 @@ namespace DotRPG
                 {
                     Vector2 dir = cmd.move.sqrMagnitude > .01f ? SnapTo8(cmd.move) : AimDirection;
                     skills.ShadowDash(dir);
+                    ReportSkillMove(ShadowDashDistance);
                 }
             }
             if (combat.IsAttacking || skills.IsCasting) animator.Play(CharacterAnim.Attack, Facing);

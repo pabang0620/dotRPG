@@ -74,7 +74,7 @@ namespace DotRPG
                 return data;
             }
         }
-        public static void ResetCache() { data = femaleData = rogueData = null; bodySheet = attackSheet = rogueBody = rogueAttack = null; skinSheets.Clear(); }
+        public static void ResetCache() { data = femaleData = rogueData = null; bodySheet = attackSheet = rogueBody = rogueAttack = null; skinSheets.Clear(); rogueSkinSheets.Clear(); }
         static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> skinSheets =
             new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
         /// <summary>A costume skin's sheets (same layout as the shipped ones); null when the skin has none.</summary>
@@ -85,6 +85,20 @@ namespace DotRPG
             {
                 s = (Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/body"), Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/attack"));
                 skinSheets[skin] = s;
+            }
+            if (s.body == null || s.attack == null) return null;
+            return s;
+        }
+        static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> rogueSkinSheets =
+            new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
+        /// <summary>[ROGUE] A rogue costume skin's sheets (Resources/Rogue/Skins/&lt;sheet&gt;/body,attack); null when missing.</summary>
+        static (Texture2D body, Texture2D attack)? RogueSkinSheets(string skin)
+        {
+            if (string.IsNullOrEmpty(skin) || RoguePalette.Handles(skin)) return null;
+            if (!rogueSkinSheets.TryGetValue(skin, out var s))
+            {
+                s = (Resources.Load<Texture2D>(RogueFolder + "Skins/" + skin + "/body"), Resources.Load<Texture2D>(RogueFolder + "Skins/" + skin + "/attack"));
+                rogueSkinSheets[skin] = s;
             }
             if (s.body == null || s.attack == null) return null;
             return s;
@@ -199,9 +213,15 @@ namespace DotRPG
         {
             var unused = Data;
             bool attack = f.clip.StartsWith("attack") && f.clip.Length > 6;
-            var skinned = SkinSheets(skin);
+            var skinned = IsRogue(lookId) ? null : SkinSheets(skin);
             var sheet = skinned.HasValue ? (attack ? skinned.Value.attack : skinned.Value.body) : attack ? attackSheet : bodySheet;
-            if (IsRogue(lookId)) { var unusedRogue = RogueData; sheet = attack ? rogueAttack : rogueBody; }
+            if (IsRogue(lookId))
+            {
+                // [ROGUE] Rogue costume sheets live in Rogue/Skins/<sheet>; a skin whose drawing is not in yet shows the base body.
+                var unusedRogue = RogueData;
+                var rogueSkin = RogueSkinSheets(skin);
+                sheet = rogueSkin.HasValue ? (attack ? rogueSkin.Value.attack : rogueSkin.Value.body) : attack ? rogueAttack : rogueBody;
+            }
             var src = sheet.GetPixels(f.column * Size, (4 - f.row) * Size, Size, Size);
             var pixels = new Color32[Size * Size];
             for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)

@@ -69,7 +69,13 @@ namespace DotRPG
             }
         }
 
-        public bool TryGet(string id, out DialogueData data) => byId.TryGetValue(id ?? "", out data);
+        /// <summary>[ROGUE] A rogue hears "&lt;id&gt;_rogue" when the story has a rogue version of the conversation (1-5 training).</summary>
+        public bool TryGet(string id, out DialogueData data)
+        {
+            if (!string.IsNullOrEmpty(id) && Game.Session != null && Game.Session.PlayerClass == CharacterClass.Rogue
+                && byId.TryGetValue(id + "_rogue", out data)) return true;
+            return byId.TryGetValue(id ?? "", out data);
+        }
 
         public DialogueData Get(string id)
         {

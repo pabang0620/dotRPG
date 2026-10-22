@@ -113,7 +113,7 @@ namespace DotRPG
                     members = rng.Next(1, max + 1),
                     minPower = (int)diff * 900 + rng.Next(2, 9) * 100,
                     leaderName = Leaders[i % Leaders.Length],
-                    leaderClass = rng.Next(2) == 0 ? CharacterClass.Warrior : CharacterClass.Mage,
+                    leaderClass = new[] { CharacterClass.Warrior, CharacterClass.Mage, CharacterClass.Rogue }[rng.Next(3)], // [ROGUE] three classes
                     leaderLevel = 5 + (int)diff * 7 + rng.Next(0, 6),
                     message = PartyFinderRules.PresetMessages[rng.Next(PartyFinderRules.PresetMessages.Length)],
                 });

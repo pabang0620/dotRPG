@@ -98,6 +98,9 @@ namespace DotRPG
 
         void OnCasted(PlayerController m, int slot) => SendAct(m, 1, slot);
 
+        /// <summary>[NINJA] Second press of the same slot (move to the kunai / swap with a clone): act kind 2.</summary>
+        void OnFollowedUp(PlayerController m, int slot) => SendAct(m, 2, slot);
+
         /// <summary>[RAID] The roar started on the host: members draw the same line, count, edge and safe circles.</summary>
         void OnRaidRoar(EnemyController boss, float cast, Vector2[] circles)
         {

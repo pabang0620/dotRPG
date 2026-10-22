@@ -182,10 +182,44 @@ namespace DotRPG
             new CosmeticProduct("skin_m_dream", L.T("몽환의 마녀"), Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_w_starwarden", L.T("별빛 수호 기사"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_m_starsage", L.T("별의 현자"), Color.white, false, CosmeticRarity.Epic),
+            // [ROGUE 2026-10-23] Rogue skins (server starshopDefs skin_r_*).
+            new CosmeticProduct("skin_r_navy", L.T("남색 밀정복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_wine", L.T("와인빛 밀정복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_moss", L.T("숲길 정찰복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_sand", L.T("사막 행상복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_slate", L.T("회청 잠행복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_rust", L.T("적갈 사냥꾼복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_ivory", L.T("상아 견습복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_plum", L.T("자두빛 두건복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_teal", L.T("청록 밀수꾼복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_coal", L.T("숯빛 야행복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_r_crimson", L.T("진홍 그림자복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_violet", L.T("보랏빛 야행복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_gold", L.T("황금 도둑복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_frost", L.T("서리 밀정복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_rose", L.T("장미 가면복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_jade", L.T("비취 독사복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_ember", L.T("불씨 두건복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_azure", L.T("하늘빛 바람복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_onyx", L.T("흑요 암살복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_lilac", L.T("라일락 무희복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_r_sakura", L.T("벚꽃 쿠노이치"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_moonshade", L.T("달그림자 밀정"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_dunedancer", L.T("모래바람 칼춤꾼"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_corsair", L.T("바다의 칼잡이"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_raven", L.T("까마귀 깃 암살자"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_foxmask", L.T("여우 가면 무희"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_frosthunter", L.T("서리 사냥꾼"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_r_nightqueen", L.T("칠흑의 그림자 여왕"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_r_thunder", L.T("뇌신 닌자"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_r_crimsonmoon", L.T("진홍 달의 처형자"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_r_butterfly", L.T("비단 나비 무희"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_r_scorpion", L.T("황금 전갈"), Color.white, false, CosmeticRarity.Unique),
+            new CosmeticProduct("skin_r_starshade", L.T("별빛 그림자"), Color.white, false, CosmeticRarity.Epic),
         });
 
         /// <summary>Exchange-only cosmetics (server starshopDefs exchangeOnly), known before the server answers.</summary>
-        public static readonly string[] ExchangeOnlyIds = { "aura_crystal", "aura_nova", "skin_w_starwarden", "skin_m_starsage" };
+        public static readonly string[] ExchangeOnlyIds = { "aura_crystal", "aura_nova", "skin_w_starwarden", "skin_m_starsage", "skin_r_starshade" };
 
         public static CosmeticProduct Find(string id)
         {
