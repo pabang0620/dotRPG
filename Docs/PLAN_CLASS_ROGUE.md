@@ -71,7 +71,7 @@
 
 - 규격: 64x64 도트, 2등신, 머리:몸 1:1, ppu 36, 방향 5(down·downside·side·upside·up). 여성 전사와 같은 시트 형식이다: 몸 시트 8열 x 5행 = 40칸(idle0·idle1·walk0~3·attack·hurt), 공격 시트 6열 x 5행 = 30칸(휘두르기 동작), `frames.json`(손 고정점). 렌더러는 `SilverWarriorArt`의 시트 경로를 도적용 폴더(`Resources/Rogue/`)로 받게 한다.
 - 근거: 도적은 근접 휘두르기가 있어 공격 동작 30칸이 필요하다. 마법사 형식(공격 1칸)으로는 쌍단검 연속 찌르기가 안 나온다.
-- 기본 외형: 짙은 남색 짧은 후드 망토, 갈색 가죽 조끼, 손목 붕대, 무릎 장화, 허리 양쪽 단검집. 머리는 어깨 길이 흑갈색. 다른 두 직업과 구분되도록 망토 후드가 실루엣의 표지다.
+- 기본 외형: 짙은 남색 짧은 후드 망토, 갈색 가죽 조끼, 손목 붕대, 무릎 장화, 허리 양쪽 단검집. 눈 아래를 가리는 천 가리개(머리카락은 가리지 않는다), 또렷한 단발 보브 머리. 다른 두 직업과 구분되도록 망토 후드와 가리개가 실루엣의 표지다(2026-10-22 사용자 피드백 "머리가 별로, 가리개·단발·머리색 변경"). 머리색은 시안 A 남색·B 잿빛 은발·C 와인 중 사용자가 고른 것으로 몸 시트·컷인 3·전직 카드 2를 다시 맞춘다.
 - 전직 외형: 전사 계열처럼 같은 몸을 다시 칠한다(`RoguePalette`, 차가운 천 색만 바꾸고 머리·피부·가죽은 둔다). 어쌔신 자홍, 닌자 주황. 새 그림이 없다.
 - 각성 외형: 어느 직업에도 각성 전용 몸 그림이 없다(각성은 컷인과 이펙트로 보인다). 도적도 따로 만들지 않는다.
 
@@ -197,6 +197,7 @@
 | 그림 | 본체 프레임을 반투명(알파 0.55) + 남색 색조(`SpriteRenderer.color`)로 그린다. 새 몸 그림 없음. 나타남·사라짐·자리 바꾸기에 연기 이펙트 1종(`n_puff`) | 본체 동작과 프레임이 정확히 같아야 "따라 한다"가 보인다. 이동 잔상은 기존 `CareerFx.Ghost`를 쓴다 |
 
 - 주력 연사기 MP 비율 2.28%: 어쌔신과 같은 주기(0.33초)라 같은 값.
+- 닌자 무기 그림(2026-10-22 사용자 결정 "최종무기 라인은 표창"): 무기 종류는 단검 하나 그대로이고(1.2절), 닌자 전직 뒤에는 손에 든 그림과 던지는 투사체가 무기 그림 단계(`EquipmentDatabase.WeaponSprite`의 0~3)를 따른다. 0~2단계는 쿠나이(`wpn_kunai_0~2`, 투사체 `n_kunai`), 마지막 3단계(최고 단계 장비와 레전더리)는 표창(`wpn_kunai_3`, 투사체 `n_shuriken`, 날아가는 동안 회전)이다. 수치·판정은 같다: 쿠나이 순간이동·회수·분신 따라 하기·기폭은 표창도 똑같이 꽂히고 남는다. 풍마 수리검(`n_fuma`)은 스킬 전용 대형 수리검이라 따로 둔다.
 - 닌자 이동기: Shift는 그대로 그림자 질주다. 쿠나이 순간이동은 스킬 키에 둔다(사용자가 Shift라고 하지 않았고, 다시 누르기 동작이 Shift의 한 번 누르기와 맞지 않는다).
 - 기본 공격이 바뀌는 근거: 파이터 검기 태세가 기본 공격을 투사체로 바꾸는 선례가 있다. 쿠나이 기본 공격 초당 0.65 / 0.3 = 2.17배는 마법사 구슬(0.8 / 0.38 = 2.11배)과 같은 원거리 기본 공격 화력이다.
 - 각성기 컷인 이름 띠: "분신 난무". 시련: "분신술 지속 중에 쿠나이 순간이동 3회 + 기폭 쿠나이로 몬스터 4마리 속박, 45초". 조건 확인: 분신술·기폭 쿠나이를 배웠는지(Lv22, 노드 6개).
@@ -377,12 +378,14 @@
 | 메일 캠페인 | 관리자 메일 대상 직업 목록에 `rogue` |
 | 11개 언어 | 새 문구(한국어 원문 기준): 직업 2, 기본 스킬·이동기 12, 전직 스킬 이름·설명 38, 전직 이름·역할·갈래 8, 스킬 수치 요약(`CareerNumbers`) 19, 시련(제목 2, 대사 12, 진행 표시 2, 조건 안내 2) 18, 단검 이름 43 + 설명·문구 3, 동료 3 = 146줄 + 화면 문구(도적 탭 숨김 안내 등). `Tools/i18n` 흐름으로 11개 언어(de en es fr id ja pt-BR ru vi zh-Hans zh-Hant) 번역, `I18N_GLOSSARY.md`에 도적·어쌔신·닌자·쿠나이·분신·표식 고정 |
 | 스토리 | `STORY.md` 주인공 줄 "전사·마법사" → "전사·마법사·도적" |
+| 안내 문서·스토어·홈페이지 | 직업 2종 서술을 3종으로: `README.md` 71·144줄, `Docs/STORE.md` 18줄(스토어 소개 문구, 11개 언어 스토어 문구가 있으면 함께), `Docs/SKILL_VIDEO_CAPTURE.md` 파티원 구성, 홈페이지 레포 `games/sites/dotrpg-home`(`content/characters.ts`·`lib/translations.ts`의 직업 소개, 캐릭터 소개 그림은 도적 컷인·전직 카드). 홈페이지 반영과 배포는 출시 범위와 같이 사용자가 정할 때 |
+| 스킬 영상 촬영 | `DevCapture.SkillClip`에 도적 스킬 24개(기본 5 + 전직 19) 촬영 목록 추가. 촬영은 요청할 때만 |
 
 ### 5.1 서버
 
 | 항목 | 변경 |
 |---|---|
-| 마이그레이션 `0050_rogue_class.sql` | `characters.class` CHECK에 `rogue`, `auction_listings.class_only` CHECK에 `rogue`, `character_career.career`·`character_career_trials.career` CHECK `BETWEEN 1 AND 6`. `schema.sql` 같이 고침. 되돌리기: 도적 캐릭터가 없을 때만 CHECK를 원래대로 |
+| 마이그레이션 `0050_rogue_class.sql`(wonho. `ch3`에 이미 있는 0050·0051은 도적을 병합할 때 0051_chapter3_seal_exchange·0052_lord_difficulty로, 계획된 보스 시즌 레벨은 0053으로 미룬다. 출시 서버가 먼저 받는 번호가 작아야 하고 ch3 번호는 어느 서버에도 적용 전이다) | `characters.class` CHECK에 `rogue`, `auction_listings.class_only` CHECK에 `rogue`, `character_career.career`·`character_career_trials.career` CHECK `BETWEEN 1 AND 6`. `schema.sql` 같이 고침. 되돌리기: 도적 캐릭터가 없을 때만 CHECK를 원래대로 |
 | 직업 번호 | 전직 5 = 어쌔신, 6 = 닌자. 기본 직업 매핑을 한 표로: `{1,2: warrior, 3,4: mage, 5,6: rogue}`(`careerRules.ts`, `careerGrantService.baseClassOf`가 같은 함수를 쓴다) |
 | `careerRules.ts` | `career` 최대 4 → 6, `careerIds`에 두 목록, `MAIN_HUNTERS`에 `a_rend`·`n_volley`, 9번 추가 노드 규칙에 어쌔신(파이터와 같음: 선행 2, Lv18) |
 | 타입 | `'warrior' \| 'mage'` 유니온 14개 파일(characterRepository, economyRepository, fieldRepository, partyRepository, partyRunRepository, partyInvitesRepository, friendsRepository, presenceService, auctionRepository, auctionRules, auctionSearchRepository, starshopDefs, characterValidation, mailCampaignsValidation)에 `'rogue'`. 공용 타입 `CharacterClassId` 하나로 모은다. 직업 목록을 따로 가진 곳 4개도 고친다: `raidShop.ts` `SHOP_CLASSES`, `ratesSnapshot.ts` `classes`(스킨 풀이 없는 도적은 빼는 쪽으로), `gamedata/loader.ts` 시작 장비 반복, `enhanceService.ts`의 `cls !== 'warrior'`(무기 해제 판정이라 도적에게 그대로 맞는지 확인). `mailCampaignsValidation`은 `.max(2)` → `.max(3)` |
@@ -397,7 +400,7 @@
 | 기본 몸 | 몸 시트 40칸 + 공격 시트 30칸(`Resources/FemaleWarrior`) | 40프레임(`char_mage_*`) | **70칸**(몸 40 + 공격 30) | 여자, 64px, 2등신, 머리:몸 1:1, ppu 36, 여성 전사 시트 형식 + 왼손 고정점 |
 | 전직 외형 | 0(팔레트 2종) | 80(`char_career_arcanist·bishop_*`) | **0**(팔레트 2종) | 어쌔신 자홍, 닌자 주황 |
 | 각성 외형 | 0 | 0 | 0 | 어느 직업에도 없다 |
-| 손에 든 무기 | 4(`katanas_v2` 4칸, `wpn_sword_0~3`) | 4(`wpn_staff_0~3`) | **4**(`wpn_dagger_0~3`) | 양손에 같은 그림 |
+| 손에 든 무기 | 4(`katanas_v2` 4칸, `wpn_sword_0~3`) | 4(`wpn_staff_0~3`) | **8**(`wpn_dagger_0~3` + 닌자 `wpn_kunai_0~2`·표창 `wpn_kunai_3`) | 양손에 같은 그림. 닌자는 2.4절 무기 그림 |
 | 무기 대체 아이콘 | 4(`eqicon_sword_0~3`) | 4 | **4** | `Resources/Art/Weapons` |
 | 장비 아이콘 | 검 41 + 판금 40 + 각반 40 | 지팡이 41 + 로브 40 + 치마 40 | **41**(단검만) | 64px, `Art/Gear/eqicon_eq_dagger_*` |
 | 기본 스킬 아이콘 | 5(`gem_crush` 등) | 5 | **5** | 64px `gem_stab`·`gem_leap`·`gem_backstab`·`gem_raid`·`gem_dance` |
@@ -409,8 +412,8 @@
 | 스킨 | 33종 | 32종 | 0 | 5절 |
 | 스킬 영상 썸네일 | 0 | 0 | 0 | 게임에 스킬 영상이 들어가 있지 않다(`Resources/Video`는 레이드 예고 4개뿐) |
 
-- 이펙트 9종: `r_dance_slash`(천인난무 베기 띠), `r_backstab`(백어택 심장 뜯기 폭발), `a_mark`(표식 1~5), `a_smoke`(연막), `a_venom`(독 방울), `n_kunai`(쿠나이, 투사체와 박힌 것 겸용), `n_fuma`(대형 수리검), `n_tag`(기폭 부적), `n_puff`(분신 연기). 그 밖은 기존을 색만 바꿔 쓴다: 질주 경로 베기·연쇄 도약 잔상은 `SkillFx` 검기·`CareerFx.Ghost`, 기폭 폭발은 `m2_fire_explosion`, 분신은 본체 프레임 반투명.
-- 합계: 70 + 4 + 4 + 41 + 5 + 19 + 2 + 3 + 9 + 40 = **197장(칸)**. 생성 경로는 기존 규칙(Flow 기본, 알파 필요 그림은 마젠타 배경 후 키잉, 몸 시트는 여성 전사 규격 검증 `FemaleWarriorValidation`과 같은 검사를 도적 폴더에 건다).
+- 이펙트 10종: `r_dance_slash`(천인난무 베기 띠), `r_backstab`(백어택 심장 뜯기 폭발), `a_mark`(표식 1~5), `a_smoke`(연막), `a_venom`(독 방울), `n_kunai`(쿠나이, 투사체와 박힌 것 겸용), `n_shuriken`(최종 단계 표창, 회전 프레임), `n_fuma`(대형 수리검), `n_tag`(기폭 부적), `n_puff`(분신 연기). 그 밖은 기존을 색만 바꿔 쓴다: 질주 경로 베기·연쇄 도약 잔상은 `SkillFx` 검기·`CareerFx.Ghost`, 기폭 폭발은 `m2_fire_explosion`, 분신은 본체 프레임 반투명.
+- 합계: 70 + 8 + 4 + 41 + 5 + 19 + 2 + 3 + 10 + 40 = **202장(칸)**. 생성 경로는 기존 규칙(Flow 기본, 알파 필요 그림은 마젠타 배경 후 키잉, 몸 시트는 여성 전사 규격 검증 `FemaleWarriorValidation`과 같은 검사를 도적 폴더에 건다).
 
 ## 7. 구현 순서
 
@@ -422,10 +425,10 @@
 | 1 | 직업 골격 | `CharacterClass.cs`(enum `Rogue` 끝에 추가, `saveId "rogue"`, `basicHitScale`·거리·반경), `CharacterStatsCalc`(HP·MP·`CareerHp`), `CharacterData`(이동 속도 패시브), 직업 두 값 분기(런타임 40파일, `CharacterClass.Warrior`·`Mage` 152곳. 착수 때 `grep -rnE "CharacterClass\.(Mage|Warrior)"`로 목록을 다시 뽑는다. 주요 파일: `EquipmentDatabase`, `PartyClient`, `PartyFinderService`, `ServerPartyFinderService`, `OnlineSession`, `OnlineCharacterScreen`, `OnlineScreens`(카드 2장 배치 `i == 0 ? -150 : 150`), `PartyFramesView`, `PartyScreen`, `SkillScreen.Career`, `AwakeningCutIn`, `QuestAutoPilot.*`, `PlayerController.Mobility`, `SkillCaster`, `SkillRangePreview`, `CosmeticShopScreen`, `CharacterSelectScreen`, `PassiveTree`, `CompanionBrain`·`MercenaryDatabase.IsMage`, `Equipment`, `CharacterData`, `DungeonResultScreen.Raid`, `CareerCombat.Windup`(기본 직업이 전사가 아니면 마법진을 그린다. 도적 전직은 전사 쪽 자세로), 손에 든 무기 `EquipmentScreen.Input`·`SpriteLibrary.GetWarriorWeapon`·`SilverWarriorPresentation`, 몸 시트 `SilverWarriorArt`(정적 아틀라스 하나, `Supports`가 `player` id만 받는다. 폴더별 아틀라스로 바꾼다), 버프 줄 `BuffBarView`(맹독·은신·분신 줄, 기존 아이콘 재사용)) | 컴파일, 세이브 왕복(전사·마법사 기존 세이브가 그대로 읽힘) | 도적을 만들어 마을에서 걷고 기본 공격한다 |
 | 2 | 장비 | `GearCatalog.cs`(단검 종류·이름·`classes`), `EquipmentItem.cs`(`UsableBy`), `EquipmentDatabase.cs`(시작 무기·`WeaponSprite`·`RollDrop` 직업 가중), `MercenaryDatabase.GearFor`, `Editor/GameDataExport.cs` | 내보내기 단언(단검 44개, 판금 `classes` 2개) | 단검·판금 장착, 로브 장착 불가 |
 | 3 | 기본 스킬·이동기 | 새 `SkillCaster.Rogue.cs`(급소 찌르기·연쇄 도약·백어택·그림자 습격·천인난무), `SkillData.cs`(젬 5), `SkillCaster.cs`(`Cast` 스위치), `PlayerController.Mobility.cs`(그림자 질주), `PlayerCombat.cs`(쌍단검), `EnemyController`(등 뒤 판정 `IsBehind(from)`, 8방향 135도) | 이론 확인만(사용자 지침: 화면 검증은 요청 시) | 5스킬·이동기 수치가 2.2절과 같다 |
-| 4 | 그림 1차 | 몸 시트 70칸, 무기 4 + 4, 기본 스킬 아이콘 5, 장비 아이콘 41, `cutin_rogue` | `FemaleWarriorValidation`과 같은 규격 검사 | 197장 중 125장 |
+| 4 | 그림 1차 | 몸 시트 70칸, 무기 8 + 4, 기본 스킬 아이콘 5, 장비 아이콘 41, `cutin_rogue` | `FemaleWarriorValidation`과 같은 규격 검사 | 202장 중 129장 |
 | 5 | 전직 | `CareerData.cs`(enum 5·6, `Base`·`Name`·`Role`·`Branches`·`Color`, 19행, 추가 노드·연사기·MP 비율, `"venom"`을 `"frenzy"`와 같은 고정 쿨 묶음에), 새 `CareerCombat.Assassin.cs`·`CareerCombat.Ninja.cs`·`NinjaClone.cs`·`KunaiProjectile.cs`, `CareerNumbers.cs`(요약 15 + 패시브 4), `CareerTrials.cs`(2종), `SkinCatalog.CareerLook` + 새 `RoguePalette.cs`, `BossRushCatalog.CareerDamageMul`, `CareerFx.Main` | 이론 확인, `SkillRecommendCheck` | 두 전직의 19스킬이 2.3·2.4절 표와 같다 |
 | 6 | 서버 | `migrations/0050_rogue_class.sql`, `schema.sql`, `careerRules.ts`, `careerGrantService.ts`, 타입 14파일, `usableBy` 9곳, `inventoryService` 문구, `townPresence`, `ratesDisclosure`·`starshopService`(스킨 풀), `mailCampaignsValidation`, `data/*.json` 내보내기 | `npm test -- rogueClass careers careerGrant careerQuestCheck kills auction bossRush`, 타입 검사 | 테스트 통과, 데이터 버전 갱신 |
-| 7 | 연동·그림 2차 | 튜토리얼 1-5 대사, 전직 안내, 동료 미르, 파티 색, 랭킹 이름, 스킨 탭 숨김, `DevCapture.SkillClip`(`ScriptedLength` 3개), 11개 언어 146줄, `STORY.md`. 그림: 전직 아이콘 19, 카드 2, 컷인 2, 이펙트 9, 동료 40 | 번역 누락 검사(`Tools/i18n`) | 197장 완료, 번역 누락 0 |
+| 7 | 연동·그림 2차 | 튜토리얼 1-5 대사, 전직 안내, 동료 미르, 파티 색, 랭킹 이름, 스킨 탭 숨김, `DevCapture.SkillClip`(`ScriptedLength` 3개), 11개 언어 146줄, `STORY.md`. 그림: 전직 아이콘 19, 카드 2, 컷인 2, 이펙트 10, 동료 40 | 번역 누락 검사(`Tools/i18n`) | 202장 완료, 번역 누락 0 |
 | 8 | 측정·마감 | `theory_combat`·`theory_mana`·`theory_gold`·`theory_progress --measured` 재실행, 보스 방 3분 측정(어쌔신·닌자), 1~15 사냥 측정을 기존 측정 모드로 | 측정 기록을 `BALANCE_MEASURE` 문서에 | 3.2절 배율 뒤 70~100%, 골드 비율 0.88(드롭 가중 전과 같음), Lv40 46.0시간, 1~15 1마리 처치 시간이 전사의 90~110% |
 
 ### 7.1 출시 일정에 주는 작업량
@@ -436,7 +439,7 @@
 | 클라이언트 고치는 파일 | 직업 분기 40파일 + 카탈로그·데이터 10(`CharacterClass`, `SkillData`, `CareerData`, `CareerNumbers`, `CareerTrials`, `GearCatalog`, `EquipmentItem`, `EquipmentDatabase`, `SkinCatalog`, `BossRushCatalog`) + `GameDataExport` |
 | 서버 | 마이그레이션 1, 고치는 파일 25(규칙 2, 타입 14, 판정 3, 프레즌스·확률 공시 2, 직업 목록 4), 새 테스트 1, 고치는 테스트 6 |
 | 데이터 | 스킬 24(기본 5 + 전직 19), 장비 44, 문구 146줄 x 11개 언어 |
-| 그림 | 197장(칸) |
+| 그림 | 202장(칸) |
 | 도구·문서 | 이론 도구 3, 문서 4(`SKILLS.md`, `PLAN_CAREER_SKILLS.md`, `STORY.md`, `I18N_GLOSSARY.md`) |
 
 ## 8. 3장·4장에서 도적 자리 (ch3 브랜치 문서 기준)
@@ -456,6 +459,7 @@
 
 - 사용자 지정 스킬(그림자 질주 제외 6개)은 원형 수치를 그대로 두고, 특화는 그 위의 선택지다. 확산형 B(서버 `AOE_CAP` 8 조건)는 집중·확산 축 5개의 B.
 - 3장 장비 티어 9·10(Lv45·50)에 단검 줄 추가: 이름 10 + Lv50 레전더리 2(광역형·토벌형), 아이콘 10 + 1, 계승 경로 Lv40 → Lv50 단검 줄.
+- 도적 특화는 출시용 도적(7절 0~8단계)이 wonho에 들어가고 `ch3`로 병합된 뒤에 한다. 3장 2단계(특화 48쌍)는 끝났으므로 도적 24쌍은 3장 7단계(측정) 전에 별도 단계로 넣고, `theory_specs.py` 대상이 96개 → 144개가 된다.
 
 ### 8.2 4장 진각성 (`Docs/PLAN_CHAPTER4.md` 8.4절)
 
@@ -466,4 +470,4 @@
 | 어쌔신 | 두 그림자의 처형 | 본체와 그림자가 한 적의 앞뒤에서 동시에 찌른다. 단계마다 표식 폭발·그림자 수가 는다 |
 | 닌자 | 주기의 분신진 | 분신이 원을 돌며 한 바퀴마다 쿠나이를 던진다. 단계마다 바퀴 수·쿠나이가 는다 |
 
-- 이름은 기존 진각성의 쌍둥이·한 주기 모티프를 따른다(마야 모티프는 고유명에만). 그림: 컷인 2, 단계 이펙트 2, 아이콘 2. 4장 티어 11(Lv55)에도 단검 줄(이름 5 + Lv55 레전더리 2, 아이콘 5 + 1).
+- 이름은 기존 진각성의 쌍둥이·한 주기 모티프를 따른다(마야 모티프는 고유명에만). 그림: 컷인 2, 단계 이펙트 2, 아이콘 2. 4장 티어 11(Lv55)에도 단검 줄(이름 5 + Lv55 레전더리 2, 아이콘 5 + 1, 계승 경로 Lv50 → Lv55 단검 줄). 5장 티어 12(Lv60)도 같은 양이고 계승은 Lv55 → Lv60(`PLAN_GEAR_INHERIT_2026-10-22.md` 1절).
