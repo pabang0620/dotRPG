@@ -115,7 +115,7 @@ def check_export():
     bad = 0
     for row in tiers["rows"]:
         to = int(row["to"].split("_")[2])
-        weapon = row["to"].split("_")[1] in ("sword", "staff")
+        weapon = row["to"].split("_")[1] in ("sword", "staff", "dagger")  # [ROGUE] 단검도 무기(InheritRules와 같다)
         for n, g in enumerate(row["gold"]):
             want = 0 if n <= FREE else round_away(SHARE * BASE[to] * (1.0 if weapon else 0.8) * (units(n) - units(FREE)))
             if want != g:
