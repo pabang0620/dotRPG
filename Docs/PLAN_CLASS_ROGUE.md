@@ -116,7 +116,7 @@
 - **그림자 질주**: 거리 2.8 x 1.2 = 3.36m(사용자 지정 120%). 속도는 대시와 같게 둔다(지속 0.18초 x 1.2 = 0.216초). 쿨 1.6초는 피해가 있는 이동기의 기존 값(섬광보를 Shift로 쓸 때 대시 + 0.2초)이다. 4타 합 0.8 = 전사 기본 공격 한 타(0.8)로, 질주를 계속 섞어도 기본 공격 화력이 전사를 넘지 않는다(1.4절, 96%). MP 0은 대시·텔레포트와 같다. 4타 시각: 지나간 뒤 0.6초, 0.77초, 0.94초, 1.11초. 간격 0.17초는 몬스터 피격 무적 0.15초(`EnemyStats.invulnerableTime`)를 넘기는 기존 규칙(`PLAN_CAREER_SKILLS.md` 7절)이다. 질주 중 무적은 없다(대시와 같다).
 - **급소 찌르기**: 파쇄 일격 2.7·번개 창 2.5는 맞은 자리 주변에도 피해(반경 1.3·2.0)가 있다. 급소 찌르기는 단일이라 2.9(+7%). 무리 3마리 상대로는 파쇄 일격보다 약하다.
 - **연쇄 도약**: 배율 1.7·쿨 3초·MP 8은 같은 칸의 회전 베기(1.7·3초·8)와 같다. 탐색은 시전 위치 기준 5m. 다음 대상은 아직 안 맞은 적 중 가장 가까운 적, 같은 적은 한 번만. 한 번 도약 0.1초 + 베기, 마지막 뒤 0.12초에 돌아온다(5마리 0.72초). 도약 중에는 넉백을 받지 않고 피해는 받는다. 적이 1마리면 한 번 베고 돌아온다(보스 상대 초당 0.57로 회전 베기와 같다).
-- **백어택**: 사용자 지정 "기본 공격의 150%" = 도적 기본 공격 한 타(0.65) x 1.5 = 0.975. 경직 0.8초(사용자 지정)는 기존 기절과 같은 규칙을 탄다: 일반 몬스터는 6초 안에 다시 걸리면 절반씩(1, 1/2, 1/4), 보스는 x0.3(0.24초). 등 뒤 판정: 적의 바라보는 방향(8방향 `Facing`)과 "적에서 도적으로 가는 방향" 사이 각이 112.5도 이상이면 등 뒤다(8방향 중 뒤쪽 3칸 = 135도 부채꼴). 정면(그 밖)은 기본 공격 한 타의 60%(0.39), 경직 없음, 쿨은 그대로 4초. 쿨 4초 근거: 같은 칸 기절·빙결은 10초에 여러 마리지만 백어택은 한 마리라 경직 비율 0.8 / 4 = 20%로 함성(1.3 / 10 = 13%, 여러 마리)과 맞춘다.
+- **백어택**: 사용자 지정 "기본 공격의 150%" = 도적 기본 공격 한 타(0.65) x 1.5 = 0.975. 경직 0.8초(사용자 지정)는 기존 기절과 같은 규칙을 탄다: 일반 몬스터는 6초 안에 다시 걸리면 절반씩(1, 1/2, 1/4), 보스는 x0.3(0.24초) 뒤 8초 면역(`MonsterCrowdControl`, `BossCcImmunity`). 그래서 `EnemyController.Stun`으로 넣고 `Stagger`(파이터 경직, 보스도 전체 시간)는 쓰지 않는다. `Stagger`로 넣으면 4초마다 0.8초, 보스 행동의 20%를 멈춘다. 등 뒤 판정: 적의 바라보는 방향(8방향 `Facing`)과 "적에서 도적으로 가는 방향" 사이 각이 112.5도 이상이면 등 뒤다(8방향 중 뒤쪽 3칸 = 135도 부채꼴). 정면(그 밖)은 기본 공격 한 타의 60%(0.39), 경직 없음, 쿨은 그대로 4초. 보스 상대 등 뒤: 보스는 공격할 때 대상 쪽을 본다(`EnemyController` 추적 상태의 `facing`). 혼자인 보스 방에서는 그림자 습격 뒤 1초가 사실상 유일한 등 뒤 기회이고(습격 쿨 4.5초, 백어택 4초라 매번 맞물린다), 피해는 초당 0.975 / 4.5 = 0.22배로 작다. 탱커가 있는 레이드에서는 거의 늘 등 뒤다(3.2절). 쿨 4초 근거: 같은 칸 기절·빙결은 10초에 여러 마리지만 백어택은 한 마리라 경직 비율 0.8 / 4 = 20%로 함성(1.3 / 10 = 13%, 여러 마리)과 맞춘다.
 - **그림자 습격**: 쿨·MP는 같은 칸 돌진 베기(4.5초·9)와 같다. 돌진 베기 2.5는 경로의 여러 적이고 습격은 한 마리라 2.6. 6m 안에 적이 없으면 쓰지 않는다(쿨 안 걸림).
 - **천인난무**: 사용자 지정 "전사 각성기와 비슷하지만 더 빠르게 12번, 전체 시간은 비슷, 범위는 좁게". 천검 강림(`SkillCaster.Blades`)은 컷인 0.35초 + 검 12자루 0.1초 간격 + 낙하 0.14초 + 0.1초 = 1.79초, 영역 반경 6m, 검마다 반경 2m, 2.4 x 12. 천인난무는 컷인 0.35초 + 파고들기 0.2초 + 12번 베기 0.07초 간격(0.77초) + 마무리 자세 0.45초 = 1.77초, 영역 3.5m, 베기마다 반경 1.2m. 베기는 영역 안 적을 돌아가며 노리고 한 마리면 12번 모두 그 적이다. 간격이 피격 무적보다 짧으므로 이 스킬 타격은 `noHitInvulnerability`(이미 `DamageInfo`에 있음)로 들어간다. 배율 2.2: 천검 강림 명목 총량 28.8의 92%다. 범위가 좁은 대신 무적에 먹히는 타격이 없어 한 대상에게 12타가 모두 들어가므로 명목값을 낮췄다. 쿨·MP는 천검 강림과 같다(24초·30).
 
@@ -134,13 +134,14 @@
 | 3 | `a_venom` | 맹독 도포 | 22 | 20 / 20 / 62 / 0 / 0 / .1 / 120 | +20% / 13 / 62초 | 120초 동안 모든 직접 공격이 준 피해의 20%만큼 독을 남긴다(3초에 나눠, 방어 무시) |
 | 4 | `a_ambush` | 기습 | 15 | 패시브 15 | +15%(랭크당 +5) | 등 뒤(2.2절 판정) 직접 공격 피해 +15% |
 | 5 | `a_rend` | 연환 베기 | 18 | 0.8 / 18 / 0 / 2 / .9 / .1 / 0 / 2 | 0.68 x 2 / 최대 MP 2.28% / 없음 | 주력 연사기. 재사용 대기시간 없이 전방 2m 120도를 두 번 벤다(0.17초 간격) |
-| 6 | `a_rupture` | 급소 파열 | 18 | 2.4 / 22 / 10 / 2 / 0 / .2 | 3.47 / 14 / 7초 | 앞의 적에게 박힌 표식을 모두 터뜨린다. 기본 피해 + 표식 하나마다 1.16(원값 0.8) |
-| 7 | `a_assassinate` | 암살 | 22 | 5.0 / 26 / 12 / 1.8 / 0 / .2 | 7.86 / 17 / 8.5초 | 단검을 깊이 박는다. 등 뒤면 x1.5, 표식 5개면 x1.8(곱, 표식 소모) |
+| 6 | `a_rupture` | 급소 파열 | 18 | 1.2 / 22 / 10 / 2 / 0 / .2 | 1.73 / 14 / 7초 | 앞의 적에게 박힌 표식을 모두 터뜨린다. 기본 피해 + 표식 하나마다 0.35(원값 0.24). 표식 5개면 3.47 |
+| 7 | `a_assassinate` | 암살 | 22 | 1.85 / 26 / 12 / 1.8 / 0 / .2 | 2.91 / 17 / 8.5초 | 단검을 깊이 박는다. 등 뒤면 x1.5, 표식 5개면 x1.8(곱, 표식 소모). 둘 다면 7.86 |
 | 8 | `a_awake` | 천영참 | 15 | 0.8 / 60 / 48 / 0 / 5.4 / 0 / 2 / 12 | 0.8 x 18 + 4.8 / 45 / 60초, 반경 7m, 3초 | 그림자 여섯이 반경 7m 적 사이를 오가며 3초 동안 18번 벤 뒤, 맞은 적마다 표식을 터뜨린다(480%) |
 | 9 | `a_stealth` | 은신 | 18 | 50 / 20 / 20 / 0 / 0 / .1 / 6 | +50% / 13 / 14초 | 추가 노드(선행 연막 도약). 6초 동안 투명해져 일반 몬스터가 추적을 멈춘다(보스는 그대로). 이동 속도 +30%. 은신 중 첫 공격은 피해 +50%이고 항상 등 뒤 판정, 공격하면 풀린다 |
 
 - 주력 연사기 MP 비율 2.28%: 기존 규칙 "전속 연사 시 초당 최대 MP 9% 소모(보조 젬 x1.3 포함)"에 연환 베기 주기(시전 0.1 + 회복 0.15 + 0.08 = 0.33초)를 넣은 값이다. 0.09 / 1.3 / 3.03 = 0.0228.
 - 추가 노드 규칙: 선행 2번(연막 도약), Lv18. 파이터 검기 태세와 같은 규칙이라 `CareerSkill.ExtraPrerequisite`·`ExtraLevel`과 서버 `careerRules.ts`의 메이지 예외 분기 옆에 어쌔신을 "파이터와 같음"으로 둔다.
+- 급소 파열·암살 원값: 보스 1체에는 표식 5개가 1초 안에 다시 쌓이고(연환 베기 0.33초마다 2타) 그림자 습격으로 등 뒤를 매번 만든다. 그래서 조건을 다 채운 값이 3.2절 모델 값(3.47, 7.86)이 되게 기본값을 정했다. 처음 값(2.4 + 표식당 0.8, 5.0 x1.5 x1.8)이면 같은 모델에서 보스 화력이 파이터의 1.41배, 1마리 처치가 파이터의 69% 시간이었다.
 - 등 뒤를 만드는 길: 그림자 습격(기본 R), 은신, 연막 도약 뒤 돌아 들어가기. 사용자 백어택과 기습 패시브가 같은 판정을 쓴다.
 - 이동기: 어쌔신은 Shift를 바꾸지 않는다. 사용자 지정 그림자 질주를 그대로 쓴다(파이터만 섬광보로 바꾼다).
 - 맹독 도포의 가치는 검귀 해방(+20%, 120초, 62초)과 같다. 다른 점은 피해가 3초 독으로 나뉘고 방어를 무시한다는 것이다(갑옷 있는 Lv15+ 몬스터에게 조금 더 낫고, 처치가 늦게 끝난다).
@@ -173,6 +174,8 @@
 | 적 관통·피해 | 적을 관통한다. 지나간 적마다 2.11 피해(한 번씩). 적에게 멈추지 않는다 | 순간이동 도착 지점을 던질 때 예측할 수 있어야 한다(적에게 멈추면 도착점이 적 몸속이 된다). 피해는 기존 전직 쿨 스킬 공식(원값 1.6, 쿨 8)으로 |
 | 도착 위치 | 쿠나이 위치가 걸을 수 있는 칸이면 그 자리. 벽에 박혔으면 `GridPath.Walkable`로 1.5m 안에서 가장 가까운 걸을 수 있는 칸 | 사용자 지정. 1.5m 안에 칸이 없으면 이동하지 않고 "이동할 자리가 없다" 안내, 쿠나이는 사라진다 |
 | 이동 처리 | `PlayerController.Mobility`의 텔레포트 경로(위치 직접 설정 + `Physics2D.SyncTransforms` + 충돌 여유 `MobilitySkin`)를 그대로 쓴다. 도착 칸이 다른 충돌체와 겹치면 같은 칸 탐색을 이어 간다 | 벽 속 끼임을 막는 기존 코드 |
+| 막힌 지형 | 쿠나이는 몸 충돌과 같은 레이어(벽·물·절벽·던전 방 문·보스 방 경계)에 막혀 박힌다. 몸이 못 지나가는 곳은 쿠나이도 못 지나가므로 물·구덩이 건너편, 닫힌 방, 맵 밖으로는 이동하지 않는다 | 텔레포트의 `MobilityClearance`가 몸 충돌로 거리를 자르는 것과 같은 규칙 |
+| 파티 온라인 | 호스트는 멤버의 보고 위치를 초당 이동 한도로 자른다(`PartyNet.Host.ClampMove`, 여유 8m). 쿠나이 순간이동(최대 10m + 1.5m)·분신 자리 바꾸기·연쇄 도약은 한도를 넘으므로, 호스트가 그 멤버의 시전을 처리할 때 이동 거리를 `CreditLaunch`처럼 미리 적립한다. 원격 표시는 기존 `PartyMsg.Act`(칸·종류·스킬 칸·방향)로 시전을 재생하되, 같은 칸의 두 번째 누름(이동)을 종류 값 하나로 구분한다. 방향이 8방향으로 오므로 원격 화면의 쿠나이 궤적은 45도 단위이고 위치는 스냅숏이 맞춘다 | 적립이 없으면 먼 이동이 잘려 원격 화면에서 되돌아간다 |
 | 쿨·MP | 5.5초, MP 9. 쿨은 던질 때 시작하고 이동은 공짜 | 이동은 던지기의 후속 입력이라 따로 쿨을 걸지 않는다 |
 | 무적 | 없음 | 마법사 텔레포트와 같다 |
 | 보스 방·레이드 | 같은 규칙. 레이드 안전지대 판정은 도착 위치 기준 | 순간이동으로 안전지대에 들어가는 것은 의도된 사용이다 |
@@ -190,6 +193,7 @@
 | 쿠나이 순간이동과 연계 | 본체가 순간이동하면 분신도 본체 좌우로 같이 옮겨진다 | 분신이 뒤에 남으면 위치 바꾸기가 의도치 않은 먼 거리 이동이 된다 |
 | 피해 집계 | 분신 피해는 본체(내 영웅) 피해로 센다. 처치 판정, 보스 방 기록, 레이드·던전 기여도, `CareerDamageMul` 모두 본체 것 | 분신은 독·화상처럼 본체 스킬이 만든 피해다. AI 동료 피해 제외 규칙은 별도 캐릭터(동료 데이터·장비)에 대한 것이라 해당하지 않는다. 클라이언트에서는 분신 타격도 본체 `SkillCaster`의 `Hit`로 들어가므로 따로 갈래가 없다 |
 | 서버 상한 | `attackCap`·`powerAllows` 그대로 | 3.2절 계산: 분신을 넣은 닌자 보스 화력이 파이터의 0.71배다. 상한 비율 0.37(전사 피크)보다 낮다 |
+| 파티 온라인 표시 | 분신은 몸(칸)이 아니라 본체 `CareerCombat` 상태다. 원격 PC는 `PartyMsg.Act`로 분신술 시전을 재생해 그 사본에 분신을 붙이고, 따라 하는 투척도 본체 Act 재생에서 같이 그린다(피해 없음, 호스트만 피해 계산). 자리 바꾸기는 쿠나이 순간이동 표의 이동 적립을 탄다 | 새 메시지 없이 기존 Act 재생 경로로 보인다 |
 | 그림 | 본체 프레임을 반투명(알파 0.55) + 남색 색조(`SpriteRenderer.color`)로 그린다. 새 몸 그림 없음. 나타남·사라짐·자리 바꾸기에 연기 이펙트 1종(`n_puff`) | 본체 동작과 프레임이 정확히 같아야 "따라 한다"가 보인다. 이동 잔상은 기존 `CareerFx.Ghost`를 쓴다 |
 
 - 주력 연사기 MP 비율 2.28%: 어쌔신과 같은 주기(0.33초)라 같은 값.
@@ -217,8 +221,10 @@
 - 무리 3마리에서 연사기 평균 타격: 연환 베기 1.4, 연발 쿠나이 1.6. 쿨 스킬 평균: 어쌔신 1.0(단일), 닌자 2.0.
 - 한 마리에게 들어가는 쿨 스킬 타수: 쌍인참 4, 풍마 수리검 6, 기폭 쿠나이 3, 회수 6.
 - 기본 공격: 도적 단검 0.65 / 0.24초(무리 x1.1), 닌자 쿠나이 0.65 / 0.3초(무리 x1.0).
+- 급소 파열·암살은 조건을 다 채운 값(3.47, 7.86)으로 넣는다(2.3절). 연막 도약은 무리에서도 1마리로 센다.
+- 도적 MP는 코드 식(`CharacterStatsCalc`: 40 + 40, 레벨당 4 + 2, 전사와 같음)이다. `theory_combat.py`의 전사 MP 식은 옛 값(40 + 10, 레벨당 4)이라 기존 네 줄은 그 값으로 나온 것이다. 0단계에서 전사 MP 식도 코드 식으로 고친다. 모든 직업을 코드 식으로 다시 돌리면 파이터 무리 4.09초, 수호자 7.24초, 보스 비 메이지 0.61·비숍 0.49·어쌔신 0.99·닌자 0.66이고, 3.2절 배율 뒤 값(어쌔신 0.94, 닌자 0.76)이 여전히 70~100% 안이라 결정은 같다.
 
-### 3.1 전직 뒤 사냥 (Lv18~53 사냥터 21곳 평균, 목표는 `BALANCE_COMBAT_2026-10-11.md` 2절)
+### 3.1 전직 뒤 사냥 (Lv18~53 사냥터 15곳 평균, 목표는 `BALANCE_COMBAT_2026-10-11.md` 2절)
 
 | 직업 | 1마리 평균(초) | 1마리 범위 | 무리 3마리 정리 평균(초) | 범위 | 버팀(초) | 버팀 목표 |
 |---|---|---|---|---|---|---|
@@ -249,7 +255,8 @@
 - 결정: `BossRushCatalog.CareerDamageMul`에 어쌔신 0.95, 닌자 1.15.
 - 근거: 메이지는 모델과 실측이 같다(0.64). 두 도적 전직은 기본 공격·연사기·쿨 스킬로 피해를 넣는 직업이라 메이지처럼 모델이 실측을 따라간다(실측이 크게 갈린 비숍은 회복 중심이라 모델에 없는 행동이 많다). 어쌔신은 파이터와 같게(0.99), 닌자는 메이지와 같은 자리(0.82)에 둔다. 배율이 1보다 작은 직업은 어쌔신이 처음이다. 개인 피해 랭킹이 한 직업으로 채워지지 않게 한다는 7.3절 목적에 따라 파이터를 넘지 않게 했다.
 - 확인: 7절 8단계에서 같은 3분 측정(`DevCapture.Measure.BossRush`)을 두 직업에 돌려, 배율 뒤 값이 파이터의 70~100% 밖이면 같은 식(목표 / 실측)으로 고친다.
-- 서버 상한: 보스 방 상한 비율 0.37(전사 피크) 아래다. 어쌔신 배율 뒤 화력이 파이터와 같으므로 `HIGH_DAMAGE_RATIO` 0.8, `DAMAGE_SLACK` 0.6은 그대로 둔다.
+- 모델에 없는 조건부 가산: 닌자 원거리 집중(+12%, 6m 이상)은 보스 방에서 늘 켜진다고 보면 배율 뒤 0.82 → 0.92, 어쌔신이 탱커 뒤에서 모든 공격을 등 뒤로 넣으면(레이드) 기습 1.05 → 1.15라 배율 뒤 0.99 → 1.03이다. 둘 다 8단계 실측 범위 검사에 걸리는 크기다.
+- 서버 상한: 보스 방 상한 비율 0.37(전사 피크, `ch3/PROGRESSION_AND_GEAR.md` 2026-10-20 실측 270,000 / 상한 731,000) 아래다. 분신 피해를 본체 피해로 세도 닌자 배율 뒤 화력은 파이터 이하라 비율 0.37 이하, 3장 집중형 x1.5·4장 진각성 x1.3을 곱해도 0.72로 `HIGH_DAMAGE_RATIO` 0.8 아래다. 어쌔신 배율 뒤 화력이 파이터와 같으므로 `HIGH_DAMAGE_RATIO` 0.8, `DAMAGE_SLACK` 0.6은 그대로 둔다.
 
 ### 3.3 Lv1~15 초반 사냥 (사용자 확인: 지금 처치 속도가 적당)
 
@@ -344,9 +351,10 @@
 
 | 표 | 들어가는 방식 |
 |---|---|
-| 사냥 드롭(`RollDrop`, 서버 `rollEquipmentDrop`) | 단검이 같은 무게로 들어간다. 종류가 8 → 9가 되어 직업마다 "내가 쓸 장비" 비율이 5/8 → 5/9로 준다. 그래서 장비 드롭 확률을 0.08 → 0.09(x9/8)로 올린다(클라이언트 `EnemyController.EquipmentDropChance`, 서버 `monsters.json` `equipmentDropChance`). 세 직업 모두 내 장비 드롭 빈도가 지금 전사·마법사와 같아진다 |
-| 골드 수지 | 드롭 장비 판매 수입이 x9/8. 7절 8단계에서 `theory_gold.py`로 무자본 Lv40 비율이 0.85~0.90 안인지 확인하고, 밖이면 장비 판매가(`sellPrice`)를 x8/9로 맞춘다 |
-| 상점(`shop.json`) | 장비는 상점 판매가 없다(판매가만). 시작 무기만 추가 |
+| 사냥 드롭(`RollDrop`, 서버 `rollEquipmentDrop`) | 장비 드롭 확률 0.08은 그대로 둔다. 단검이 같은 무게로 들어가 종류가 8 → 9가 되면 직업마다 "내가 쓸 장비" 비율이 5/8 → 5/9로 주므로, 후보를 고를 때 그 직업이 못 쓰는 장비의 무게를 x0.75로 둔다(못 쓰는 종류 4개 x 0.75 = 3, 쓰는 종류 5개 → 5/8). 두 함수 모두 이미 직업(`cls`)을 받는데 지금은 쓰지 않는다(2026-10-11 "다른 직업 장비도 나온다" 결정은 유지, 비율만 줄인다). 던전 보상의 `RollDrop` 호출도 같은 가중을 탄다. 확률을 0.09로 올리는 안은 `theory_gold.py`에서 장비 판매 251,986 → 283,484, 수입/지출 0.88 → 0.90(목표 상단)으로 1~40 골드 수지를 바꿔 쓰지 않는다. 가중 방식은 드롭 수가 같고 장비 판매가가 종류와 무관해 0.88 그대로다. `theory_progress.py --measured` 46.0시간은 장비 드롭을 쓰지 않아 어느 쪽이든 그대로다 |
+| 골드 수지 | 변화 없음(0.88). `theory_gold.py`·`theory_income.py`의 장비 판매 기대값은 드롭 풀 가중 평균이라, 가중을 넣을 때 직업별 가중으로 바꿔도 값이 같은지 8단계에서 확인한다 |
+| 상점(`shop.json`) | 장비는 상점 판매가 없다(판매가만). 시작 무기만 추가. 시작 장비 표 `starter.json` `gear`에 `rogue`(`eq_dagger_wood`, 무기 칸)를 더한다(서버 `gamedata/loader.ts`가 직업마다 읽는다) |
+| 레이드 상점(`raid_shop.json`, 클라이언트 `RaidShop`, 서버 `raidShop.ts` `SHOP_CLASSES`) | 상품은 무기·상의·하의·목걸이·반지 종류로 정해지고 직업별로 후보를 고른다. `SHOP_CLASSES`에 `rogue`를 더해 도적은 단검·판금·각반이 나온다 |
 | 던전 보상·유니크 상자·별빛 교환 | `usableBy`로 도적이면 단검·판금·각반·목걸이·반지가 후보 |
 | 승급·계승(`PLAN_GEAR_INHERIT_2026-10-22.md`) | 키 규칙 `eq_{kind}_{level}_{grade}`라 `dagger`가 그대로 들어간다. 계승 경로표에 단검 줄 추가(유니크·레전더리·토벌형 `lb` 단계마다) |
 | 강화 | 무기 공통 규칙. 변경 없음 |
@@ -377,10 +385,10 @@
 | 마이그레이션 `0050_rogue_class.sql` | `characters.class` CHECK에 `rogue`, `auction_listings.class_only` CHECK에 `rogue`, `character_career.career`·`character_career_trials.career` CHECK `BETWEEN 1 AND 6`. `schema.sql` 같이 고침. 되돌리기: 도적 캐릭터가 없을 때만 CHECK를 원래대로 |
 | 직업 번호 | 전직 5 = 어쌔신, 6 = 닌자. 기본 직업 매핑을 한 표로: `{1,2: warrior, 3,4: mage, 5,6: rogue}`(`careerRules.ts`, `careerGrantService.baseClassOf`가 같은 함수를 쓴다) |
 | `careerRules.ts` | `career` 최대 4 → 6, `careerIds`에 두 목록, `MAIN_HUNTERS`에 `a_rend`·`n_volley`, 9번 추가 노드 규칙에 어쌔신(파이터와 같음: 선행 2, Lv18) |
-| 타입 | `'warrior' \| 'mage'` 유니온 14개 파일(characterRepository, economyRepository, fieldRepository, partyRepository, partyRunRepository, partyInvitesRepository, friendsRepository, presenceService, auctionRepository, auctionRules, auctionSearchRepository, starshopDefs, characterValidation, mailCampaignsValidation)에 `'rogue'`. 공용 타입 `CharacterClassId` 하나로 모은다 |
+| 타입 | `'warrior' \| 'mage'` 유니온 14개 파일(characterRepository, economyRepository, fieldRepository, partyRepository, partyRunRepository, partyInvitesRepository, friendsRepository, presenceService, auctionRepository, auctionRules, auctionSearchRepository, starshopDefs, characterValidation, mailCampaignsValidation)에 `'rogue'`. 공용 타입 `CharacterClassId` 하나로 모은다. 직업 목록을 따로 가진 곳 4개도 고친다: `raidShop.ts` `SHOP_CLASSES`, `ratesSnapshot.ts` `classes`(스킨 풀이 없는 도적은 빼는 쪽으로), `gamedata/loader.ts` 시작 장비 반복, `enhanceService.ts`의 `cls !== 'warrior'`(무기 해제 판정이라 도적에게 그대로 맞는지 확인). `mailCampaignsValidation`은 `.max(2)` → `.max(3)` |
 | 무기 해제 | `inventoryService`는 이미 "전사가 아니면 무기 해제 불가"라 도적에게 그대로 맞다. 문구만 "이 직업은 무기를 뺄 수 없습니다"로. `reissuesStarterWeapon`도 그대로 |
-| 데이터 내보내기 | `careers.json`(19행), `skill_gems.json`(도적 5), `shop.json`(단검 44, `classes`), `monsters.json`(드롭 0.09), `lang.*.json`. 데이터 버전 갱신 |
-| 테스트 | 새 `server/test/rogueClass.test.ts`: 도적 만들기, 어쌔신·닌자 전직(다른 기본 직업 거부), 노드 레벨·선행·추가 노드, 연사기 Lv18, 단검·판금 장착 허용과 로브 거부, 무기 해제 거부, 드롭 후보에 단검·판금, 스킨 뽑기 422, 마이그레이션 CHECK. 기존 `careers.test.ts`·`careerGrant.test.ts`·`careerQuestCheck.test.ts`·`kills.test.ts`(드롭 확률·후보)·`auction.test.ts`(class_only)·`bossRush.test.ts`의 직업 표 갱신 |
+| 데이터 내보내기 | `careers.json`(19행), `skill_gems.json`(도적 5), `shop.json`(단검 44, `classes`), `starter.json`(`gear.rogue`), `raid_shop.json`, `lang.*.json`. `monsters.json` 드롭 확률은 바꾸지 않는다. 데이터 버전 갱신 |
+| 테스트 | 새 `server/test/rogueClass.test.ts`: 도적 만들기, 어쌔신·닌자 전직(다른 기본 직업 거부), 노드 레벨·선행·추가 노드, 연사기 Lv18, 단검·판금 장착 허용과 로브 거부, 무기 해제 거부, 드롭 후보에 단검·판금, 스킨 뽑기 422, 마이그레이션 CHECK. 기존 `careers.test.ts`·`careerGrant.test.ts`·`careerQuestCheck.test.ts`·`kills.test.ts`(드롭 후보 가중: 직업마다 쓸 장비 무게 비율 5/8)·`auction.test.ts`(class_only)·`bossRush.test.ts`의 직업 표 갱신 |
 
 ## 6. 그림 목록 (기존 직업이 가진 것을 실제 파일로 센 수와 비교)
 
@@ -411,22 +419,22 @@
 | 단계 | 내용 | 소유 파일 | 테스트·확인 | 완료 기준 |
 |---|---|---|---|---|
 | 0 | 이론 도구에 도적 반영 | `Tools/balance/theory_combat.py`(정규식 `[fgmb]` → `[fgmban]`, 도적 HP 식, 두 전직), `theory_mana.py`, `theory_skills.py` | 도구 실행 | 3절 표와 같은 값이 나온다 |
-| 1 | 직업 골격 | `CharacterClass.cs`(enum `Rogue` 끝에 추가, `saveId "rogue"`, `basicHitScale`·거리·반경), `CharacterStatsCalc`(HP·MP·`CareerHp`), `CharacterData`(이동 속도 패시브), 직업 두 값 분기 25곳(0절 목록의 `CharacterClass.Mage ? : ` 형태: `EquipmentDatabase`, `PartyClient`, `ServerPartyFinderService`, `OnlineSession`, `OnlineCharacterScreen`, `OnlineScreens`, `PartyFramesView`, `PartyScreen`, `SkillScreen.Career`, `AwakeningCutIn`, `QuestAutoPilot.*`, `PlayerController.Mobility`, `SkillCaster`, `SkillRangePreview`, `CosmeticShopScreen`, `CharacterSelectScreen`, `PassiveTree`, `CompanionBrain`, `Equipment`) | 컴파일, 세이브 왕복(전사·마법사 기존 세이브가 그대로 읽힘) | 도적을 만들어 마을에서 걷고 기본 공격한다 |
-| 2 | 장비 | `GearCatalog.cs`(단검 종류·이름·`classes`), `EquipmentItem.cs`(`UsableBy`), `EquipmentDatabase.cs`(시작 무기·`WeaponSprite`), `EnemyController.cs`(드롭 0.09), `MercenaryDatabase.GearFor`, `Editor/GameDataExport.cs` | 내보내기 단언(단검 44개, 판금 `classes` 2개) | 단검·판금 장착, 로브 장착 불가 |
+| 1 | 직업 골격 | `CharacterClass.cs`(enum `Rogue` 끝에 추가, `saveId "rogue"`, `basicHitScale`·거리·반경), `CharacterStatsCalc`(HP·MP·`CareerHp`), `CharacterData`(이동 속도 패시브), 직업 두 값 분기(런타임 40파일, `CharacterClass.Warrior`·`Mage` 152곳. 착수 때 `grep -rnE "CharacterClass\.(Mage|Warrior)"`로 목록을 다시 뽑는다. 주요 파일: `EquipmentDatabase`, `PartyClient`, `PartyFinderService`, `ServerPartyFinderService`, `OnlineSession`, `OnlineCharacterScreen`, `OnlineScreens`(카드 2장 배치 `i == 0 ? -150 : 150`), `PartyFramesView`, `PartyScreen`, `SkillScreen.Career`, `AwakeningCutIn`, `QuestAutoPilot.*`, `PlayerController.Mobility`, `SkillCaster`, `SkillRangePreview`, `CosmeticShopScreen`, `CharacterSelectScreen`, `PassiveTree`, `CompanionBrain`·`MercenaryDatabase.IsMage`, `Equipment`, `CharacterData`, `DungeonResultScreen.Raid`, `CareerCombat.Windup`(기본 직업이 전사가 아니면 마법진을 그린다. 도적 전직은 전사 쪽 자세로), 손에 든 무기 `EquipmentScreen.Input`·`SpriteLibrary.GetWarriorWeapon`·`SilverWarriorPresentation`, 몸 시트 `SilverWarriorArt`(정적 아틀라스 하나, `Supports`가 `player` id만 받는다. 폴더별 아틀라스로 바꾼다), 버프 줄 `BuffBarView`(맹독·은신·분신 줄, 기존 아이콘 재사용)) | 컴파일, 세이브 왕복(전사·마법사 기존 세이브가 그대로 읽힘) | 도적을 만들어 마을에서 걷고 기본 공격한다 |
+| 2 | 장비 | `GearCatalog.cs`(단검 종류·이름·`classes`), `EquipmentItem.cs`(`UsableBy`), `EquipmentDatabase.cs`(시작 무기·`WeaponSprite`·`RollDrop` 직업 가중), `MercenaryDatabase.GearFor`, `Editor/GameDataExport.cs` | 내보내기 단언(단검 44개, 판금 `classes` 2개) | 단검·판금 장착, 로브 장착 불가 |
 | 3 | 기본 스킬·이동기 | 새 `SkillCaster.Rogue.cs`(급소 찌르기·연쇄 도약·백어택·그림자 습격·천인난무), `SkillData.cs`(젬 5), `SkillCaster.cs`(`Cast` 스위치), `PlayerController.Mobility.cs`(그림자 질주), `PlayerCombat.cs`(쌍단검), `EnemyController`(등 뒤 판정 `IsBehind(from)`, 8방향 135도) | 이론 확인만(사용자 지침: 화면 검증은 요청 시) | 5스킬·이동기 수치가 2.2절과 같다 |
 | 4 | 그림 1차 | 몸 시트 70칸, 무기 4 + 4, 기본 스킬 아이콘 5, 장비 아이콘 41, `cutin_rogue` | `FemaleWarriorValidation`과 같은 규격 검사 | 197장 중 125장 |
 | 5 | 전직 | `CareerData.cs`(enum 5·6, `Base`·`Name`·`Role`·`Branches`·`Color`, 19행, 추가 노드·연사기·MP 비율, `"venom"`을 `"frenzy"`와 같은 고정 쿨 묶음에), 새 `CareerCombat.Assassin.cs`·`CareerCombat.Ninja.cs`·`NinjaClone.cs`·`KunaiProjectile.cs`, `CareerNumbers.cs`(요약 15 + 패시브 4), `CareerTrials.cs`(2종), `SkinCatalog.CareerLook` + 새 `RoguePalette.cs`, `BossRushCatalog.CareerDamageMul`, `CareerFx.Main` | 이론 확인, `SkillRecommendCheck` | 두 전직의 19스킬이 2.3·2.4절 표와 같다 |
 | 6 | 서버 | `migrations/0050_rogue_class.sql`, `schema.sql`, `careerRules.ts`, `careerGrantService.ts`, 타입 14파일, `usableBy` 9곳, `inventoryService` 문구, `townPresence`, `ratesDisclosure`·`starshopService`(스킨 풀), `mailCampaignsValidation`, `data/*.json` 내보내기 | `npm test -- rogueClass careers careerGrant careerQuestCheck kills auction bossRush`, 타입 검사 | 테스트 통과, 데이터 버전 갱신 |
 | 7 | 연동·그림 2차 | 튜토리얼 1-5 대사, 전직 안내, 동료 미르, 파티 색, 랭킹 이름, 스킨 탭 숨김, `DevCapture.SkillClip`(`ScriptedLength` 3개), 11개 언어 146줄, `STORY.md`. 그림: 전직 아이콘 19, 카드 2, 컷인 2, 이펙트 9, 동료 40 | 번역 누락 검사(`Tools/i18n`) | 197장 완료, 번역 누락 0 |
-| 8 | 측정·마감 | `theory_combat`·`theory_mana`·`theory_gold` 재실행, 보스 방 3분 측정(어쌔신·닌자), 1~15 사냥 측정을 기존 측정 모드로 | 측정 기록을 `BALANCE_MEASURE` 문서에 | 3.2절 배율 뒤 70~100%, 골드 비율 0.85~0.90, 1~15 1마리 처치 시간이 전사의 90~110% |
+| 8 | 측정·마감 | `theory_combat`·`theory_mana`·`theory_gold`·`theory_progress --measured` 재실행, 보스 방 3분 측정(어쌔신·닌자), 1~15 사냥 측정을 기존 측정 모드로 | 측정 기록을 `BALANCE_MEASURE` 문서에 | 3.2절 배율 뒤 70~100%, 골드 비율 0.88(드롭 가중 전과 같음), Lv40 46.0시간, 1~15 1마리 처치 시간이 전사의 90~110% |
 
 ### 7.1 출시 일정에 주는 작업량
 
 | 구분 | 양 |
 |---|---|
 | 클라이언트 새 파일 | 6(`SkillCaster.Rogue`, `CareerCombat.Assassin`, `CareerCombat.Ninja`, `NinjaClone`, `KunaiProjectile`, `RoguePalette`) |
-| 클라이언트 고치는 파일 | 직업 분기 25 + 카탈로그·데이터 10(`CharacterClass`, `SkillData`, `CareerData`, `CareerNumbers`, `CareerTrials`, `GearCatalog`, `EquipmentItem`, `EquipmentDatabase`, `SkinCatalog`, `BossRushCatalog`) + `GameDataExport` |
-| 서버 | 마이그레이션 1, 고치는 파일 21(규칙 2, 타입 14, 판정 3, 프레즌스·확률 공시 2), 새 테스트 1, 고치는 테스트 6 |
+| 클라이언트 고치는 파일 | 직업 분기 40파일 + 카탈로그·데이터 10(`CharacterClass`, `SkillData`, `CareerData`, `CareerNumbers`, `CareerTrials`, `GearCatalog`, `EquipmentItem`, `EquipmentDatabase`, `SkinCatalog`, `BossRushCatalog`) + `GameDataExport` |
+| 서버 | 마이그레이션 1, 고치는 파일 25(규칙 2, 타입 14, 판정 3, 프레즌스·확률 공시 2, 직업 목록 4), 새 테스트 1, 고치는 테스트 6 |
 | 데이터 | 스킬 24(기본 5 + 전직 19), 장비 44, 문구 146줄 x 11개 언어 |
 | 그림 | 197장(칸) |
 | 도구·문서 | 이론 도구 3, 문서 4(`SKILLS.md`, `PLAN_CAREER_SKILLS.md`, `STORY.md`, `I18N_GLOSSARY.md`) |
@@ -447,15 +455,15 @@
 | 패시브 | 급소 간파, 기습, 투척술, 원거리 집중 (4) |
 
 - 사용자 지정 스킬(그림자 질주 제외 6개)은 원형 수치를 그대로 두고, 특화는 그 위의 선택지다. 확산형 B(서버 `AOE_CAP` 8 조건)는 집중·확산 축 5개의 B.
-- 3장 장비 티어 9·10(Lv45·50)에 단검 줄 추가: 이름 10, 아이콘 10, 계승 경로 Lv40 → Lv50 단검 줄.
+- 3장 장비 티어 9·10(Lv45·50)에 단검 줄 추가: 이름 10 + Lv50 레전더리 2(광역형·토벌형), 아이콘 10 + 1, 계승 경로 Lv40 → Lv50 단검 줄.
 
 ### 8.2 4장 진각성 (`Docs/PLAN_CHAPTER4.md` 8.4절)
 
-- 대상이 전직 4종 → **6종**. 도적 전직마다 진각성 1종, 같은 5단계 규칙(51·53·55·57·59, 60초 총량 1.0 → 1.3배, 4단계 파티 효과 8초).
+- 대상이 전직 4종 → **6종**. 도적 전직마다 진각성 1종, 같은 5단계 규칙(Lv51·52·53·54·55, 60초 총량 1.0 → 1.3배, 4단계 파티 효과 8초).
 
 | 전직 | 진각성 | 동작 축 |
 |---|---|---|
 | 어쌔신 | 두 그림자의 처형 | 본체와 그림자가 한 적의 앞뒤에서 동시에 찌른다. 단계마다 표식 폭발·그림자 수가 는다 |
 | 닌자 | 주기의 분신진 | 분신이 원을 돌며 한 바퀴마다 쿠나이를 던진다. 단계마다 바퀴 수·쿠나이가 는다 |
 
-- 이름은 기존 진각성의 쌍둥이·한 주기 모티프를 따른다(마야 모티프는 고유명에만). 그림: 컷인 2, 단계 이펙트 2, 아이콘 2. 4장 티어 11·12에도 단검 줄(이름 10, 아이콘 10).
+- 이름은 기존 진각성의 쌍둥이·한 주기 모티프를 따른다(마야 모티프는 고유명에만). 그림: 컷인 2, 단계 이펙트 2, 아이콘 2. 4장 티어 11(Lv55)에도 단검 줄(이름 5 + Lv55 레전더리 2, 아이콘 5 + 1).
