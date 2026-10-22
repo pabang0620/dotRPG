@@ -254,7 +254,7 @@ namespace DotRPG
         /// ART_LIST 6); the Lv.50 legendaries keep the legendary band of <see cref="OldIcon"/>.
         /// </summary>
         static string BandIcon(Kind k, int tier, ItemRarity r) =>
-            tier >= Chapter3Tier && r != ItemRarity.Legendary && k != Kind.Dagger ? "Gear/eqicon_band89_" + KindId(k) : null; // [ROGUE] no dagger band art yet: old dagger icon
+            tier >= Chapter3Tier && r != ItemRarity.Legendary ? "Gear/eqicon_band89_" + KindId(k) : null;
 
         static string OldIcon(Kind k, int art) => k switch
         {
