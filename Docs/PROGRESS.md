@@ -39,7 +39,9 @@
 | 길드·월드보스·길드보스·랭킹 (2026-10-20) | 길드(Lv20·3만 골드, 30명, 직위, 바로/승인 가입, 탈퇴 뒤 24시간, 길드 채팅, 이름표 길드 이름), 월드보스(Lv40 하루 3회 3분, 서버 공유 체력 4,000만(10-21 하향), 주간 최고 1회 피해 랭킹, 순위 칭호·이름 색), 길드보스(점수 누적, 하루 2회, 주간 점수 랭킹), 랭킹 창(Y). 보스 방 실측으로 체력·상한·보스 공격력 조정, 전용 그림(심연의 거신 40프레임, 메뉴 아이콘 3종) (`PLAN_GUILD_WORLDBOSS_2026-10-20.md`) | 3e748fe8, fc4de05d, 572acd4f |
 | 측정 봇 장판 회피 | 레이드·보스 방 측정 봇이 장판·낙인·섬멸을 0.25초 반응으로 피함(`-measureDodge`, 측정 전용). 일반 난이도 레이드를 잴 수 있게 됨 | 50cc880d |
 | +11 무기 강화 빛 오류 | 맞을 때 흰색 번쩍임 스프라이트(읽기 불가)를 읽어 +11 이상 무기에서 매 타격 오류가 나던 결함(`WeaponEnhanceVfx`) | fc4de05d |
-| 공유 빌드 (2026-10-20) | `games/dotRPG_online_20261020.zip`, `games/dotRPG_mobile_20261020.zip`, 시험 서버 데이터 버전 abf5257bb1ef274e (10-20 배포). 옛 zip은 삭제됨 | - |
+| 표기 이름 볼론 (2026-10-21) | 게임 표기 이름 볼론(Bolon), 영문 로고, 보스·네임드 이름 전부 부여, 마야 모티프 떡밥(`STORY.md` 7절). productName·세이브 경로는 dotRPG | 6c11170b |
+| 챕터 3 설계·구현 (2026-10-21~) | 만렙 50·특화·사얍 마을·레이드 2. 설계 `PLAN_CHAPTER3_2026-10-21.md` + `ch3/`, 0~2단계 완료, 3단계 진행 중 멈춤(9절). 서버 `CHAPTER3_OPEN=0`이면 지금과 같은 Lv40 게임 | 336bcc8b~991c0bc1 |
+| 공유 빌드 (2026-10-21) | `games/dotRPG_online_20261021.zip`, `games/dotRPG_mobile_20261021.zip`, 시험 서버 데이터 버전 c68af582b1c08308(10-21 배포, 마이그레이션 0048). 이후 커밋(볼론 이름, 챕터 3)은 시험 서버·빌드에 아직 없음 | f36aaaa5 |
 
 ## 사용자 결정 기록
 
@@ -62,15 +64,15 @@
 - 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), 전체 체크리스트: [MASTER_CHECKLIST.md](MASTER_CHECKLIST.md)
 - 지금까지 돌린 테스트(실측·시뮬레이션·실플레이·서버 테스트)와 결과: [TEST_LOG.md](TEST_LOG.md)
 
-## 현재 상태 (2026-10-20)
+## 현재 상태 (2026-10-22)
 
 | 항목 | 내용 |
 |---|---|
 | 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개, 푸시는 `wonho`와 `main`에 같이 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
 | 표기 이름 | **볼론**(Bolon, 2026-10-21 사용자 결정, 마왕 이름). 타이틀 로고는 영문 "BOLON" 하나(`Art/ui_logo_bolon`, 모든 언어 공통), 화면·문서·정책·홈페이지만 바꾼다. Unity productName·세이브 경로·레포·서버 이름은 dotRPG 유지(세이브 유실 방지). 고유 이름·떡밥은 `STORY.md` 7절 |
-| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0047, 서버 테스트 117개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
-| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0047(길드·보스)까지 적용, 데이터 버전 abf5257bb1ef274e(2026-10-20 배포). 절차는 `server/ops/README.md` 10절 |
+| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0049 커밋됨(0049 계승은 챕터 3, 시험 서버 미적용). 작업 트리에 미커밋 0050_lord_difficulty(군주 난이도)가 있는데 설계상 0050은 boss_seasons.boss_level이라 번호 정리 필요, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
+| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0048까지 적용, 데이터 버전 c68af582b1c08308(2026-10-21 배포). `CHAPTER3_OPEN` 미설정(닫힘). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
 | 홈페이지 | 로컬 `C:\Users\admin\Desktop\games\sites\dotrpg-home`(저장소 pabang0620/dotrpg-home, 비공개). OpenAI Sites 프로젝트(Next/vinext + Cloudflare), 게임 소개·스크린샷·캐릭터·스킨 화면과 로그인·가입·캐릭터 화면. 계정·OAuth 실제 연결은 아직 꺼져 있다(미설정 API는 503). 그림은 `public/assets/`(로고·배경·캐릭터·스킨·게임 캡처), 생성 기록 `docs/GENERATED_ASSETS.md`, 연결 방법 `docs/DELIVERY.md` |
 | 밸런스 기준 | 총 플레이 Lv40 약 48시간, 미니 던전을 매일 하면 42.8~43.6시간(`Tools/balance/theory_progress.py --measured --mini`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
