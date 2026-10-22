@@ -54,6 +54,7 @@
 | 4 | 동료 전사 3연타 | 유지 |
 | 5 | 보호권 아이콘 | 16px 그대로 |
 | 6 | BGM 연결 병합 | 추가 테스트 없이 병합 |
+| M | 필드 자동 사냥과 손맛 (2026-10-13) | 현행 유지. 필드는 자동 사냥·자동 진행 허용, 손맛은 던전·요일 던전·레이드(직접만)가 맡는다. 직접 사냥 보상 강화안(M1~M4)은 하지 않는다. 사용자: "던전 요일던전 레이드 직접 싸우면 됐지 뭐" |
 
 ## 남은 일
 
@@ -68,14 +69,14 @@
 
 | 항목 | 내용 |
 |---|---|
-| 작업 브랜치 | `wonho` (사용자 작업 브랜치). 브랜치는 `main`·`jaein`·`wonho` 3개, 푸시는 `wonho`와 `main`에 같이 |
+| 작업 브랜치 | `wonho` (출시용, 사용자 작업 브랜치). 푸시는 `wonho`와 `main`에 같이. 챕터 3(Lv40→50)은 `ch3` 브랜치에서만(2026-10-22 분리, 백업 태그 `backup/pre-ch3-split-20261022`). `jaein`은 다른 작업자 |
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
 | 표기 이름 | **볼론**(Bolon, 2026-10-21 사용자 결정, 마왕 이름). 타이틀 로고는 영문 "BOLON" 하나(`Art/ui_logo_bolon`, 모든 언어 공통), 화면·문서·정책·홈페이지만 바꾼다. Unity productName·세이브 경로·레포·서버 이름은 dotRPG 유지(세이브 유실 방지). 고유 이름·떡밥은 `STORY.md` 7절 |
 | 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0049 커밋됨(0049 계승은 챕터 3, 시험 서버 미적용). 0050 군주 난이도는 3단계, 0051 보스 시즌 레벨은 5단계, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
 | 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0048까지 적용, 데이터 버전 c68af582b1c08308(2026-10-21 배포). `CHAPTER3_OPEN` 미설정(닫힘). 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
 | 홈페이지 | 로컬 `C:\Users\admin\Desktop\games\sites\dotrpg-home`(저장소 pabang0620/dotrpg-home, 비공개). OpenAI Sites 프로젝트(Next/vinext + Cloudflare), 게임 소개·스크린샷·캐릭터·스킨 화면과 로그인·가입·캐릭터 화면. 계정·OAuth 실제 연결은 아직 꺼져 있다(미설정 API는 503). 그림은 `public/assets/`(로고·배경·캐릭터·스킨·게임 캡처), 생성 기록 `docs/GENERATED_ASSETS.md`, 연결 방법 `docs/DELIVERY.md` |
-| 밸런스 기준 | 총 플레이 Lv40 약 48시간, 미니 던전을 매일 하면 42.8~43.6시간(`Tools/balance/theory_progress.py --measured --mini`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
+| 밸런스 기준 | 총 플레이 Lv40 약 46시간, 미니 던전을 매일 하면 약 44시간(10-21 날짜 모델 수정 뒤)(`Tools/balance/theory_progress.py --measured --mini`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
 | 검증 | 컴파일과 관련 서버 테스트는 작업 묶음 끝에 확인한다. 게임 실행·빌드·배포는 요청이 있을 때만 |
 
 ## 개발·검증 방법
