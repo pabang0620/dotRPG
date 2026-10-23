@@ -134,7 +134,10 @@ namespace DotRPG
                 case "whirl": case "cry": case "nova": Self(r); label.Append(L.F("반경 {0:0.#}m", r)); break;
                 case "frostorb": Line(0f, range, r); Ahead(range, r); label.Append(L.F("{0} · 폭발 반경 {1:0.#}m", LineText(range, r), r)); break;
                 // [ROGUE] (SkillCaster.Rogue)
-                case "stab": case "backstab": Line(0f, range, r); label.Append(LineText(range, r)); break;
+                case "stab": case "backstab":
+                    if (NinjaReach(out float reach)) { Line(0f, reach, .3f); label.Append(LineText(reach, .3f)); } // [NINJA] thrown
+                    else { Line(0f, range, r); label.Append(LineText(range, r)); }
+                    break;
                 case "leap": Self(r); label.Append(L.F("반경 {0:0.#}m", r)); break;
                 case "raid": Self(range, .5f); label.Append(L.F("사거리 {0:0.#}m 안 가장 가까운 적", range)); break;
                 case "dance": Self(range, .6f); label.Append(L.F("반경 {0:0.#}m", range)); break;
@@ -144,6 +147,15 @@ namespace DotRPG
             }
             Label = label.ToString();
             if (shapes.Count == 0) Label = "";
+        }
+
+        /// <summary>[NINJA 2026-10-23] A promoted ninja throws 급소 투척 / 등 뒤 저격: the line is the throw's reach.</summary>
+        static bool NinjaReach(out float reach)
+        {
+            var p = Game.Player;
+            bool ninja = p != null && p.Class == CharacterClass.Rogue && CareerCombat.For(p).ThrowsKunai;
+            reach = ninja ? CareerCombat.For(p).ThrowReach : 0f;
+            return ninja;
         }
 
         static string LineText(float length, float halfWidth) => L.F("사거리 {0:0.#}m · 폭 {1:0.#}m", length, halfWidth * 2f);

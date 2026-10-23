@@ -21,7 +21,6 @@ namespace DotRPG
         const float VenomBossScale = 1.8f, VenomSpreadScale = .6f, VenomSpreadRadius = 2f;
         const float RuptureBleedShare = .4f;
         const float AssassinExecMul = 3.6f / 2.91f, AssassinExecLow = .3f, AssassinExecBonus = 1.5f, AssassinBlinkMul = 2.16f / 2.91f, AssassinBlinkGuard = .3f;
-        const float ShadowOneMul = 2f, ShadowVeilCutMul = .75f, ShadowVeilBurstMul = .5f, ShadowVeilTickMul = 1.25f;
         const float StealthDeepScale = 1.8f, StealthThreeScale = .6f;
         const int StealthThreeHits = 3;
         const int VitalCapA = 3, VitalPctA = 7;
@@ -38,7 +37,6 @@ namespace DotRPG
         const float RecallTargetMul = 1.0f / .79f, RecallWideMul = .33f / .79f, RecallWideHalf = 1.2f;
         const float FumaBigMul = 3.08f / .77f, FumaHoverMul = .385f / .77f;
         const float BombFieldRing = 3f, BombOneMul = 5f, BombFieldMul = .625f;
-        const float StormVolleyMul = 1.2f / .55f, StormLongMul = .4f / .55f, StormVolleyBurst = 8.8f / 2.8f, StormLongBurst = 1.6f / 2.8f;
 
         readonly HashSet<EnemyController> ambushOpened = new HashSet<EnemyController>();
         readonly HashSet<EnemyController> farOpened = new HashSet<EnemyController>();
@@ -241,26 +239,6 @@ namespace DotRPG
             if (c.n.spec == 'a') return AssassinExecMul * (target.Health.Current < target.Health.Max * AssassinExecLow ? AssassinExecBonus : 1f);
             if (c.n.spec == 'b') return AssassinBlinkMul;
             return 1f;
-        }
-
-        /// <summary>그림자 장막 B: the shadows stay over the area and cut every monster in it once a second (100% each).</summary>
-        IEnumerator ShadowVeil(Run c, Vector2 center, float seconds)
-        {
-            int tick = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * ShadowVeilTickMul));
-            var ring = SkillFx.Spawn("fx_ring", center, new Color(SkillSpecs.ColorB.r, SkillSpecs.ColorB.g, SkillSpecs.ColorB.b, .35f), seconds, SkillFx.GroundOrder + 14);
-            ring?.Scale(new Vector2(c.n.radius * .9f, c.n.radius * .6f), new Vector2(c.n.radius, c.n.radius * .7f));
-            for (float t = 0f; t < seconds; t += 1f)
-            {
-                yield return new WaitForSeconds(1f);
-                if (!Live(c)) yield break;
-                foreach (var e in Enemies(center, c.n.radius))
-                {
-                    float turn = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-                    Vector2 dir = new Vector2(Mathf.Cos(turn), Mathf.Sin(turn));
-                    CareerFx.Clip("f_x", e.Center, dir, .8f, 30f, VfxLayer.Top, true, SkillSpecs.ColorB);
-                    StrikeRapid(c, e, tick, e.Center - dir);
-                }
-            }
         }
 
         // ---------- 닌자 casts ----------

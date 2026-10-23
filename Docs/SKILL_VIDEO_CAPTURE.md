@@ -33,7 +33,7 @@ Tools/video/encode_skill_clips.sh /mnt/c/Users/admin/Desktop/games/skill_capture
 | 생략 | 파이터 각성(f_awake)만 |
 | `-screen-width 1280 -screen-height 720` | 촬영 해상도. 미리보기용이면 1280x720이면 충분하다 |
 
-- 영상 길이: 시전 시간 + 지속 시간(최소 1.5초, 단계가 있는 각성기는 `ScriptedLength`의 값: 천검귀일·천쇄방패 3.2초, 유성우 7.6초, 천영참·분신 난무 3.8초) + 1.2초, 2.5~8초 사이. 새 각성기를 만들면 여기에 길이를 추가한다. 시전 0.33초 전부터 찍는다. 길이를 바꾸려면 `RecordClip`의 `seconds`를 고친다.
+- 영상 길이: 시전 시간 + 지속 시간(최소 1.5초, 단계가 있는 각성기는 `ScriptedLength`의 값: 천검귀일·천쇄방패 3.2초, 유성우 7.6초, 변신술 6.8초, 표창 난사 3.4초) + 1.2초, 2.5~8초 사이. 새 각성기를 만들면 여기에 길이를 추가한다. 시전 0.33초 전부터 찍는다. 길이를 바꾸려면 `RecordClip`의 `seconds`를 고친다.
 - 소요 시간: 스킬 하나에 약 15~20초(PNG 저장 때문). `all`은 30개 안팎이라 10분 정도.
 
 ## 3. 영상 묶기 `Tools/video/encode_skill_clips.sh <저장 폴더> [미리보기 가로폭]`

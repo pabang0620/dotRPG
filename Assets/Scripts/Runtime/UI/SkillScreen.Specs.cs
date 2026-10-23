@@ -77,7 +77,7 @@ namespace DotRPG
             return list;
         }
 
-        static string SkillName(string id) => CareerCatalog.Get(id)?.name ?? SkillGems.Get(id)?.name ?? id;
+        static string SkillName(string id) => CareerCatalog.Get(id)?.name ?? (Game.Session?.Progression?.Shown(SkillGems.Get(id)) ?? SkillGems.Get(id))?.name ?? id; // [NINJA] thrown names
 
         static string SkillIcon(string id) => CareerCatalog.Get(id)?.Icon ?? SkillGems.Get(id)?.icon;
 

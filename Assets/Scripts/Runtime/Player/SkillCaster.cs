@@ -184,7 +184,8 @@ namespace DotRPG
 
         IEnumerator Cast(SkillGem gem, SkillNumbers n)
         {
-            castAim = owner.AutoAim(Mathf.Max(4f, Mathf.Max(n.range, n.radius) + 1.5f));
+            bool ninja = NinjaThrowCast(gem.id); // [NINJA 2026-10-23] the ninja throws the base attacks (SkillCaster.NinjaThrow)
+            castAim = owner.AutoAim(ninja ? NinjaReach + 1f : Mathf.Max(4f, Mathf.Max(n.range, n.radius) + 1.5f));
             if (!owner.NetPuppet) owner.FaceTowards(owner.Position + castAim); // the body turns to its target
             for (int i = 0; i <= n.repeats; i++)
             {
@@ -204,10 +205,10 @@ namespace DotRPG
                     case "frostorb": StartCoroutine(FrostOrb(n)); break;
                     case "meteor": yield return StartCoroutine(Meteor(n, i == 0)); break;
                     // [ROGUE] SkillCaster.Rogue
-                    case "stab": Stab(n); break;
-                    case "leap": yield return StartCoroutine(Leap(n)); break;
-                    case "backstab": Backstab(n); break;
-                    case "raid": Raid(n); break;
+                    case "stab": if (ninja) NinjaStab(n); else Stab(n); break;
+                    case "leap": yield return StartCoroutine(ninja ? NinjaLeap(n) : Leap(n)); break;
+                    case "backstab": if (ninja) NinjaBackstab(n); else Backstab(n); break;
+                    case "raid": if (ninja) NinjaRaid(n); else Raid(n); break;
                     case "dance": yield return StartCoroutine(Dance(n, i == 0)); break;
                     case "scarecrow": Scarecrow(n); break;
                 }

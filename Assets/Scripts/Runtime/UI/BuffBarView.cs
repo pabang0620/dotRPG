@@ -134,6 +134,7 @@ namespace DotRPG
                 if (c.FrenzyLeft > 0f) Put(ref n, "buff_burn", L.F("검귀 {0}", Sec(c.FrenzyLeft)), L.T("검귀 해방"), L.F("모든 공격 피해 +{0}%.", c.FrenzyPct));
                 // [ROGUE] 맹독 도포 · 은신 · 분신술 (existing icons)
                 if (c.VenomLeft > 0f) Put(ref n, "buff_burn", L.F("맹독 {0}", Sec(c.VenomLeft)), L.T("맹독 도포"), L.F("직접 공격 피해의 {0}%만큼 독(3초, 방어 무시).", c.VenomPct));
+                if (c.FormLeft > 0f) Put(ref n, "buff_power", L.F("변신 {0}", Sec(c.FormLeft)), L.T("변신술"), L.F("그림자 모습. 모든 공격 피해 +{0}%, 공격 속도 +{1}%. 끝날 때 주변을 터뜨린다.", c.FormPct, c.FormSpeed)); // [ROGUE 2026-10-23]
                 if (c.StealthLeft > 0f) Put(ref n, "buff_focus", L.F("은신 {0}", Sec(c.StealthLeft)), L.T("은신"), L.T("일반 몬스터가 추적을 멈춘다. 첫 공격은 피해 증가·등 뒤 판정, 공격하면 풀린다."));
                 if (c.ClonesLeft > 0f) Put(ref n, "buff_power", L.F("분신 {0}", Sec(c.ClonesLeft)), L.T("분신술"), L.T("분신이 내 공격을 본체 피해의 60%로 똑같이 따라 쓴다. 다시 누르면 분신과 자리 바꾸기."));
                 if (c.ComboStacks > 0) Put(ref n, "buff_focus", L.F("검기 {0}/3", c.ComboStacks), L.T("검기 연성"), L.T("3개일 때 다음 전직 스킬 피해 +20%."));

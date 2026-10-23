@@ -136,8 +136,8 @@ namespace DotRPG
                 case "xslash": return 3.2f;    // 천검귀일: cut, charge, crack, burst
                 case "cataclysm": return 7.6f; // 유성우: storm cloud, 4 s of comets, finale, marks fade
                 case "aegis": return 3.2f;     // 천쇄방패: sigil, walls, close, burst
-                case "shadows": return 3.8f;   // [ROGUE] 천영참: six shadows cut for 3 s, then the marks burst
-                case "cloneburst": return 3.8f; // [ROGUE] 분신 난무: six clones throw for 3 s, then the kunai burst
+                case "shadowform": return 6.8f; // [ROGUE] 변신술: 6 s in the shadow form, then the blast
+                case "starstorm": return 3.4f;  // [ROGUE] 표창 난사: 24 stars in 3 s
                 default: return 1.5f;
             }
         }

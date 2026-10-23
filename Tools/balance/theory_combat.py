@@ -149,7 +149,7 @@ S(a,3,"a_venom","맹독 도포","","venom",20,20,62,0,0,.1f,120),
 S(a,5,"a_rend","연환 베기","","rend",.8f,18,0,2,.9f,.1f,0,2),
 S(a,6,"a_rupture","급소 파열","","rupture",1.2f,22,10,2,0,.2f),
 S(a,7,"a_assassinate","암살","","assassinate",1.85f,26,12,1.8f,0,.2f),
-S(a,8,"a_awake","천영참","","shadowdance",.8f,60,48,0,5.4f,0f,2,12),
+S(a,8,"a_awake","변신술","","shadowform",4.8f,60,48,0,5.4f,0f,4,1),
 S(a,9,"a_stealth","은신","","stealth",50,20,20,0,0,.1f,6),
 S(n,1,"n_veil","연막 도약","","veil",1.7f,14,12,4,2.5f,.05f,2),
 S(n,2,"n_clone","분신술","","clone",60,30,57,0,0,.1f,8),
@@ -157,7 +157,7 @@ S(n,3,"n_recall","회수","","recall",.6f,16,8,8,0,.15f),
 S(n,5,"n_volley","연발 쿠나이","","volley",.75f,18,0,8,.35f,.1f,0,2),
 S(n,6,"n_fuma","풍마 수리검","","fuma",.55f,22,9,7,.7f,.2f,0,6),
 S(n,7,"n_bomb","기폭 쿠나이","","bomb",1.4f,26,12,7,1.2f,.25f,0,5),
-S(n,8,"n_awake","분신 난무","","clonestorm",.55f,60,48,0,6.2f,0f,2,16),
+S(n,8,"n_awake","표창 난사","","starstorm",.6667f,60,48,9,.3f,0f,2,16),
 """
 SK = {}
 _ROWS = CD if 'S(a,1,"a_phantom"' in CD else CD + ROGUE_ROWS
@@ -322,6 +322,40 @@ def career_table():
         print(f"| {name} | {rotation(40, c, 60.0)[0] / base:.2f} |")
 
 
+def form_total(T, speed, bonus, burst):
+    """[ROGUE 2026-10-23] 변신술: what one shadow form adds on a Lv40 boss, in x attack (PLAN_CLASS_ROGUE 2.3 / 3.4).
+    Extra = the assassin rotation (multipliers that also boost the form taken out: more = 1) for T seconds with the basic
+    attack and the cooldowns `speed` faster (Stats.AttackSpeed), times 1 + `bonus`, minus the plain rotation, plus the blast."""
+    base = CAREERS["어쌔신"]
+    def rot(s):
+        cc = dict(base, more=1.0, basic=(.24 / (1 + s), 1.1))
+        CAREERS["_form"] = cc
+        saved = {k: SK[k]["cd"] for k in cc["cds"]}
+        try:
+            for k in cc["cds"]:
+                SK[k]["cd"] = saved[k] / (1 + s)
+            return rotation(40, cc, T)[0] / player(40, cc)[0]
+        finally:
+            for k in cc["cds"]:
+                SK[k]["cd"] = saved[k]
+            del CAREERS["_form"]
+    return rot(speed) * (1 + bonus) - rot(0) + burst
+
+
+def awaken_table():
+    """[ROGUE 2026-10-23] PLAN_CLASS_ROGUE 3.4: one cast of the rogue careers' awakenings on a boss (x attack)."""
+    a, n = SK["a_awake"], SK["n_awake"]
+    print("\n## 도적 전직 각성기 한 번 시전 합 (보스 1체, 공격력 배수, PLAN_CLASS_ROGUE 3.4)")
+    print("| 각성기 | 한 번 합 | 목표 |")
+    print("|---|---|---|")
+    print(f"| 변신술(6초, 피해 +18%, 공격 속도 +20%, 폭발 {a['power']:.1f}) | {form_total(6, .2, .18, a['power']):.2f} | 19.2 (천영참) |")
+    print(f"| 변신술 특화 A 찰나의 변신(2초, +70%, +20%, 폭발 4.8) | {form_total(2, .2, .70, 4.8):.2f} | 19.2 |")
+    print(f"| 변신술 특화 B 그림자 동화(12초, +9%, +15%, 폭발 2.4) | {form_total(12, .15, .09, 2.4):.2f} | 19.2 |")
+    stars = math.ceil(n["hits"] * 1.5)  # S(): an awakening lands 1.5x the raw hits
+    print(f"| 표창 난사({stars}개 x {n['power']:.3f}) | {stars * n['power']:.2f} | 16.0 (분신 난무) |")
+    print(f"| 표창 난사 특화 A 표창 폭풍(12개 x {n['power'] * stars / 12:.2f}) / B 표창 비(36개 x {n['power'] * stars / 36:.2f}) | {stars * n['power']:.2f} | 16.0 |")
+
+
 def summary():
     print("\n## 요약 (같은 레벨 사냥터, 직업 4종 기하평균)")
     print("| 사냥터 | 몹Lv | 무리 정리(초) | 1마리(초) | 파이터 버팀(초) | 메이지 버팀(초) | 수호자 버팀(초) | +10Lv 캐릭터 1마리(초) |")
@@ -383,3 +417,4 @@ if __name__ == "__main__":
         report()
     summary()
     career_table()
+    awaken_table()

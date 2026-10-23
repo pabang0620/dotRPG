@@ -38,8 +38,9 @@ namespace DotRPG
         static SpecParams ARuptureB() => new SpecParams { duration = 4f, extra = "rupture_bleed" };
         static SpecParams AAssassinateA() => new SpecParams { extra = "assassin_exec" };
         static SpecParams AAssassinateB() => new SpecParams { extra = "assassin_blink" };
-        static SpecParams AAwakeA() => new SpecParams { hits = 6, duration = 1f, extra = "shadows_one" };
-        static SpecParams AAwakeB() => new SpecParams { duration = 6f, extra = "shadows_veil" };
+        // [ROGUE 2026-10-23] 변신술 (was 천영참): A 2 s at +70% (blast 480%), B 12 s at +9% and +15% speed (blast 240%). CareerCombat.ShadowForm.
+        static SpecParams AAwakeA() => new SpecParams { duration = 2f, extra = "form_short" };
+        static SpecParams AAwakeB() => new SpecParams { duration = 12f, extra = "form_long" };
         static SpecParams AStealthA() => new SpecParams { duration = 4f, extra = "stealth_deep" };
         static SpecParams AStealthB() => new SpecParams { extra = "stealth_three" };
 
@@ -57,7 +58,8 @@ namespace DotRPG
         static SpecParams NFumaB() => new SpecParams { hits = 12, duration = 2f, extra = "fuma_hover" };
         static SpecParams NBombA() => new SpecParams { projectiles = 1, radius = Own("n_bomb", s => s.radius) * 1.3f, duration = 3f, extra = "bomb_one" };
         static SpecParams NBombB() => new SpecParams { projectiles = 8, duration = 1f, extra = "bomb_field" };
-        static SpecParams NAwakeA() => new SpecParams { hits = 6, duration = 1f, extra = "storm_volley" };
-        static SpecParams NAwakeB() => new SpecParams { hits = 36, duration = 9f, extra = "storm_long" };
+        // [NINJA 2026-10-23] 표창 난사 (was 분신 난무): A 12 stars in 1 s, B 36 in 9 s, the same total (each star 24 / count).
+        static SpecParams NAwakeA() => new SpecParams { hits = 12, duration = 1f, extra = "stars_burst" };
+        static SpecParams NAwakeB() => new SpecParams { hits = 36, duration = 9f, extra = "stars_rain" };
     }
 }

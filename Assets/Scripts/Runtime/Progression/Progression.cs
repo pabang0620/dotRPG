@@ -175,10 +175,13 @@ namespace DotRPG
             if(!IsSlotOpen(slot)) return null;
             var chosen=SkillGems.Get(slots[slot,0]);
             // [FIGHTER] 섬광보 left on a key by an older save: it now goes out on Shift, the key shows its basic skill.
-            if(chosen!=null && chosen.id!=SkillCaster.RushId && IsUnlocked(chosen) && (slot==4)==chosen.IsUltimate) return chosen;
+            if(chosen!=null && chosen.id!=SkillCaster.RushId && IsUnlocked(chosen) && (slot==4)==chosen.IsUltimate) return Shown(chosen);
             if(slot==4) return Awakened ? CareerCatalog.For(Career)[8].Gem : null;
-            var basic=SkillGems.ForSlot(cls,slot); return IsUnlocked(basic)?basic:null;
+            var basic=SkillGems.ForSlot(cls,slot); return IsUnlocked(basic)?Shown(basic):null;
         }
+
+        /// <summary>[NINJA 2026-10-23] A promoted ninja sees the thrown version of the rogue's base attacks (same id and numbers).</summary>
+        public SkillGem Shown(SkillGem gem) => gem != null && cls == CharacterClass.Rogue && IsPromoted && Career == Career.Ninja ? SkillGems.ForNinja(gem) : gem;
 
         /// <summary>Gem id in a socket (socket 0 = the slot's skill).</summary>
         public string SlotGem(int slot, int socket) => socket == 0 ? Active(slot)?.id : slots[slot, socket];

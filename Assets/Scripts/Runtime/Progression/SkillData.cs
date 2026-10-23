@@ -67,6 +67,37 @@ namespace DotRPG
         static readonly List<SkillGem> gems = CreateV2();
 
         /// <summary>
+        /// [NINJA 2026-10-23] User: "닌자는 전부 원거리 ... 다 던지는 것만". A promoted ninja throws the rogue's base attacks
+        /// (SkillCaster.NinjaThrow): same id, slot, numbers and save key, only the name and text change (like 섬광보 taking
+        /// over Shift). 허수아비 (no damage) and 천인난무 (never on a player's key) stay as they are.
+        /// </summary>
+        static readonly Dictionary<string, SkillGem> ninjaThrows = CreateNinjaThrows();
+
+        static Dictionary<string, SkillGem> CreateNinjaThrows()
+        {
+            var map = new Dictionary<string, SkillGem>();
+            void Add(string id, string name, string desc)
+            {
+                var g = gems.Find(x => x.id == id)?.Clone();
+                if (g == null) return;
+                g.name = name;
+                g.description = desc;
+                map[id] = g;
+            }
+            Add("stab", L.T("급소 투척"), L.T("앞의 적 하나에게 무거운 쿠나이를 던진다. 첫 적에게 꽂힌다. 급소 찌르기와 같은 피해."));
+            Add("leap", L.T("튕기는 쿠나이"), L.T("쿠나이가 사정거리 안의 몬스터를 차례로 튕겨 다니며 맞힌다(최대 5마리, 같은 적은 한 번)."));
+            Add("backstab", L.T("등 뒤 저격"), L.T("쿠나이를 던진다. 적의 등 뒤에 맞으면 0.8초 경직시킨다. 앞에서 맞으면 얕은 피해."));
+            Add("raid", L.T("그림자 표창"), L.T("가장 가까운 적에게 표창이 날아가 박힌다. 맞은 뒤 1초 동안 그 적에게 쓰는 등 뒤 저격은 등 뒤 판정이 된다."));
+            return map;
+        }
+
+        /// <summary>[NINJA 2026-10-23] The ninja's thrown version of a base gem (same id and numbers), or the gem itself.</summary>
+        public static SkillGem ForNinja(SkillGem g) => g != null && ninjaThrows.TryGetValue(g.id, out var t) ? t : g;
+
+        /// <summary>[NINJA 2026-10-23] True for the base gems the ninja throws instead.</summary>
+        public static bool NinjaThrows(string id) => id != null && ninjaThrows.ContainsKey(id);
+
+        /// <summary>
         /// [SKILL v2] One job per slot (Tools/balance/theory_skills.py): 1 single-target main attack, 2 the one
         /// area skill, 3 control, 4 a second attack (dash strike / fire field; the old defence skills are class
         /// passives now, see CharacterData), 5 awakening. Areas were widened ~25% with the denser fields. Area skills hit each target for about 60% of the

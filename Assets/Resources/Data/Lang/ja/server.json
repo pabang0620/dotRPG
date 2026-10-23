@@ -89,5 +89,6 @@
  "{0} 중복": "{0} 重複",
  "게임 데이터 검증 실패: enhance.inheritTiers {0}": "ゲームデータ検証失敗: enhance.inheritTiers {0}",
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} の等級・部位が違います",
- "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "素材を求める行があるのに coreItem・shardItem・sealItem がありません"
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "素材を求める行があるのに coreItem・shardItem・sealItem がありません",
+ "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "影の姿に変身し、6秒間すべての攻撃ダメージ+18%、攻撃速度+20%。変身が解けるとき半径7mを爆発させる(480%)。"
 }

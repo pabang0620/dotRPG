@@ -89,5 +89,6 @@
  "{0} 중복": "{0} duplicado",
  "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Falha na validação dos dados do jogo: enhance.inheritTiers {0}",
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} diferem em raridade ou espaço",
- "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Há linhas pedindo materiais, mas falta coreItem, shardItem ou sealItem"
+ "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Há linhas pedindo materiais, mas falta coreItem, shardItem ou sealItem",
+ "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Assuma uma forma sombria por 6s: todo dano de ataque +18%, velocidade de ataque +20%. Quando a forma termina, explode num raio de 7m (480%)."
 }

@@ -23,8 +23,6 @@ namespace DotRPG
         const int VenomTicks = 3;
         /// <summary>은신: +30% move speed while hidden.</summary>
         const float StealthSpeed = 1.3f;
-        /// <summary>천영참: the closing burst on each monster cut is 480% (6x the 80% cuts).</summary>
-        const float ShadowBurst = 4.8f / .8f;
         /// <summary>환영 삼격: the outer phantoms run this many degrees off the aim; speed, push and afterimage spacing.</summary>
         const float PhantomSpread = 25f, PhantomSpeed = 14f, PhantomPush = 8f, PhantomGhostGap = .05f;
 
@@ -82,6 +80,7 @@ namespace DotRPG
             marksUntil.Clear();
             venomEnd = 0; venomPct = 0; venomBossOnly = false; venomSpread = 0;
             EndStealth();
+            EndForm();
             RogueSpecReset();
             NinjaReset();
         }
@@ -143,6 +142,7 @@ namespace DotRPG
         {
             if (stealthEnd > 0f && Time.time >= stealthEnd) EndStealth();
             MarkViewsTick();
+            FormTick();
             NinjaTick();
         }
 
@@ -274,7 +274,7 @@ namespace DotRPG
                 case "rend": yield return Rend(c); break;
                 case "rupture": Rupture(c); break;
                 case "assassinate": Assassinate(c); break;
-                case "shadows": yield return Shadows(c); break;
+                case "shadowform": yield return Shapeshift(c); break; // [2026-10-23] 변신술 (CareerCombat.ShadowForm), was 천영참
                 case "stealth": Stealth(c); break;
             }
         }
@@ -394,48 +394,6 @@ namespace DotRPG
             bool landed = Strike(c, target, Mathf.RoundToInt(c.n.damage * mult), owner.Center, 6f, 2, "c_heavy");
             if (full && c.authority) ClearMarks(target);
             if (full && landed) CareerTrials.Record(owner, "assassinate5", 1);
-        }
-
-        /// <summary>
-        /// 천영참 (awakening): six shadows dart between the monsters around me for 3 s (18 cuts), then every monster cut
-        /// takes the 480% burst. Cuts come faster than the hit invulnerability, so they all land.
-        /// </summary>
-        IEnumerator Shadows(Run c)
-        {
-            Vector2 center = owner.Center;
-            // [ROGUE SPEC] 그림자 일섬 A: 6 cuts in 1 s at x2, burst x2. 그림자 장막 B: cuts x0.75, burst x0.5, then a 6 s veil.
-            int cuts = Mathf.Max(1, c.n.spec == 'a' && c.n.hits > 0 ? c.n.hits : c.s.hits);
-            float gap = (c.n.spec == 'a' && !float.IsNaN(c.n.duration) ? c.n.duration : c.s.duration) / cuts;
-            int cutDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * (c.n.spec == 'a' ? ShadowOneMul : c.n.spec == 'b' ? ShadowVeilCutMul : 1f)));
-            var cut = new HashSet<EnemyController>();
-            for (int i = 0; i < cuts; i++)
-            {
-                if (!Live(c)) yield break;
-                var foes = Enemies(center, c.n.radius);
-                Vector2 at;
-                EnemyController foe = foes.Count > 0 ? foes[i % foes.Count] : null;
-                if (foe != null) at = foe.Center;
-                else { float a = Random.Range(0f, Mathf.PI * 2f); at = center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * Random.Range(1f, c.n.radius * .7f); }
-                float turn = (i * 60f + Random.Range(-20f, 20f)) * Mathf.Deg2Rad;
-                Vector2 dir = new Vector2(Mathf.Cos(turn), Mathf.Sin(turn));
-                ShadowAt(at - dir * .5f, AssassinShade, .3f, dir.x < 0f);
-                CareerFx.Gen("r_dance_slash", "f_x", at, dir, 1.4f, .9f, 30f, VfxLayer.Top, true, Tint(c, AssassinPink));
-                Sound("c_slash", .45f);
-                if (foe != null && StrikeRapid(c, foe, cutDamage, at - dir)) cut.Add(foe);
-                yield return new WaitForSeconds(gap);
-            }
-            if (!Live(c)) yield break;
-            Sound("c_heavy");
-            Feel(2, Vector2.up);
-            foreach (var e in cut)
-            {
-                if (e == null || e.IsDead) continue;
-                CareerFx.Gen("a_mark", "f_shatter", e.Center, Vector2.zero, 1.6f, 1.6f, 20f, VfxLayer.Top, false, fps: 14f);
-                StrikeRapid(c, e, Mathf.RoundToInt(c.n.damage * ShadowBurst * (c.n.spec == 'a' ? ShadowOneMul : c.n.spec == 'b' ? ShadowVeilBurstMul : 1f)), center, 2);
-                if (c.authority) ClearMarks(e);
-            }
-            SkillVisuals.UltFinish(owner.Center, Tint(c, AssassinPink), c.n.radius);
-            if (c.n.spec == 'b') StartCoroutine(ShadowVeil(c, center, float.IsNaN(c.n.duration) ? 6f : c.n.duration));
         }
 
         /// <summary>은신: hidden for a while (ordinary monsters lose me), faster, and the first blow is stronger and from behind.</summary>

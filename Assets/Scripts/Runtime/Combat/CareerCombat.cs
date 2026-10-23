@@ -87,7 +87,7 @@ namespace DotRPG
         }
 
         /// <summary>Retired attack-speed passive; kept for the stat sheet.</summary>
-        public static int SpeedFor(CharacterData d) => 0;
+        public static int SpeedFor(CharacterData d) => FormSpeedFor(d); // [ROGUE 2026-10-23] 변신술 attack speed
 
         // ---------- States ----------
 
@@ -192,6 +192,7 @@ namespace DotRPG
             float mult = Time.time < blessEnd ? 1 + bless / 100f : 1;
             if (Time.time < frenzyEnd && (!frenzyBossOnly || enemy.IsBoss)) mult *= 1 + frenzy / 100f; // [CH3 SPEC] 귀검 집중 A: bosses only
             if (Time.time < sanctumEnd) mult *= 1.5f;
+            mult *= FormDamageMul(); // [ROGUE 2026-10-23] 변신술
             if (broken.TryGetValue(enemy, out var until) && Time.time < until) mult *= 1.15f;
             if (Time.time < retalEnd) mult *= RetalMul(); // [CH3 SPEC] A/B rules in CareerCombat.SpecWarrior
             mult *= EdgeMul(enemy) * SpecTakenMul(enemy);

@@ -294,7 +294,10 @@ namespace DotRPG
                 if (e.IsBoss) damage = Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
                 bool landed = false;
                 CareerCombat.For(owner).Uncopied(() => landed = e.TakeDamage(new DamageInfo(damage, e.Center - direction, 1f, Team.Player, owner.gameObject))); // [NINJA] the dash is not copied
-                if (landed) CareerFx.Clip("f_x", e.Center, k % 2 == 0 ? direction : -direction, .7f, 30f, VfxLayer.Top, true, ShadowTint);
+                if (!landed) continue;
+                // [NINJA 2026-10-23] The ninja's dash throws: each cut shows as a kunai flicked from the body, not a dagger slash.
+                if (CareerCombat.For(owner).ThrowsKunai) CareerFx.Line(owner.Center, e.Center, ShadowTint, .04f, .08f);
+                CareerFx.Clip("f_x", e.Center, k % 2 == 0 ? direction : -direction, .7f, 30f, VfxLayer.Top, true, ShadowTint);
             }
         }
 
