@@ -34,8 +34,9 @@ export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge'
  ['m_elements','m_fire','m_ice','m_storm','m_flow','m_orbit','m_veil','m_rift','m_awake','m_barrier'],
  ['b_mercy','b_heal','b_bloom','b_cleanse','b_grace','b_light','b_wing','b_bless','b_awake'],
  // 5 어쌔신(10노드, 9번 은신은 파이터와 같은 추가 노드 규칙), 6 닌자(9노드). Docs/PLAN_CLASS_ROGUE.md 2.3~2.4절
- ['a_vital','a_twin','a_veil','a_venom','a_ambush','a_rend','a_rupture','a_assassinate','a_awake','a_stealth'],
- ['n_throw','n_kunai','n_clone','n_recall','n_far','n_volley','n_fuma','n_bomb','n_awake']];
+ // 2026-10-23 사용자 결정: 쿠나이 순간이동은 어쌔신 2번(a_kunai), 연막 도약은 닌자 1번(n_veil)으로 서로 자리를 바꿨다
+ ['a_vital','a_twin','a_kunai','a_venom','a_ambush','a_rend','a_rupture','a_assassinate','a_awake','a_stealth'],
+ ['n_throw','n_veil','n_clone','n_recall','n_far','n_volley','n_fuma','n_bomb','n_awake']];
 const reject = (why: string): never => { throw new AppError(422, '전직 상태가 올바르지 않습니다.', 'INVALID_CAREER', {reason:why}); };
 /** 9단계: 서버가 기록한 전직(character_career). granted가 null이면 행 없음(미전직). log는 거절하지 않고 기록만 한다 */
 export interface ServerCareer { granted: {career:number;stage:number} | null; mode: 'log' | 'enforce' }
@@ -109,8 +110,8 @@ export function validCareerActive(id:string, state:CareerState|null|undefined, s
 export const BASE_SKILLS: Record<string, string[]> = {
   warrior: ['crush', 'whirl', 'cry', 'charge', 'blades'],
   mage: ['lance', 'frostorb', 'nova', 'firefield', 'meteor'],
-  // 도적(2026-10-23): 이동기 그림자 질주는 젬이 아니라 특화 대상이 아니다(Docs/ch3/SKILL_SPECIALIZATION.md 3.6절)
-  rogue: ['stab', 'leap', 'backstab', 'raid', 'dance'],
+  // 도적(2026-10-23): 이동기 그림자 질주는 젬이 아니라 특화 대상이 아니다(Docs/ch3/SKILL_SPECIALIZATION.md 3.6절). 허수아비는 같은 날 추가된 여섯 번째 기본 스킬
+  rogue: ['stab', 'leap', 'backstab', 'raid', 'dance', 'scarecrow'],
 };
 /** 특화 포인트: Lv41부터 레벨당 1(최대 10). 레벨은 지금 상한(levelCap)까지만 센다 */
 export const specPoints = (level: number, cap: number = levelCap()): number =>

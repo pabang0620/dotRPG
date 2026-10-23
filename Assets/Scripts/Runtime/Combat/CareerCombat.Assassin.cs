@@ -194,6 +194,67 @@ namespace DotRPG
             if (gone != null) foreach (var e in gone) ClearMarks(e);
         }
 
+        // ---------- 쿠나이 순간이동 (어쌔신, moved from the ninja 2026-10-23) ----------
+
+        /// <summary>
+        /// 쿠나이 순간이동 (user skill): one kunai flies 10 m in a straight line at 20 m/s through monsters (each cut once),
+        /// sticks in a wall or drops at the end, and stays 3 s. A second press (TryFollowUp) moves me to it at any time.
+        /// The kunai is stopped by what stops the body (walls, water, cliffs, closed doors), so I never land beyond them.
+        /// </summary>
+        IEnumerator KunaiPort(Run c)
+        {
+            if (portKunai != null) portKunai.Vanish();
+            int version = ++portVersion;
+            Vector2 feet = owner.Position;
+            float clear = owner.SkillClearance(c.dir, c.n.range);
+            var k = KunaiProjectile.Spawn(owner, owner.Center + c.dir * .3f, c.dir, false); // the assassin holds daggers: always a kunai
+            portKunai = k;
+            Sound("swing", .8f);
+            int portDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * (c.n.spec == 'a' ? PortPierceMul : c.n.spec == 'b' ? PortAnchorMul : 1f))); // [ROGUE SPEC]
+            portAnchor = c.n.spec == 'b';
+            var hit = new HashSet<EnemyController>();
+            Vector2 lift = owner.Center - feet;
+            float travelled = 0f;
+            while (travelled < clear)
+            {
+                if (!Live(c) || k == null || version != portVersion) yield break;
+                float step = Mathf.Min(PortSpeed * Time.deltaTime, clear - travelled);
+                Vector2 a = feet + lift + c.dir * travelled, b = a + c.dir * step;
+                foreach (var e in Corridor(a, b, c.n.radius)) if (hit.Add(e)) Strike(c, e, portDamage, a, 2f, 1, "c_slash");
+                travelled += step;
+                k.Place(feet + lift + c.dir * travelled);
+                yield return null;
+            }
+            if (k == null || version != portVersion) yield break;
+            float anchor = c.n.spec == 'b' && !float.IsNaN(c.n.duration) ? c.n.duration : c.s.duration; // [ROGUE SPEC] 그림자 닻 6 s
+            k.Stick(anchor, false); // not for 회수: this one is the anchor
+            yield return new WaitForSeconds(anchor);
+            if (version == portVersion && portKunai == k) { portKunai = null; if (k != null) k.Vanish(); }
+        }
+
+        /// <summary>The second press: go to the kunai (where it is right now, even mid-flight).</summary>
+        void PortToKunai()
+        {
+            var k = portKunai;
+            portKunai = null;
+            portVersion++; // stops the flight
+            if (k == null) return;
+            Vector2 target = k.Position - new Vector2(0f, .45f); // the kunai flies at body height; the body stands at its feet
+            k.Vanish();
+            Vector2? spot = FreeSpotNear(target, PortSearch);
+            if (spot == null)
+            {
+                if (owner.IsLocal) { GameEvents.RaiseToast(L.T("이동할 자리가 없습니다.")); Game.Audio.PlaySfx("cancel"); }
+                return;
+            }
+            CareerFx.Ghost(owner, new Color(1f, .6f, .3f, .7f), .3f);
+            NinjaClone.Puff(owner.Center);
+            if (!owner.NetPuppet) owner.SkillTeleportTo(spot.Value, spot.Value + (spot.Value - owner.Position));
+            NinjaClone.Puff(owner.Center);
+            Sound("c_dash", .8f);
+            if (portAnchor) AddGuard(PortAnchorGuard, PortAnchorGuardSeconds); // [ROGUE SPEC] 그림자 닻
+        }
+
         // ---------- Casts ----------
 
         IEnumerator Assassin(Run c)
@@ -201,7 +262,7 @@ namespace DotRPG
             switch (c.s.effect)
             {
                 case "twin": yield return TwinStab(c); break;
-                case "veil": yield return SmokeLeap(c); break;
+                case "kunaiport": yield return KunaiPort(c); break;
                 case "venom": Venom(c); break;
                 case "rend": yield return Rend(c); break;
                 case "rupture": Rupture(c); break;
@@ -228,29 +289,6 @@ namespace DotRPG
                 if (target != null) TwinSpec(c, target, stab, i == c.s.hits - 1); // [ROGUE SPEC] 쌍인 연참 / 쌍인 회선
                 if (i < c.s.hits - 1) yield return new WaitForSeconds(CutGap);
             }
-        }
-
-        /// <summary>연막 도약: jump 4 m back and burst smoke where I stood; monsters in it are hit and can't attack for 2 s.</summary>
-        IEnumerator SmokeLeap(Run c)
-        {
-            if (c.n.spec == 'a') { yield return SmokeThrough(c); yield break; } // [ROGUE SPEC] 연막 돌파
-            Vector2 spot = owner.Center, feet = owner.Position;
-            int smokeDamage = c.n.spec == 'b' ? Mathf.Max(1, Mathf.RoundToInt(c.n.damage * VeilDoubleShare)) : c.n.damage;
-            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false);
-            SkillFx.Spawn("fx_ring", feet, new Color(.6f, .45f, .7f, .7f), .5f, SkillFx.GroundOrder + 14)
-                .Scale(new Vector2(c.n.radius * .3f, c.n.radius * .2f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
-            Sound("c_dash", .8f);
-            foreach (var e in Enemies(spot, c.n.radius))
-                if (Strike(c, e, smokeDamage, spot, 3f, 1, "hit")) Stun(c, e, c.s.duration);
-            CareerFx.Ghost(owner, AssassinShade, .35f);
-            float distance = Dash(-c.dir, c.n.range);
-            float seconds = DashSeconds(distance);
-            for (float t = 0; t < seconds; t += Time.deltaTime)
-            {
-                if (!Live(c)) yield break;
-                yield return null;
-            }
-            if (c.n.spec == 'b') SmokeArrival(c); // [ROGUE SPEC] 이중 연막
         }
 
         /// <summary>맹독 도포: for a while every direct hit leaves 20% of its damage as poison.</summary>

@@ -242,5 +242,19 @@
  "스킨 뽑기 (도적)": "Skin-Ziehung (Schurke)",
  "별빛 그림자(교환소 전용)": "Sternenlicht-Schatten (nur Tauschladen)",
  "밀정의 옷장": "Kleiderschrank des Spions",
- "칼춤의 의상": "Gewänder des Klingentanzes"
+ "칼춤의 의상": "Gewänder des Klingentanzes",
+ "새 스킬: {0}  (메뉴 → 스킬에서 원하는 키에 올릴 수 있습니다)": "Neue Fertigkeit: {0}  (Menü → Fertigkeiten: auf eine beliebige Taste legen)",
+ "가장 가까운 적 너머에 짚 허수아비를 세운다. 반경 4.2m 안의 적이 4초 동안 허수아비를 노린다(보스는 짧게). 맞으면 부서진다. 적이 등을 돌린 틈에 백어택을 넣는다.": "Stellt knapp hinter dem nächsten Gegner eine Vogelscheuche aus Stroh auf. Gegner im Radius 4,2m greifen 4s lang die Vogelscheuche an (Bosse nur kurz). Bei genug Treffern zerbricht sie. Nutze den Moment, in dem sie dir den Rücken zuwenden, für einen Backstab.",
+ "허수아비": "Vogelscheuche",
+ "2.76, 0.5초 무적, 1초 뒤 원래 자리로 돌아온다": "2.76, 0.5s unverwundbar, kehrt nach 1s an die ursprüngliche Stelle zurück",
+ "4.6, 도착 뒤 2초 동안 그 적에게 등 뒤 판정": "4.6, zählt 2s nach Ankunft gegen diesen Gegner als von hinten",
+ "가장 가까운 적 1체만 6초 도발(보스 1.8초), 허수아비 HP x2": "Verspottet nur den nächsten Gegner 6s lang (Bosse 1.8s), HP der Vogelscheuche x2",
+ "단단한 허수아비": "Robuste Vogelscheuche",
+ "반경 x1.5 안 최대 3체를 2초씩 도발(보스 0.6초)": "Verspottet bis zu 3 Gegner im Radius x1.5 je 2s lang (Bosse 0.6s)",
+ "적마다 0.7 + 남은 그림자가 1초·1.5초 뒤 0.15씩 두 번": "0.7 pro Gegner + die zurückbleibenden Schatten treffen nach 1s und 1.5s je zweimal mit 0.15",
+ "쿨 3초, 적마다 6.0, 마지막 적 0.5초 경직": "AZ 3s, 6.0 pro Gegner, der letzte Gegner strauchelt 0.5s",
+ "흩날리는 허수아비": "Verwehende Vogelscheuche",
+ "분신 중 연막 도약 {0}/2 · 기폭 속박 {1}/4": "Rauchsprünge während der Klone {0}/2 · Fesselungen durch Zündung {1}/4",
+ "시련: 분신술 지속 중에 연막 도약 2회 + 기폭 쿠나이로 4번 속박. 45초.": "Prüfung: 2 Rauchsprünge während Klonkunst + 4 Fesselungen durch Zünd-Kunai. 45s.",
+ "쿠나이 순간이동·암살을 해금하세요. (Lv.22, 노드 6개)": "Schalte Kunai-Teleport und Meuchelmord frei. (Lv.22, 6 Knoten)"
 }

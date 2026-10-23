@@ -280,6 +280,11 @@ namespace DotRPG
                     c.Line(6, 6, 18, 18, PixelCanvas.Hex("#ffe070")); c.Line(10, 6, 20, 16, PixelCanvas.Hex("#ffe070")); c.Line(6, 10, 16, 20, PixelCanvas.Hex("#ffe070"));
                     c.Circle(24f, 24f, 6.8f, mark); c.Circle(25f, 25f, 3.6f, PixelCanvas.Hex("#e8401c"));
                     break;
+                case "scarecrow": // [ROGUE] stand-in until Resources/Art/gem_scarecrow is drawn: a straw figure on a pole
+                    c.VLine(19, 6, 34, PixelCanvas.Hex("#6b4a2b")); c.VLine(20, 6, 34, PixelCanvas.Hex("#6b4a2b"));
+                    c.HLine(9, 30, 19, PixelCanvas.Hex("#6b4a2b")); c.Rect(15, 18, 10, 9, PixelCanvas.Hex("#e2c060"));
+                    c.Circle(19.5f, 12f, 4.2f, PixelCanvas.Hex("#e2c060")); c.HLine(14, 25, 8, PixelCanvas.Hex("#7a5a34"));
+                    break;
                 case "whirl": c.Circle(19f, 19f, 7f, mark); c.Circle(19f, 19f, 4f, baseCol); c.Set(26, 14, mark); c.Set(12, 24, mark); break;
                 case "nova": c.VLine(18, 8, 31, mark); c.VLine(19, 8, 31, mark); c.HLine(8, 31, 18, mark); c.HLine(8, 31, 19, mark); c.Line(12, 12, 27, 27, mark); c.Line(27, 12, 12, 27, mark); break;
                 case "sup_dmg": c.VLine(18, 10, 29, mark); c.VLine(19, 10, 29, mark); c.HLine(10, 29, 18, mark); c.HLine(10, 29, 19, mark); break;

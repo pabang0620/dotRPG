@@ -142,8 +142,8 @@ namespace DotRPG
             }
         }
 
-        /// <summary>[ROGUE] The rogue's base skills in key order (급소 찌르기, 연쇄 도약, 백어택, 그림자 습격, 천인난무).</summary>
-        static readonly string[] RogueBaseClips = { "stab", "leap", "backstab", "raid", "dance" };
+        /// <summary>[ROGUE] The rogue's base skills in key order (급소 찌르기, 연쇄 도약, 백어택, 그림자 습격, 천인난무, 허수아비 on A).</summary>
+        static readonly string[] RogueBaseClips = { "stab", "leap", "backstab", "raid", "dance", "scarecrow" };
 
         static EnemyStats DummyStats()
         {

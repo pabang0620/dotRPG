@@ -4,19 +4,23 @@ namespace DotRPG
     /// [ROGUE SPEC] Number overrides of the rogue line (rogue base, 어쌔신, 닌자), Docs/ch3/SKILL_SPECIALIZATION.md 3.6.
     /// Same split as the warrior line: base skills give absolute gem numbers, career skills keep their built numbers and
     /// the cast functions (CareerCombat.SpecRogue) apply the damage ratios. The user's skills (연쇄 도약, 백어택, 천인난무,
-    /// 쿠나이 순간이동, 분신술) keep their own numbers when no side is chosen; a side is an option on top.
+    /// 허수아비, 쿠나이 순간이동 (assassin since 2026-10-23), 분신술) keep their own numbers when no side is chosen; a side is an option on top.
     /// </summary>
     public static partial class SkillSpecs
     {
         // ---------- Rogue base (gem units = the design's raw numbers) ----------
         static SpecParams StabA() => new SpecParams { damageMult = 3.6f, extra = "stab_heart" };
         static SpecParams StabB() => new SpecParams { damageMult = 1.2f, targets = 4, spreadDeg = 90f, extra = "stab_fan" };
-        static SpecParams LeapA() => new SpecParams { damageMult = 3.4f, cooldown = 6f, extra = "leap_heavy" };
-        static SpecParams LeapB() => new SpecParams { damageMult = 1.2f, extra = "leap_trail" };
+        // [ROGUE 2026-10-23] 연쇄 도약 is spammable now (1.0 a monster, 0.5 s): A = cooldown x6 and damage x6, B = 0.7 + 2 x 0.15.
+        static SpecParams LeapA() => new SpecParams { damageMult = 6.0f, cooldown = 3f, extra = "leap_heavy" };
+        static SpecParams LeapB() => new SpecParams { damageMult = 0.7f, extra = "leap_trail" };
         static SpecParams BackstabA() => new SpecParams { duration = 1.6f, targets = 1, extra = "back_heart" };
         static SpecParams BackstabB() => new SpecParams { duration = .55f, targets = 3, extra = "back_spin" };
-        static SpecParams RaidA() => new SpecParams { damageMult = 4.0f, extra = "raid_open" };
-        static SpecParams RaidB() => new SpecParams { damageMult = 2.4f, extra = "raid_return" };
+        static SpecParams RaidA() => new SpecParams { damageMult = 4.6f, extra = "raid_open" }; // [ROGUE 2026-10-23] x1.15 with the base
+        static SpecParams RaidB() => new SpecParams { damageMult = 2.76f, extra = "raid_return" };
+        /// <summary>[ROGUE 2026-10-23] 허수아비: A one monster 6 s (x HP 2), B up to 3 in 1.5x the radius for 2 s.</summary>
+        static SpecParams ScarecrowA() => new SpecParams { targets = 1, duration = 6f, extra = "crow_tough" };
+        static SpecParams ScarecrowB() => new SpecParams { targets = 3, duration = 2f, radius = 4.2f * 1.5f, extra = "crow_wide" };
         static SpecParams DanceA() => new SpecParams { damageMult = 8.8f, hits = 3, extra = "dance_three" };
         static SpecParams DanceB() => new SpecParams { damageMult = 1.1f, hits = 12, cooldown = 12f, extra = "dance_quick" };
 
@@ -25,8 +29,8 @@ namespace DotRPG
         static SpecParams ATwinB() => new SpecParams { targets = 3, radius = 1.6f, extra = "twin_sweep" };
         static SpecParams ARendA() => new SpecParams { targets = 1, extra = "rend_point" };
         static SpecParams ARendB() => new SpecParams { targets = 5, range = Own("a_rend", s => s.range) * 1.2f, extra = "rend_whirl" };
-        static SpecParams AVeilA() => new SpecParams { extra = "veil_through" };
-        static SpecParams AVeilB() => new SpecParams { extra = "veil_double" };
+        static SpecParams AKunaiA() => new SpecParams { extra = "port_pierce" };
+        static SpecParams AKunaiB() => new SpecParams { duration = 6f, extra = "port_anchor" };
         static SpecParams AVenomA() => new SpecParams { duration = 90f, extra = "venom_boss" };
         static SpecParams AVenomB() => new SpecParams { targets = 2, extra = "venom_spread" };
         static SpecParams ARuptureA() => new SpecParams { cooldown = Own("a_rupture", s => s.cooldown) * 2f, extra = "rupture_big" };
@@ -39,8 +43,8 @@ namespace DotRPG
         static SpecParams AStealthB() => new SpecParams { extra = "stealth_three" };
 
         // ---------- 닌자 ----------
-        static SpecParams NKunaiA() => new SpecParams { extra = "port_pierce" };
-        static SpecParams NKunaiB() => new SpecParams { duration = 6f, extra = "port_anchor" };
+        static SpecParams NVeilA() => new SpecParams { extra = "veil_through" };
+        static SpecParams NVeilB() => new SpecParams { extra = "veil_double" };
         static SpecParams NCloneA() => new SpecParams { targets = 1, extra = "clone_one" };
         static SpecParams NCloneB() => new SpecParams { targets = 3, extra = "clone_three" };
         static SpecParams NRecallA() => new SpecParams { targets = 1, extra = "recall_target" };

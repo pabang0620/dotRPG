@@ -107,6 +107,10 @@ SKILLDATA = os.path.join(os.path.dirname(__file__), "..", "..", "Assets", "Scrip
 EARLY_SLOTS = {"전사": ["crush", "whirl", "cry"], "마법사": ["lance", "frostorb", "nova"], "도적": ["stab", "leap", "backstab"]}
 PACK_TARGETS = {"crush": 2, "lance": 2, "whirl": 3, "frostorb": 3, "cry": 3, "nova": 3, "leap": 3, "stab": 1, "backstab": 1}
 DASH = dict(mult=.2 * 4, cd=1.6, busy=.216, pack=2)
+# [ROGUE 2026-10-23] 연쇄 도약 with a cooldown under 1 s is a spam skill: it replaces stabbing instead of adding to it.
+# The cast holds 0.12 s a monster + 0.17 s (jumps, return); the cycle is the longer of that and the cooldown. On one
+# monster the 0.21 s left of a 0.5 s cycle is stabbing; on a pack of 3 (0.53 s hold) there is no time left to stab.
+LEAP_JUMP, LEAP_TAIL = .12, .17
 
 
 def early_gems():
@@ -127,6 +131,14 @@ def early_basic(cls):
     return stab + dash, stab * 1.1 + dash * DASH["pack"]
 
 
+def leap_spam(dm, cd):
+    """(single, pack) damage per second of a spammed 연쇄 도약, stabbing in the gaps, with the dash's busy share taken out."""
+    free = 1 - DASH["busy"] / DASH["cd"]
+    cyc1, cyc3 = max(cd, LEAP_JUMP + LEAP_TAIL), max(cd, 3 * LEAP_JUMP + LEAP_TAIL)
+    gap1 = max(0.0, cyc1 - (LEAP_JUMP + LEAP_TAIL)) / cyc1
+    return free * (dm / cyc1 + .65 / .24 * gap1), free * (dm * 3 / cyc3)
+
+
 def early_table():
     g = early_gems()
     print("\n## Lv1~15 초반 사냥 (공격력 배수 초당 피해, PLAN_CLASS_ROGUE 3.3)")
@@ -141,10 +153,24 @@ def early_table():
                     s1 = sp = float("nan")
                     break
                 dm, cd = g[gid]
+                if gid == "leap" and cd < 1:  # spam: the stabbing it replaces comes out first
+                    stab = .65 / .24 * (1 - DASH["busy"] / DASH["cd"])
+                    a, b = leap_spam(dm, cd)
+                    s1 += a - stab
+                    sp += b - stab * 1.1
+                    continue
                 s1 += dm / cd
                 sp += dm / cd * PACK_TARGETS[gid]
             one[cls], pack[cls] = s1, sp
         print(f"| {label} | {keys} | {one['전사']:.2f} | {one['마법사']:.2f} | {one['도적']:.2f} | {pack['전사']:.2f} | {pack['마법사']:.2f} | {pack['도적']:.2f} |")
+    if "leap" in g and g["leap"][1] < 1:
+        print("\n연쇄 도약 연사(쿨 {0:g}초) 타격당 배율별 Lv6~11 도적 1마리 / 무리 (위 표 Lv6~11 줄의 전사·마법사와 비교):".format(g["leap"][1]))
+        q = g["stab"][0] / g["stab"][1]
+        base1, basep = early_basic("도적")
+        stab = .65 / .24 * (1 - DASH["busy"] / DASH["cd"])
+        for dm in (1.7, 1.3, 1.2, 1.1, 1.0, 0.9):
+            a, b = leap_spam(dm, g["leap"][1])
+            print(f"- {dm:.1f}: 1마리 {base1 - stab + q + a:.2f}, 무리 {basep - stab * 1.1 + q * PACK_TARGETS['stab'] + b:.2f}")
 
 
 if __name__ == "__main__":

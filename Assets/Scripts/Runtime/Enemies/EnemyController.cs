@@ -242,6 +242,8 @@ namespace DotRPG
                 return;
             }
 
+            if (DecoyTick()) return; // [ROGUE] 허수아비: a lured monster goes for the scarecrow (EnemyController.Decoy.cs)
+
             var target = Target;
             float distToPlayer = target != null ? Vector2.Distance(Position, target.Position) : float.MaxValue;
             float distFromHome = Vector2.Distance(Position, home);

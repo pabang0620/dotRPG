@@ -198,6 +198,9 @@ namespace DotRPG
             }
             foreach (var g in SkillGems.All)
                 if (g.kind == GemKind.Support && g.unlockLevel == level) GameEvents.RaiseToast(L.F("새 보조 젬: {0}  (메뉴 → 스킬 → 스킬 젬)", L.T(g.name)));
+                // [ROGUE] 허수아비 opens before its own key (Lv12, key A at Lv20): it can go on any open key from now.
+                else if (g.kind == GemKind.Active && g.unlockLevel == level && g.slot >= 0 && Progression.SlotLevel(g.slot) != level && g.UsableBy(Class))
+                    GameEvents.RaiseToast(L.F("새 스킬: {0}  (메뉴 → 스킬에서 원하는 키에 올릴 수 있습니다)", L.T(g.name)));
         }
 
         void OnDisable()

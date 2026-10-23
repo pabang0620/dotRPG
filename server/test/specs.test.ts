@@ -15,9 +15,10 @@ afterAll(async () => { await shutdown(); });
 describe('specializations, chapter 3 open', () => {
   beforeAll(() => { buildApp({ CHAPTER3_OPEN: 'true' }); });
 
-  test('the exported data has 144 specs (96 + rogue 48), each skill a and b', () => {
+  test('the exported data has 146 specs (96 + rogue 50), each skill a and b', () => {
     const defs = getGameData().economy.skillSpecs;
-    expect(defs.size).toBe(144);
+    expect(defs.size).toBe(146);
+    expect(defs.get('scarecrow:a')).toMatchObject({ axis: 'support', cost: 2 });
     expect(defs.get('stab:b')).toMatchObject({ axis: 'spread', cost: 2 });
     expect(defs.get('a_vital:a')).toMatchObject({ axis: 'passive', cost: 1 });
     expect(defs.get('lance:a')).toMatchObject({ axis: 'focus', cost: 2 });
@@ -42,8 +43,10 @@ describe('specializations, chapter 3 open', () => {
     expect(() => check(state(0, [{ skill: 'crush', side: 'a' }]), 45, 'rogue')).toThrow(); // warrior skill on a rogue
     expect(() => check(state(0, [{ skill: 'stab', side: 'a' }]), 45)).toThrow(); // rogue skill on a warrior
     expect(() => check(state(5, [{ skill: 'a_rend', side: 'b' }, { skill: 'a_vital', side: 'a' }]), 43, 'rogue')).not.toThrow();
-    expect(() => check(state(6, [{ skill: 'n_kunai', side: 'a' }, { skill: 'n_far', side: 'b' }]), 43, 'rogue')).not.toThrow();
-    expect(() => check(state(5, [{ skill: 'n_kunai', side: 'a' }]), 50, 'rogue')).toThrow(); // ninja skill on an assassin
+    expect(() => check(state(6, [{ skill: 'n_veil', side: 'a' }, { skill: 'n_far', side: 'b' }]), 43, 'rogue')).not.toThrow();
+    expect(() => check(state(5, [{ skill: 'n_veil', side: 'a' }]), 50, 'rogue')).toThrow(); // ninja skill on an assassin
+    expect(() => check(state(6, [{ skill: 'a_kunai', side: 'a' }]), 50, 'rogue')).toThrow(); // 2026-10-23: 쿠나이 순간이동 is the assassin's
+    expect(() => check(state(0, [{ skill: 'scarecrow', side: 'b' }]), 42, 'rogue')).not.toThrow(); // the sixth base skill
     expect(hasSpreadSpec(state(6, [{ skill: 'n_volley', side: 'b' }]))).toBe(true);
     expect(hasSpreadSpec(state(6, [{ skill: 'n_volley', side: 'a' }]))).toBe(false);
   });

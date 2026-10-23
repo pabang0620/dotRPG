@@ -1,6 +1,6 @@
 """챕터 3 특화 기대값 점검 (Docs/ch3/SKILL_SPECIALIZATION.md 1절 기대값 원칙, 7절 검증 도구).
 
-server/data/skill_specs.json(Unity 내보내기)의 144개 특화(전사·마법사 96 + 도적 48)를 축별 기준 상황으로 비교한다.
+server/data/skill_specs.json(Unity 내보내기)의 146개 특화(전사·마법사 96 + 도적 50)를 축별 기준 상황으로 비교한다.
 - 집중·확산: A 보스 1체 한 번 시전 = B 묶음 3체 한 번 시전 합
 - 폭발·지속: 보스 1체 60초 총 피해
 - 공격·기동: B 피해 = A의 60%(나머지는 방어·기동으로 돌려받음, 측정 봇 피격 수로 검증)
@@ -62,14 +62,14 @@ EV = {
     # 도적 계열(도적 기본·어쌔신·닌자, 2026-10-23). 집중·확산: A 1체 / B 3체 합
     "stab": (3.6, 1.2 * 3), "a_twin": (1.3 * 4, 0.43 * 4 * 3), "a_rend": (1.1 * 2, 0.37 * 2 * 3),
     "n_volley": (0.64 * 3, 0.64 * 3), "n_recall": (6 * 1.0, 6 * 0.33 * 3),                  # 회수: 쿠나이 6개 기준
-    # 폭발·지속: 보스 1체 60초 총량(쿨: 연쇄 도약 6 / 3, 급소 파열 14 / 7, 풍마 13 / 6.5, 각성 60)
-    "leap": (10 * 3.4, 20 * (1.2 + 0.25 * 2)), "dance": (2.5 * 3 * 8.8, 5 * 12 * 1.1),
+    # 폭발·지속: 보스 1체 60초 총량(쿨: 연쇄 도약 3 / 0.5(2026-10-23 연사기), 급소 파열 14 / 7, 풍마 13 / 6.5, 각성 60)
+    "leap": (20 * 6.0, 120 * (0.7 + 0.15 * 2)), "dance": (2.5 * 3 * 8.8, 5 * 12 * 1.1),
     "a_rupture": (60 / 14 * 6.94, 60 / 7 * 3.47), "a_awake": (6 * 1.6 + 9.6, 18 * 0.6 + 2.4 + 6 * 1.0),
     "n_fuma": (60 / 13 * 3 * 3.08, 60 / 6.5 * 12 * 0.385), "n_awake": (6 * 1.2 + 8.8, 36 * 0.4 + 1.6),
     # 공격·기동: B = A x 0.6
-    "raid": (4.0, 2.4), "a_veil": (4.0, 2.4), "a_assassinate": (3.6, 2.16), "n_kunai": (3.2, 1.92),
+    "raid": (4.6, 2.76), "n_veil": (4.0, 2.4), "a_assassinate": (3.6, 2.16), "a_kunai": (3.2, 1.92),  # 2026-10-23 습격 x1.15, 쿠나이↔연막 자리 교환
     # 회복·제어·버프: A 1명(1체) = B 3명(3체) 합
-    "backstab": (1.6, 0.55 * 3), "a_venom": (36, 12 * 3), "a_stealth": (90, 30 * 3), "n_clone": (50, 17 * 3), "n_bomb": (3.0, 1.0 * 3),
+    "backstab": (1.6, 0.55 * 3), "scarecrow": (6.0, 2.0 * 3), "a_venom": (36, 12 * 3), "a_stealth": (90, 30 * 3), "n_clone": (50, 17 * 3), "n_bomb": (3.0, 1.0 * 3),
 }
 # 특화 id -> 보스 방 3분 평균 초당 피해(측정 또는 계산). 있으면 아래 추정 대신 쓴다
 BOSS_DPS = {}
@@ -80,7 +80,7 @@ CLASS_REL = {"warrior": 1.0, "mage": 0.83, "rogue": 0.99,
              "f": 1.0, "g": 0.77, "m": 0.83, "b": 0.70, "a": 0.99, "n": 0.92}
 BASE_CLASS = {"crush": "warrior", "whirl": "warrior", "cry": "warrior", "charge": "warrior", "blades": "warrior",
               "lance": "mage", "frostorb": "mage", "nova": "mage", "firefield": "mage", "meteor": "mage",
-              "stab": "rogue", "leap": "rogue", "backstab": "rogue", "raid": "rogue", "dance": "rogue"}
+              "stab": "rogue", "leap": "rogue", "backstab": "rogue", "raid": "rogue", "dance": "rogue", "scarecrow": "rogue"}
 SPEC_GAIN = 1.5
 
 

@@ -103,6 +103,7 @@
 | 분신 | Clone |
 | 표식 | Mark |
 | 표창 | Shuriken |
+| 허수아비 | Scarecrow |
 
 ## 각성기
 | 한국어 | English |

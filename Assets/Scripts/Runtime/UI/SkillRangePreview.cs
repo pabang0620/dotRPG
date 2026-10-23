@@ -138,6 +138,7 @@ namespace DotRPG
                 case "leap": Self(r); label.Append(L.F("반경 {0:0.#}m", r)); break;
                 case "raid": Self(range, .5f); label.Append(L.F("사거리 {0:0.#}m 안 가장 가까운 적", range)); break;
                 case "dance": Self(range, .6f); label.Append(L.F("반경 {0:0.#}m", range)); break;
+                case "scarecrow": Ahead(SkillCaster.ScarecrowFront, r); label.Append(L.F("앞 {0:0.#}m · 반경 {1:0.#}m", SkillCaster.ScarecrowFront, r)); break;
                 case "blades": case "meteor": Self(range, .6f); label.Append(L.F("반경 {0:0.#}m 안의 적에게 낙하 · 한 발 반경 {1:0.#}m", range, r)); break;
                 default: if (r > 0f) { Self(r); label.Append(L.F("반경 {0:0.#}m", r)); } break; // passives draw nothing
             }

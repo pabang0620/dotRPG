@@ -6,8 +6,9 @@ namespace DotRPG
 {
     /// <summary>
     /// 닌자 (rogue career, Docs/PLAN_CLASS_ROGUE.md 2.4): thrown kunai at range. 투척술 turns the basic attack into a
-    /// kunai throw; 쿠나이 순간이동 (user skill) throws one kunai and a second press moves me to it; 분신술 (user skill)
-    /// puts two clones beside me that copy my kunai throws at 25% of my damage. Clone damage is my own damage.
+    /// kunai throw; 연막 도약 is the escape; 분신술 (user skill) puts two clones beside me that copy my kunai throws at 25%
+    /// of my damage. Clone damage is my own damage. 쿠나이 순간이동 moved to the assassin (2026-10-23) but its anchor state
+    /// and the free-spot search stay here, next to the clone swap that shares them.
     /// </summary>
     public sealed partial class CareerCombat
     {
@@ -186,13 +187,14 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// [NINJA] A second press of a skill whose first press is still out: 쿠나이 순간이동 moves me to the kunai, 분신술 swaps me
-        /// with the farther clone (once a cast). Returns true when the press was used this way (no MP, no cooldown).
+        /// [ROGUE] A second press of a skill whose first press is still out: 쿠나이 순간이동 (assassin) moves me to the kunai,
+        /// 분신술 (ninja) swaps me with the farther clone (once a cast). Returns true when the press was used this way (no MP, no cooldown).
         /// </summary>
         public bool TryFollowUp(string skillId)
         {
-            if (owner == null || owner.IsDead || Mine != Career.Ninja) return false;
-            if (skillId == "n_kunai" && portKunai != null) { PortToKunai(); return true; }
+            if (owner == null || owner.IsDead) return false;
+            if (skillId == "a_kunai" && Mine == Career.Assassin && portKunai != null) { PortToKunai(); return true; }
+            if (Mine != Career.Ninja) return false;
             if (skillId == "n_clone" && ClonesUp)
             {
                 if (cloneSwapUsed) return true; // once a cast: the press does nothing more
@@ -226,70 +228,6 @@ namespace DotRPG
             far.Snap(mine);
             foreach (var clone in clones) if (clone != null && clone != far) clone.SnapHome();
             Sound("c_dash", .7f);
-        }
-
-        // ---------- 쿠나이 순간이동 ----------
-
-        /// <summary>
-        /// 쿠나이 순간이동 (user skill): one kunai flies 10 m in a straight line at 20 m/s through monsters (each cut once),
-        /// sticks in a wall or drops at the end, and stays 3 s. A second press (TryFollowUp) moves me to it at any time.
-        /// The kunai is stopped by what stops the body (walls, water, cliffs, closed doors), so I never land beyond them.
-        /// </summary>
-        IEnumerator KunaiPort(Run c)
-        {
-            if (portKunai != null) portKunai.Vanish();
-            int version = ++portVersion;
-            Vector2 feet = owner.Position;
-            float clear = owner.SkillClearance(c.dir, c.n.range);
-            var k = KunaiProjectile.Spawn(owner, owner.Center + c.dir * .3f, c.dir, ThrowsStars);
-            portKunai = k;
-            Sound("swing", .8f);
-            int portDamage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * (c.n.spec == 'a' ? PortPierceMul : c.n.spec == 'b' ? PortAnchorMul : 1f))); // [ROGUE SPEC]
-            portAnchor = c.n.spec == 'b';
-            ForClones(clone => StartCoroutine(CloneLine(c, clone, c.dir, c.n.range, PortSpeed, CloneDamage(portDamage))));
-            var hit = new HashSet<EnemyController>();
-            Vector2 lift = owner.Center - feet;
-            float travelled = 0f;
-            while (travelled < clear)
-            {
-                if (!Live(c) || k == null || version != portVersion) yield break;
-                float step = Mathf.Min(PortSpeed * Time.deltaTime, clear - travelled);
-                Vector2 a = feet + lift + c.dir * travelled, b = a + c.dir * step;
-                foreach (var e in Corridor(a, b, c.n.radius)) if (hit.Add(e)) Strike(c, e, portDamage, a, 2f, 1, "c_slash");
-                travelled += step;
-                k.Place(feet + lift + c.dir * travelled);
-                yield return null;
-            }
-            if (k == null || version != portVersion) yield break;
-            float anchor = c.n.spec == 'b' && !float.IsNaN(c.n.duration) ? c.n.duration : c.s.duration; // [ROGUE SPEC] 그림자 닻 6 s
-            k.Stick(anchor, false); // not for 회수: this one is the anchor
-            yield return new WaitForSeconds(anchor);
-            if (version == portVersion && portKunai == k) { portKunai = null; if (k != null) k.Vanish(); }
-        }
-
-        /// <summary>The second press: go to the kunai (where it is right now, even mid-flight). The clones come along.</summary>
-        void PortToKunai()
-        {
-            var k = portKunai;
-            portKunai = null;
-            portVersion++; // stops the flight
-            if (k == null) return;
-            Vector2 target = k.Position - new Vector2(0f, .45f); // the kunai flies at body height; the body stands at its feet
-            k.Vanish();
-            Vector2? spot = FreeSpotNear(target, PortSearch);
-            if (spot == null)
-            {
-                if (owner.IsLocal) { GameEvents.RaiseToast(L.T("이동할 자리가 없습니다.")); Game.Audio.PlaySfx("cancel"); }
-                return;
-            }
-            CareerFx.Ghost(owner, new Color(1f, .6f, .3f, .7f), .3f);
-            NinjaClone.Puff(owner.Center);
-            if (!owner.NetPuppet) owner.SkillTeleportTo(spot.Value, spot.Value + (spot.Value - owner.Position));
-            NinjaClone.Puff(owner.Center);
-            foreach (var clone in clones) if (clone != null) clone.SnapHome();
-            Sound("c_dash", .8f);
-            if (ClonesUp) CareerTrials.Record(owner, "kunaiport", 1);
-            if (portAnchor) AddGuard(PortAnchorGuard, PortAnchorGuardSeconds); // [ROGUE SPEC] 그림자 닻
         }
 
         /// <summary>
@@ -334,25 +272,30 @@ namespace DotRPG
             return true;
         }
 
-        /// <summary>A clone's copy of a straight piercing throw (쿠나이 순간이동): its own kunai, never a teleport anchor.</summary>
-        IEnumerator CloneLine(Run c, NinjaClone clone, Vector2 dir, float range, float speed, int damage)
+        // ---------- 연막 도약 ----------
+
+        /// <summary>[NINJA] 연막 도약 (moved from the assassin 2026-10-23): jump 4 m back and burst smoke where I stood; monsters in it are hit and can't attack for 2 s.</summary>
+        IEnumerator SmokeLeap(Run c)
         {
-            Vector2 at = clone.Center + dir * .3f;
-            var k = KunaiProjectile.Spawn(owner, at, dir, ThrowsStars, CloneTint);
-            var hit = new HashSet<EnemyController>();
-            for (float travelled = 0f; travelled < range;)
+            if (c.n.spec == 'a') { yield return SmokeThrough(c); yield break; } // [ROGUE SPEC] 연막 돌파
+            Vector2 spot = owner.Center, feet = owner.Position;
+            int smokeDamage = c.n.spec == 'b' ? Mathf.Max(1, Mathf.RoundToInt(c.n.damage * VeilDoubleShare)) : c.n.damage;
+            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false);
+            SkillFx.Spawn("fx_ring", feet, new Color(.6f, .45f, .7f, .7f), .5f, SkillFx.GroundOrder + 14)
+                .Scale(new Vector2(c.n.radius * .3f, c.n.radius * .2f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
+            Sound("c_dash", .8f);
+            foreach (var e in Enemies(spot, c.n.radius))
+                if (Strike(c, e, smokeDamage, spot, 3f, 1, "hit")) Stun(c, e, c.s.duration);
+            CareerFx.Ghost(owner, CloneTint, .35f);
+            float distance = Dash(-c.dir, c.n.range);
+            float seconds = DashSeconds(distance);
+            for (float t = 0; t < seconds; t += Time.deltaTime)
             {
-                if (!Live(c) || k == null) break;
-                float step = Mathf.Min(speed * Time.deltaTime, range - travelled);
-                Vector2 next = at + dir * step;
-                if (ProjectileBlocked(next)) break;
-                foreach (var e in Corridor(at, next, c.n.radius)) if (hit.Add(e)) Strike(c, e, damage, at, 1f, 0, "hit");
-                k.Place(next);
-                at = next;
-                travelled += step;
+                if (!Live(c)) yield break;
                 yield return null;
             }
-            if (k != null) k.Vanish();
+            if (c.n.spec == 'b') SmokeArrival(c); // [ROGUE SPEC] 이중 연막
+            if (ClonesUp) CareerTrials.Record(owner, "veil", 1); // the ninja trial: smoke leaps with the clones out
         }
 
         // ---------- Casts ----------
@@ -361,7 +304,7 @@ namespace DotRPG
         {
             switch (c.s.effect)
             {
-                case "kunaiport": yield return KunaiPort(c); break;
+                case "veil": yield return SmokeLeap(c); break;
                 case "clone": Clones(c); break;
                 case "recall": yield return Recall(c); break;
                 case "volley": yield return Volley(c); break;

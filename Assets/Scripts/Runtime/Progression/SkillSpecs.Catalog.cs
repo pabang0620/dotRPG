@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace DotRPG
 {
     /// <summary>
-    /// [CH3 SPEC] The 144 specializations (72 skills x A/B; [ROGUE SPEC] 24 rogue pairs at the end), from Docs/ch3/SKILL_SPECIALIZATION.md section 3.
+    /// [CH3 SPEC] The 146 specializations (73 skills x A/B; [ROGUE SPEC] 25 rogue pairs at the end), from Docs/ch3/SKILL_SPECIALIZATION.md section 3.
     /// Names and one-line texts are final; <see cref="SpecParams"/> overrides are filled per skill as each cast
     /// function learns its new behaviour (lance is the worked example). Exported as server/data/skill_specs.json.
     /// </summary>
@@ -110,7 +110,7 @@ namespace DotRPG
             S("b_mercy", 'b', "passive", L.T("넓은 숨"), L.T("회복 반경 +20%, 회복 +6%")),
             S("b_grace", 'a', "passive", L.T("단단한 그릇"), L.T("자신 보호막 +25%")),
             S("b_grace", 'b', "passive", L.T("나눔의 그릇"), L.T("+8% + 깨질 때 반경 3 아군에 20% 나눔")),
-            // [ROGUE SPEC] 도적 24쌍 (Docs/ch3/SKILL_SPECIALIZATION.md 3.6, 축은 PLAN_CLASS_ROGUE.md 8.1)
+            // [ROGUE SPEC] 도적 25쌍 (Docs/ch3/SKILL_SPECIALIZATION.md 3.6, 축은 PLAN_CLASS_ROGUE.md 8.1)
             S("stab", 'a', "focus", L.T("심장 꿰기"), L.T("단일 3.6, HP 50% 미만 적에게 x1.25"), p: StabA()),
             S("stab", 'b', "spread", L.T("부채 찌르기"), L.T("전방 90도 1.8m 1.2, 최대 4체"), p: StabB()),
             S("a_twin", 'a', "focus", L.T("쌍인 연참"), L.T("한 적에게 4타 1.3, 마지막 타가 표식 1개를 더 새긴다"), p: ATwinA()),
@@ -121,8 +121,8 @@ namespace DotRPG
             S("n_volley", 'b', "spread", L.T("부채 연발"), L.T("쿠나이 3개를 ±15도로 동시에 0.64, 관통"), p: NVolleyB()),
             S("n_recall", 'a', "focus", L.T("표적 회수"), L.T("쿠나이가 앞의 적 하나를 거쳐 돌아온다, 쿠나이마다 1.0"), p: NRecallA()),
             S("n_recall", 'b', "spread", L.T("회오리 회수"), L.T("돌아오는 길 폭 2.4m, 쿠나이마다 0.33"), p: NRecallB()),
-            S("leap", 'a', "burst", L.T("그림자 일격 도약"), L.T("쿨 6초, 적마다 3.4, 마지막 적 0.5초 경직"), p: LeapA()),
-            S("leap", 'b', "sustain", L.T("잔영 도약"), L.T("적마다 1.2 + 남은 그림자가 1초·1.5초 뒤 0.25씩 두 번"), p: LeapB()),
+            S("leap", 'a', "burst", L.T("그림자 일격 도약"), L.T("쿨 3초, 적마다 6.0, 마지막 적 0.5초 경직"), p: LeapA()),
+            S("leap", 'b', "sustain", L.T("잔영 도약"), L.T("적마다 0.7 + 남은 그림자가 1초·1.5초 뒤 0.15씩 두 번"), p: LeapB()),
             S("dance", 'a', "burst", L.T("일도난무"), L.T("3번 베기 8.8, 마지막 베기 1초 경직"), p: DanceA()),
             S("dance", 'b', "sustain", L.T("끝없는 난무"), L.T("12번 1.1, 쿨 12"), p: DanceB()),
             S("a_rupture", 'a', "burst", L.T("파열 극"), L.T("쿨 x2, 피해 x2(표식 더하기 그대로)"), p: ARuptureA()),
@@ -133,16 +133,18 @@ namespace DotRPG
             S("n_fuma", 'b', "sustain", L.T("회전 풍마"), L.T("끝에서 2초 머문다, 같은 적에게 최대 12번 0.385"), p: NFumaB()),
             S("n_awake", 'a', "burst", L.T("분신 일제 투척"), L.T("1초 동안 쿠나이 6개 1.2, 맞은 적마다 폭발 880%"), p: NAwakeA()),
             S("n_awake", 'b', "sustain", L.T("분신 진"), L.T("9초 동안 쿠나이 36개 0.4, 맞은 적마다 폭발 160%"), p: NAwakeB()),
-            S("raid", 'a', "attack", L.T("급습"), L.T("4.0, 도착 뒤 2초 동안 그 적에게 등 뒤 판정"), p: RaidA()),
-            S("raid", 'b', "mobility", L.T("그림자 귀환"), L.T("2.4, 0.5초 무적, 1초 뒤 원래 자리로 돌아온다"), p: RaidB()),
-            S("a_veil", 'a', "attack", L.T("연막 돌파"), L.T("앞으로 4m 뚫고 지나가며 경로의 적 4.0, 출발점에 연막"), p: AVeilA()),
-            S("a_veil", 'b', "mobility", L.T("이중 연막"), L.T("2.4, 도착점에도 연막(1초 공격 불가), 도착 뒤 1.5초 받는 피해 -30%"), p: AVeilB()),
+            S("raid", 'a', "attack", L.T("급습"), L.T("4.6, 도착 뒤 2초 동안 그 적에게 등 뒤 판정"), p: RaidA()),
+            S("raid", 'b', "mobility", L.T("그림자 귀환"), L.T("2.76, 0.5초 무적, 1초 뒤 원래 자리로 돌아온다"), p: RaidB()),
+            S("a_kunai", 'a', "attack", L.T("관통 쿠나이"), L.T("지나간 적마다 3.2"), p: AKunaiA()),
+            S("a_kunai", 'b', "mobility", L.T("그림자 닻"), L.T("1.92, 쿠나이가 6초 남는다, 도착 뒤 1.5초 받는 피해 -40%"), p: AKunaiB()),
             S("a_assassinate", 'a', "attack", L.T("처형"), L.T("3.6, HP 30% 미만 적에게 x1.5"), p: AAssassinateA()),
             S("a_assassinate", 'b', "mobility", L.T("그림자 암살"), L.T("2.16, 대상 등 뒤로 순간이동해 찌른다(항상 등 뒤), 0.3초 무적"), p: AAssassinateB()),
-            S("n_kunai", 'a', "attack", L.T("관통 쿠나이"), L.T("지나간 적마다 3.2"), p: NKunaiA()),
-            S("n_kunai", 'b', "mobility", L.T("그림자 닻"), L.T("1.92, 쿠나이가 6초 남는다, 도착 뒤 1.5초 받는 피해 -40%"), p: NKunaiB()),
+            S("n_veil", 'a', "attack", L.T("연막 돌파"), L.T("앞으로 4m 뚫고 지나가며 경로의 적 4.0, 출발점에 연막"), p: NVeilA()),
+            S("n_veil", 'b', "mobility", L.T("이중 연막"), L.T("2.4, 도착점에도 연막(1초 공격 불가), 도착 뒤 1.5초 받는 피해 -30%"), p: NVeilB()),
             S("backstab", 'a', "support", L.T("심장 뜯기"), L.T("등 뒤 경직 1.6초, 1체"), p: BackstabA()),
             S("backstab", 'b', "support", L.T("회전 백어택"), L.T("1.6m 안 최대 3체, 등 뒤인 적마다 경직 0.55초"), p: BackstabB()),
+            S("scarecrow", 'a', "support", L.T("단단한 허수아비"), L.T("가장 가까운 적 1체만 6초 도발(보스 1.8초), 허수아비 HP x2"), p: ScarecrowA()),
+            S("scarecrow", 'b', "support", L.T("흩날리는 허수아비"), L.T("반경 x1.5 안 최대 3체를 2초씩 도발(보스 0.6초)"), p: ScarecrowB()),
             S("a_venom", 'a', "support", L.T("맹독 집중"), L.T("보스에게만 독 36%, 90초"), p: AVenomA()),
             S("a_venom", 'b', "support", L.T("맹독 전염"), L.T("독 12%, 2m 안 다른 적 2체에도 같은 독"), p: AVenomB()),
             S("a_stealth", 'a', "support", L.T("암영"), L.T("4초, 첫 공격 +90%"), p: AStealthA()),

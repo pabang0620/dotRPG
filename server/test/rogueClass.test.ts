@@ -119,14 +119,14 @@ describe('어쌔신·닌자 전직', () => {
     expect(MAIN_HUNTERS).toEqual(expect.arrayContaining(['a_rend', 'n_volley']));
   });
 
-  it('노드 레벨·선행: 연환 베기 Lv18, 연막 도약 Lv18, 맹독 도포 Lv22, 각성은 노드로 못 찍는다', () => {
+  it('노드 레벨·선행: 연환 베기 Lv18, 쿠나이 순간이동 Lv18, 맹독 도포 Lv22, 각성은 노드로 못 찍는다', () => {
     const s = blank(5);
     s.nodes = [{ id: 'a_ambush', rank: 1 }, { id: 'a_rend', rank: 1 }];
     expect(() => check(s, 17)).toThrow();
     expect(() => check(s, 18)).not.toThrow();
     s.nodes = [{ id: 'a_rend', rank: 1 }];
     expect(() => check(s, 30)).toThrow(); // 선행 a_ambush 없음
-    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_veil', rank: 1 }, { id: 'a_venom', rank: 1 }];
+    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_kunai', rank: 1 }, { id: 'a_venom', rank: 1 }];
     expect(() => check(s, 21)).toThrow();
     expect(() => check(s, 22)).not.toThrow();
     s.nodes = [{ id: 'a_awake', rank: 1 }];
@@ -139,11 +139,25 @@ describe('어쌔신·닌자 전직', () => {
     expect(() => check(n, 40)).toThrow(); // 다른 전직 노드
   });
 
-  it('추가 노드 은신: 파이터와 같음(선행 연막 도약, Lv18)', () => {
+  it('2026-10-23: 쿠나이 순간이동은 어쌔신 2번(Lv18), 연막 도약은 닌자 1번(Lv15)', () => {
+    expect(careerIds[5]?.[2]).toBe('a_kunai');
+    expect(careerIds[6]?.[1]).toBe('n_veil');
+    const s = blank(5);
+    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_kunai', rank: 1 }];
+    expect(() => check(s, 17)).toThrow();
+    expect(() => check(s, 18)).not.toThrow();
+    const n = blank(6);
+    n.nodes = [{ id: 'n_throw', rank: 1 }, { id: 'n_veil', rank: 1 }];
+    expect(() => check(n, 15)).not.toThrow();
+    n.nodes = [{ id: 'n_throw', rank: 1 }, { id: 'n_kunai', rank: 1 }];
+    expect(() => check(n, 30)).toThrow(); // 옛 닌자 노드 id
+  });
+
+  it('추가 노드 은신: 파이터와 같음(선행 쿠나이 순간이동, Lv18)', () => {
     const s = blank(5);
     s.nodes = [{ id: 'a_stealth', rank: 1 }];
     expect(() => check(s, 30)).toThrow();
-    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_veil', rank: 1 }, { id: 'a_stealth', rank: 1 }];
+    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_kunai', rank: 1 }, { id: 'a_stealth', rank: 1 }];
     expect(() => check(s, 18)).not.toThrow();
     expect(() => check(s, 17)).toThrow();
   });

@@ -24,7 +24,8 @@ BEFORE = dict(war_bonus=10, war_lv=0, mage_bonus=40, mage_lv=3,
 # 2026-10-12: warrior MP 40 + 6/Lv, main hunting skills cost a share of max MP (CareerSkill.MainHunterMpShare)
 AFTER = dict(war_bonus=40, war_lv=2, mage_bonus=40, mage_lv=3,
              share={"fighter": .0263, "guardian": .0199, "arcanist": .0333, "bishop": .0146,
-                    "assassin": .0228, "ninja": .0228})  # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 2.3/2.4
+                    "assassin": .0228, "ninja": .0228,  # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 2.3/2.4
+                    "rogue": .0346})  # [ROGUE 2026-10-23] 연쇄 도약 (base skill, 0.5 s): .09 / 1.3 x .5
 
 CAREERS = {  # mage?, career MP x, spam skill, casts per second at full speed
     "fighter": (False, 1.0, "파쇄 검기", 1 / (.15 + .15 + .08)),
@@ -34,6 +35,8 @@ CAREERS = {  # mage?, career MP x, spam skill, casts per second at full speed
     # [ROGUE 2026-10-23] Rogue MP pool = warrior (40 + 40, 4 + 2 per level). Both main skills: cast .1 + recovery .15 + .08.
     "assassin": (False, 1.0, "연환 베기", 1 / (.1 + .15 + .08)),
     "ninja": (False, 1.0, "연발 쿠나이", 1 / (.1 + .15 + .08)),
+    # [ROGUE 2026-10-23] Base rogue (any career): 연쇄 도약 on one monster, one cast per 0.5 s cooldown (the cast holds 0.29 s).
+    "rogue": (False, 1.0, "연쇄 도약(기본 스킬, 1마리)", 1 / .5),
 }
 
 

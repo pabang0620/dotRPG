@@ -22,6 +22,11 @@ namespace DotRPG
         /// along a 0.9 m wide path. The 0.17 s gap is longer than a monster's 0.15 s hit invulnerability.</summary>
         public const float ShadowDashHitScale = .2f, ShadowDashFirstHit = .6f, ShadowDashHitGap = .17f, ShadowDashHalfWidth = .45f;
         public const int ShadowDashHits = 4;
+        /// <summary>
+        /// [ROGUE 2026-10-23] 허수아비 (user feedback "백어택 is hard to use"): set past the nearest monster in range (so the
+        /// monsters turn their backs on me), else 3 m ahead. Taunt time 4 s like 대지의 호령, bosses x0.3 (1.2 s); HP half my max HP.
+        /// </summary>
+        public const float ScarecrowSeconds = 4f, ScarecrowBossShare = .3f, ScarecrowHpShare = .5f, ScarecrowBeyond = 1.5f, ScarecrowFront = 3f;
         /// <summary>천인난무: cut-in 0.35 s, dash in 0.2 s, 12 cuts 0.07 s apart, closing pose 0.45 s (1.77 s in all).</summary>
         const float DanceCutIn = .35f, DanceDashIn = .2f, DanceGap = .07f, DanceFinish = .45f;
 
@@ -84,11 +89,14 @@ namespace DotRPG
             Vector2 origin = owner.Position, searchFrom = owner.Center;
             var done = new HashSet<EnemyController>();
             EnemyController last = null;
-            float total = LeapMaxTargets * (LeapJump + LeapCut) + LeapReturn + .05f;
+            // [ROGUE 2026-10-23] The cast holds only as long as the jumps it will make (0.29 s on one monster), so the 0.5 s
+            // cooldown is what paces it; it used to hold for five jumps (0.77 s) whatever the count.
+            int planned = Mathf.Clamp(EnemiesInRadius(searchFrom, n.radius).Count, 1, LeapMaxTargets);
+            float total = planned * (LeapJump + LeapCut) + LeapReturn + .05f;
             HoldCast(total);
             owner.HoldSteady(total);
             Game.Audio.PlaySfx("swing");
-            for (int k = 0; k < LeapMaxTargets; k++)
+            for (int k = 0; k < planned; k++)
             {
                 if (owner.IsDead) yield break;
                 // Next: the nearest monster not cut yet, among those within the radius of the cast spot.
@@ -175,6 +183,21 @@ namespace DotRPG
             raidMarkUntil = Time.time + (n.spec == 'a' ? RaidOpenWindow : RaidBehindWindow); // [ROGUE SPEC] 급습 2 s
             if (n.spec == 'b') StartCoroutine(RaidReturn(origin)); // [ROGUE SPEC] 그림자 귀환
             Shake(0.08f, 0.12f);
+        }
+
+        /// <summary>허수아비: a straw scarecrow that monsters around it go for (ScarecrowDecoy); it breaks when its HP runs out.</summary>
+        void Scarecrow(SkillNumbers n)
+        {
+            float seconds = float.IsNaN(n.duration) ? ScarecrowSeconds : n.duration; // [ROGUE SPEC] A 6 s on one, B 2 s on three
+            var near = Nearest(owner.Center, n.range, null);
+            Vector2 feet = owner.Position;
+            Vector2 dir = near != null ? near.Position - feet : castAim;
+            float want = near != null ? dir.magnitude + ScarecrowBeyond : ScarecrowFront;
+            dir = dir.sqrMagnitude > .0001f ? dir.normalized : castAim;
+            Vector2 spot = feet + dir * owner.SkillClearance(dir, want);
+            int hp = Mathf.Max(1, Mathf.RoundToInt(owner.Data.Stats.MaxHp * ScarecrowHpShare * (n.spec == 'a' ? 2f : 1f))); // [ROGUE SPEC] 단단한 허수아비
+            ScarecrowDecoy.Spawn(owner, spot, hp, seconds, n.radius, n.targets, seconds * ScarecrowBossShare, n.spec != '\0' ? SpecTint(n, RogueGreen) : (Color?)null);
+            Game.Audio.PlaySfx("swing");
         }
 
         /// <summary>천인난무 (awakening): dash in and cut twelve times around the area, taking turns on the monsters in it.</summary>

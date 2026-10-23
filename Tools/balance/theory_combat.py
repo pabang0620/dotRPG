@@ -144,14 +144,14 @@ HEAL, BUFF = {"heal", "bloom", "cleanse"}, {"guard", "oath", "bless", "counter",
 # Used only until CareerData.cs carries them (7절 5단계); once it does, the rows are read from the code like the others.
 ROGUE_ROWS = """
 S(a,1,"a_twin","쌍인참","","twin",1.0f,10,3,1.6f,0,.08f,0,4),
-S(a,2,"a_veil","연막 도약","","veil",1.7f,14,12,4,2.5f,.05f,2),
+S(a,2,"a_kunai","쿠나이 순간이동","","kunai",1.6f,14,8,10,.4f,.08f),
 S(a,3,"a_venom","맹독 도포","","venom",20,20,62,0,0,.1f,120),
 S(a,5,"a_rend","연환 베기","","rend",.8f,18,0,2,.9f,.1f,0,2),
 S(a,6,"a_rupture","급소 파열","","rupture",1.2f,22,10,2,0,.2f),
 S(a,7,"a_assassinate","암살","","assassinate",1.85f,26,12,1.8f,0,.2f),
 S(a,8,"a_awake","천영참","","shadowdance",.8f,60,48,0,5.4f,0f,2,12),
 S(a,9,"a_stealth","은신","","stealth",50,20,20,0,0,.1f,6),
-S(n,1,"n_kunai","쿠나이 순간이동","","kunai",1.6f,14,8,10,.4f,.08f),
+S(n,1,"n_veil","연막 도약","","veil",1.7f,14,12,4,2.5f,.05f,2),
 S(n,2,"n_clone","분신술","","clone",25,20,24,0,0,.1f,8),
 S(n,3,"n_recall","회수","","recall",.6f,16,8,8,0,.15f),
 S(n,5,"n_volley","연발 쿠나이","","volley",.75f,18,0,8,.35f,.1f,0,2),
@@ -205,11 +205,12 @@ CAREERS = {
     "비숍": dict(cls="m", hpmul=1.05, mpcls="m", spam="b_light", spam_hits=1, splash=2.0,
                 cds=["b_cleanse"], cd_hits={}, cd_splash=2.0, more=1.18, dr=0, shield=0),
     # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 3절: assassin more = venom 1.2 x marks 1.15 x ambush 1.05, ninja = clones 1.235 x .96.
+    # Same day (user): 쿠나이 순간이동 moved to the assassin (one monster on its line here), 연막 도약 to the ninja (smoke on the pack).
     "어쌔신": dict(cls="r", hpmul=1.15, mpcls="r", spam="a_rend", spam_hits=2, splash=1.4,
-                 cds=["a_twin", "a_veil", "a_rupture", "a_assassinate"], cd_hits={"a_twin": 4}, cd_splash=1.0, more=1.2 * 1.15 * 1.05, dr=0, shield=0,
+                 cds=["a_twin", "a_kunai", "a_rupture", "a_assassinate"], cd_hits={"a_twin": 4}, cd_splash=1.0, more=1.2 * 1.15 * 1.05, dr=0, shield=0,
                  basic=(.24, 1.1)),
     "닌자": dict(cls="r", hpmul=1.0, mpcls="r", spam="n_volley", spam_hits=2, splash=1.6,
-                cds=["n_kunai", "n_fuma", "n_bomb", "n_recall"], cd_hits={"n_fuma": 6, "n_bomb": 3, "n_recall": 6}, cd_splash=2.0, more=1.235 * .96, dr=0, shield=0,
+                cds=["n_veil", "n_fuma", "n_bomb", "n_recall"], cd_hits={"n_fuma": 6, "n_bomb": 3, "n_recall": 6}, cd_splash=2.0, more=1.235 * .96, dr=0, shield=0,
                 basic=(.3, 1.0)),
 }
 # --old-mp: the warrior MP formula this tool used before 2026-10-23 (40 + 10, 4 per level). The code (CharacterStatsCalc) is

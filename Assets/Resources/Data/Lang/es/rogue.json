@@ -242,5 +242,19 @@
  "스킨 뽑기 (도적)": "Tirada de skin (Pícaro)",
  "별빛 그림자(교환소 전용)": "Sombra de luz estelar (solo intercambio)",
  "밀정의 옷장": "Armario del espía",
- "칼춤의 의상": "Atuendo de la danza de hojas"
+ "칼춤의 의상": "Atuendo de la danza de hojas",
+ "새 스킬: {0}  (메뉴 → 스킬에서 원하는 키에 올릴 수 있습니다)": "Nueva habilidad: {0}  (Menú → Habilidades: ponla en la tecla que quieras)",
+ "가장 가까운 적 너머에 짚 허수아비를 세운다. 반경 4.2m 안의 적이 4초 동안 허수아비를 노린다(보스는 짧게). 맞으면 부서진다. 적이 등을 돌린 틈에 백어택을 넣는다.": "Planta un Espantapájaros de paja justo detrás del enemigo más cercano. Los enemigos en un radio de 4.2 m atacan al Espantapájaros durante 4 s (los jefes, poco tiempo). Se rompe si recibe suficientes golpes. Aprovecha que te dan la espalda para una Puñalada trasera.",
+ "허수아비": "Espantapájaros",
+ "2.76, 0.5초 무적, 1초 뒤 원래 자리로 돌아온다": "2.76, Invulnerable 0.5 s, vuelve al sitio original tras 1 s",
+ "4.6, 도착 뒤 2초 동안 그 적에게 등 뒤 판정": "4.6, cuenta como por la espalda contra ese enemigo durante 2 s tras llegar",
+ "가장 가까운 적 1체만 6초 도발(보스 1.8초), 허수아비 HP x2": "Provoca solo al enemigo más cercano durante 6 s (jefes 1.8 s), PV del Espantapájaros x2",
+ "단단한 허수아비": "Espantapájaros robusto",
+ "반경 x1.5 안 최대 3체를 2초씩 도발(보스 0.6초)": "Provoca hasta 3 enemigos en radio x1.5 durante 2 s cada uno (jefes 0.6 s)",
+ "적마다 0.7 + 남은 그림자가 1초·1.5초 뒤 0.15씩 두 번": "0.7 por enemigo + las sombras restantes golpean dos veces con 0.15 cada una tras 1 s y 1.5 s",
+ "쿨 3초, 적마다 6.0, 마지막 적 0.5초 경직": "Reutil. 3 s, 6.0 por enemigo, el último enemigo sufre Tambaleo de 0.5 s",
+ "흩날리는 허수아비": "Espantapájaros disperso",
+ "분신 중 연막 도약 {0}/2 · 기폭 속박 {1}/4": "Saltos de humo durante Clones {0}/2 · Inmovilizaciones por detonación {1}/4",
+ "시련: 분신술 지속 중에 연막 도약 2회 + 기폭 쿠나이로 4번 속박. 45초.": "Prueba: 2 Saltos de humo durante Arte de clones + 4 inmovilizaciones con Kunai detonante. 45 s.",
+ "쿠나이 순간이동·암살을 해금하세요. (Lv.22, 노드 6개)": "Desbloquea Teletransporte de kunai y Asesinato. (Nv. 22, 6 nodos)"
 }

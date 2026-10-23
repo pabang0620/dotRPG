@@ -242,5 +242,19 @@
  "스킨 뽑기 (도적)": "Quay Skin (Đạo Tặc)",
  "별빛 그림자(교환소 전용)": "Bóng Ánh Sao (chỉ ở quầy đổi)",
  "밀정의 옷장": "Tủ đồ mật thám",
- "칼춤의 의상": "Trang phục kiếm vũ"
+ "칼춤의 의상": "Trang phục kiếm vũ",
+ "새 스킬: {0}  (메뉴 → 스킬에서 원하는 키에 올릴 수 있습니다)": "Kỹ năng mới: {0}  (Menu → Kỹ năng: gắn vào phím bạn muốn)",
+ "가장 가까운 적 너머에 짚 허수아비를 세운다. 반경 4.2m 안의 적이 4초 동안 허수아비를 노린다(보스는 짧게). 맞으면 부서진다. 적이 등을 돌린 틈에 백어택을 넣는다.": "Dựng một Bù Nhìn rơm ngay phía sau kẻ địch gần nhất. Kẻ địch trong bán kính 4.2m nhắm vào Bù Nhìn trong 4s (boss chỉ một lúc). Bị đánh đủ nhiều sẽ vỡ. Tung Đâm Lưng khi chúng quay lưng lại.",
+ "허수아비": "Bù Nhìn",
+ "2.76, 0.5초 무적, 1초 뒤 원래 자리로 돌아온다": "2.76, Vô địch 0.5s, quay về chỗ cũ sau 1s",
+ "4.6, 도착 뒤 2초 동안 그 적에게 등 뒤 판정": "4.6, tính là từ sau lưng với kẻ địch đó trong 2s sau khi đến nơi",
+ "가장 가까운 적 1체만 6초 도발(보스 1.8초), 허수아비 HP x2": "Chỉ khiêu khích kẻ địch gần nhất trong 6s (boss 1.8s), HP Bù Nhìn x2",
+ "단단한 허수아비": "Bù Nhìn Vững Chắc",
+ "반경 x1.5 안 최대 3체를 2초씩 도발(보스 0.6초)": "Khiêu khích tối đa 3 kẻ địch trong bán kính x1.5, mỗi kẻ 2s (boss 0.6s)",
+ "적마다 0.7 + 남은 그림자가 1초·1.5초 뒤 0.15씩 두 번": "0.7 mỗi kẻ địch + các bóng còn lại đánh hai lần 0.15 sau 1s và 1.5s",
+ "쿨 3초, 적마다 6.0, 마지막 적 0.5초 경직": "Hồi chiêu 3s, 6.0 mỗi kẻ địch, kẻ địch cuối Khựng 0.5s",
+ "흩날리는 허수아비": "Bù Nhìn Tung Bay",
+ "분신 중 연막 도약 {0}/2 · 기폭 속박 {1}/4": "Nhảy Khói khi có Phân Thân {0}/2 · Trói bằng Kunai Nổ {1}/4",
+ "시련: 분신술 지속 중에 연막 도약 2회 + 기폭 쿠나이로 4번 속박. 45초.": "Thử thách: 2 lần Nhảy Khói trong lúc Phân Thân Thuật + 4 lần trói bằng Kunai Nổ. 45s.",
+ "쿠나이 순간이동·암살을 해금하세요. (Lv.22, 노드 6개)": "Hãy mở khóa Kunai Dịch Chuyển và Ám Sát. (Lv.22, 6 nút)"
 }

@@ -13,8 +13,8 @@ namespace DotRPG
         const float StabHeartLow = 1.25f;
         /// <summary>그림자 일격 도약 A: the last monster cut is staggered.</summary>
         const float LeapHeavyStagger = .5f;
-        /// <summary>잔영 도약 B: the shadow left on each monster cuts twice, 1 s and 1.5 s later, 0.25 each (of the 1.2 cut).</summary>
-        const float LeapTrailShare = .25f / 1.2f, LeapTrailFirst = 1f, LeapTrailGap = .5f;
+        /// <summary>잔영 도약 B: the shadow left on each monster cuts twice, 1 s and 1.5 s later, 0.15 each (of the 0.7 cut).</summary>
+        const float LeapTrailShare = .15f / .7f, LeapTrailFirst = 1f, LeapTrailGap = .5f;
         /// <summary>급습 A: a backstab on the raided monster counts as from behind for 2 s.</summary>
         const float RaidOpenWindow = 2f;
         /// <summary>그림자 귀환 B: 0.5 s untouchable, back to the start spot 1 s after the cut.</summary>

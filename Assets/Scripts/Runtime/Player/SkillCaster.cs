@@ -209,6 +209,7 @@ namespace DotRPG
                     case "backstab": Backstab(n); break;
                     case "raid": Raid(n); break;
                     case "dance": yield return StartCoroutine(Dance(n, i == 0)); break;
+                    case "scarecrow": Scarecrow(n); break;
                 }
                 if (i < n.repeats) yield return new WaitForSeconds(0.28f);
             }

@@ -56,7 +56,9 @@ namespace DotRPG
         public static float MainHunterMpShare(string id) =>
             id == "f_break" ? .0263f : id == "g_wall" ? .0199f : id == "m_storm" ? .0333f : id == "b_light" ? .0146f
             // [ROGUE] 연환 베기 / 연발 쿠나이: one cast every 0.33 s (0.1 cast + 0.15 recovery + 0.08) -> 0.09 / 1.3 / 3.03 = 2.28%.
-            : id == "a_rend" || id == "n_volley" ? .0228f : 0f;
+            : id == "a_rend" || id == "n_volley" ? .0228f
+            // [ROGUE 2026-10-23] 연쇄 도약 (base skill, user: 0.5 s recharge "to use without end"): one cast every 0.5 s at most -> 0.09 / 1.3 x 0.5.
+            : id == "leap" ? .0346f : 0f;
         public SkillGem Gem => new SkillGem { id = id, name = name, description = description, icon = Icon,
             kind = GemKind.Active, classOnly = CareerCatalog.Base(career), unlockLevel = level,
             slot = kind == CareerSkillKind.Awakening ? 4 : -1, damageMult = power, cooldown = cooldown,
@@ -213,7 +215,9 @@ namespace DotRPG
                 // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 2.3 (어쌔신) and 2.4 (닌자): raw values here, S() makes the "실제" column.
                 S(a,0,"a_vital","급소 간파","같은 적을 직접 맞힐 때마다 표식 1개(최대 5, 4초). 표식 하나마다 그 적이 내게 받는 피해 +4%.","vital",4,0,0,0,0,0,4),
                 S(a,1,"a_twin","쌍인참","눈앞의 적 하나를 양손 단검으로 4번 찌른다(0.17초 간격).","twin",1.0f,10,3,1.6f,0,.08f,0,4),
-                S(a,2,"a_veil","연막 도약","뒤로 4m 물러나며 서 있던 자리에 연막(반경 2.5m)을 터뜨린다. 연막 안 적은 피해를 받고 2초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,2),
+                // [ROGUE 2026-10-23] User: 쿠나이 순간이동 is the assassin's skill. It takes 연막 도약's place (index 2, Lv18) and
+                // 연막 도약, a smoke bomb escape that fits the ninja, takes its old place there (index 1, Lv15). Raw numbers unchanged.
+                S(a,2,"a_kunai","쿠나이 순간이동","쿠나이를 10m 일직선으로 던져 지나간 적을 벤다. 한 번 더 누르면 쿠나이 위치로 이동한다(날아가는 중에도, 멈춘 뒤 3초까지). 벽에 박히면 근처 걸을 수 있는 자리로.","kunaiport",1.6f,14,8,10,.4f,.08f,3),
                 S(a,3,"a_venom","맹독 도포","120초 동안 모든 직접 공격이 준 피해의 20%만큼 독을 남긴다(3초에 나눠, 방어 무시).","venom",20,20,62,0,0,.1f,120),
                 S(a,4,"a_ambush","기습","등 뒤에서 하는 직접 공격 피해 +15%.","ambush",15,0,0,0,0,0),
                 S(a,5,"a_rend","연환 베기","재사용 대기시간 없이 전방 2m 120도를 두 번 벤다(0.17초 간격).","rend",.8f,18,0,2,.9f,.1f,0,2),
@@ -222,7 +226,7 @@ namespace DotRPG
                 S(a,8,"a_awake","천영참","그림자 여섯이 반경 5.4m 적 사이를 오가며 3초 동안 벤 뒤, 맞은 적마다 표식을 터뜨린다(480%).","shadows",.8f,60,48,0,5.4f,0,2,12),
                 S(a,9,"a_stealth","은신","6초 동안 투명해져 일반 몬스터가 추적을 멈춘다(보스는 그대로). 이동 속도 +30%. 은신 중 첫 공격은 피해 +50%이고 항상 등 뒤 판정, 공격하면 풀린다.","stealth",50,20,20,0,0,.1f,6),
                 S(n,0,"n_throw","투척술","기본 공격이 쿠나이 투척으로 바뀐다(0.3초, 6m, 첫 적에게 꽂힘). 빗나간 쿠나이와 꽂힌 쿠나이는 그 자리에 4초 남는다.","throw",0,0,0,0,0,0,4),
-                S(n,1,"n_kunai","쿠나이 순간이동","쿠나이를 10m 일직선으로 던져 지나간 적을 벤다. 한 번 더 누르면 쿠나이 위치로 이동한다(날아가는 중에도, 멈춘 뒤 3초까지). 벽에 박히면 근처 걸을 수 있는 자리로.","kunaiport",1.6f,14,8,10,.4f,.08f,3),
+                S(n,1,"n_veil","연막 도약","뒤로 4m 물러나며 서 있던 자리에 연막(반경 2.5m)을 터뜨린다. 연막 안 적은 피해를 받고 2초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,2),
                 S(n,2,"n_clone","분신술","분신 둘이 8초 동안 쿠나이 투척을 따라 한다(분신마다 본체 피해의 25%). 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.","clone",25,20,24,0,0,.1f,8),
                 S(n,3,"n_recall","회수","8m 안에 남은 쿠나이를 모두(최대 12개) 손으로 끌어당긴다. 돌아오는 길의 적을 쿠나이마다 벤다. 회수한 쿠나이마다 MP 1% 회복.","recall",.6f,16,8,8,0,.15f),
                 S(n,4,"n_far","원거리 집중","6m 이상 떨어진 적에게 직접 공격 피해 +12%.","far",12,0,0,0,0,0),

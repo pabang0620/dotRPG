@@ -88,14 +88,20 @@ namespace DotRPG
             Active("firefield", L.T("화염 장판"), CharacterClass.Mage, 3, L.T("적이 몰린 자리에 불길을 깔아 3초 동안 6번 태운다. 무리를 묶어 둘 때 쓴다.")).With(g => { g.damageMult = 0.4f; g.cooldown = 6f; g.range = 7.5f; g.radius = 3.2f; g.hits = 6; g.manaCost = 10; }),
             Active("meteor", L.T("메테오"), CharacterClass.Mage, 4, L.T("거대한 운석을 연달아 떨어뜨려 넓은 지역을 불태운다.")).With(g => { g.damageMult = 2.8f; g.cooldown = 24f; g.radius = 2.8f; g.range = 7f; g.hits = 8; g.manaCost = 32; }),
             // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 2.2 (leap, backstab and dance are the user's numbers). Not shaped by S().
-            // stab 2.9 single target; leap 1.7 per monster, up to 5 (SkillCaster.LeapMaxTargets) within 5 m of the cast; backstab 0.975 from behind
-            // (150% of a 0.65 stab) with a 0.8 s stun, 0.39 from the front (SkillCaster.BackstabFrontShare); raid 2.6 behind the
+            // stab 2.9 single target; leap 1.0 per monster, up to 5 (SkillCaster.LeapMaxTargets) within 5 m of the cast; backstab 0.975 from behind
+            // (150% of a 0.65 stab) with a 0.8 s stun, 0.39 from the front (SkillCaster.BackstabFrontShare); raid 2.99 behind the
             // nearest monster in 6 m; dance 12 x 2.2 inside 3.5 m (range), each cut 1.2 m (radius).
+            // [ROGUE 2026-10-23] User feedback: leap recharges in 0.5 s and costs a share of max MP like the career spam skills
+            // (CareerSkill.MainHunterMpShare); 1.7 -> 1.0 per monster keeps Lv6-14 hunting in the plan's band (theory_skills.py).
+            // Raid +15% (2.6 -> 2.99). Scarecrow (new, the A key's default, usable from Lv12): plan 2.2.
             Active("stab", L.T("급소 찌르기"), CharacterClass.Rogue, 0, L.T("눈앞의 적 하나를 깊이 찌른다. 충격파가 없는 대신 파쇄 일격보다 세다.")).With(g => { g.damageMult = 2.9f; g.cooldown = 1.6f; g.range = 1.8f; g.radius = 0.5f; g.manaCost = 4; }),
-            Active("leap", L.T("연쇄 도약"), CharacterClass.Rogue, 1, L.T("사정거리 안의 몬스터를 타고 타고 벤다. 다 때리면 시전 위치로 돌아온다.")).With(g => { g.damageMult = 1.7f; g.cooldown = 3f; g.range = 5f; g.radius = 5f; g.manaCost = 8; }),
+            Active("leap", L.T("연쇄 도약"), CharacterClass.Rogue, 1, L.T("사정거리 안의 몬스터를 타고 타고 벤다. 다 때리면 시전 위치로 돌아온다.")).With(g => { g.damageMult = 1.0f; g.cooldown = 0.5f; g.range = 5f; g.radius = 5f; g.manaCost = 4; }),
             Active("backstab", L.T("백어택"), CharacterClass.Rogue, 2, L.T("등 뒤에서 쓰면 심장을 뜯어 0.8초 경직시킨다. 등 뒤가 아니면 얕게 찌른다.")).With(g => { g.damageMult = 0.975f; g.cooldown = 4f; g.range = 1.6f; g.radius = 0.5f; g.stun = 0.8f; g.manaCost = 6; }),
-            Active("raid", L.T("그림자 습격"), CharacterClass.Rogue, 3, L.T("가장 가까운 적의 등 뒤로 순간이동해 벤다. 도착 뒤 1초 동안 그 적에게 쓰는 백어택은 등 뒤 판정이 된다.")).With(g => { g.damageMult = 2.6f; g.cooldown = 4.5f; g.range = 6f; g.radius = 0.5f; g.manaCost = 9; }),
+            Active("raid", L.T("그림자 습격"), CharacterClass.Rogue, 3, L.T("가장 가까운 적의 등 뒤로 순간이동해 벤다. 도착 뒤 1초 동안 그 적에게 쓰는 백어택은 등 뒤 판정이 된다.")).With(g => { g.damageMult = 2.99f; g.cooldown = 4.5f; g.range = 6f; g.radius = 0.5f; g.manaCost = 9; }),
             Active("dance", L.T("천인난무"), CharacterClass.Rogue, 4, L.T("주변의 적을 12번 마구 난도질한다.")).With(g => { g.damageMult = 2.2f; g.cooldown = 24f; g.range = 3.5f; g.radius = 1.2f; g.hits = 12; g.manaCost = 30; }),
+            // [ROGUE] 허수아비: slot 5 = the A key's default (Lv20) but learnable from Lv12 with 백어택, so it can go on any key earlier.
+            // range = how far it is set up, radius = the taunt circle; taunt 4 s (bosses 1.2 s) and HP in SkillCaster.Scarecrow*.
+            Active("scarecrow", L.T("허수아비"), CharacterClass.Rogue, 5, L.T("가장 가까운 적 너머에 짚 허수아비를 세운다. 반경 4.2m 안의 적이 4초 동안 허수아비를 노린다(보스는 짧게). 맞으면 부서진다. 적이 등을 돌린 틈에 백어택을 넣는다.")).With(g => { g.damageMult = 0f; g.cooldown = 10f; g.range = 6f; g.radius = 4.2f; g.manaCost = 12; g.unlockLevel = 12; }),
 
             new SkillGem { id = "sup_dmg", tip = L.T("보스·강적을 잡는 주력기(1번 스킬)에. MP 여유가 있을 때 가장 무난하다."), name = L.T("추가 피해"), icon = "gem_sup_dmg", kind = GemKind.Support, unlockLevel = 3, moreDamage = 35, manaMult = 1.3f,
                 description = L.T("연결된 스킬의 피해 35% 증폭. MP 소모 30% 증가.") },
@@ -317,7 +323,8 @@ namespace DotRPG
             // [BALANCE 2026-10-12] A career's main hunting skill costs a share of max MP instead of a flat number, so
             // nonstop spam empties a full pool in about 25 s and normal hunting needs about one MP potion a minute at
             // every level (a flat cost was crushing at Lv18-20 and free at Lv40). Tools/balance/theory_mana.py.
-            float share = career != null && !n.usesLife ? CareerSkill.MainHunterMpShare(career.id) : 0f;
+            // [ROGUE 2026-10-23] 연쇄 도약 (a base skill) is spammable too and pays the same way.
+            float share = !n.usesLife ? CareerSkill.MainHunterMpShare(active.id) : 0f;
             if (share > 0f) n.manaCost = Mathf.Max(1, Mathf.RoundToInt(MaxMp * share * mana * (1f - ManaCostReduction / 100f)));
             if(career!=null) {
                 n.careerPotency=rankScale*more;

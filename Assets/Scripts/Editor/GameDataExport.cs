@@ -33,10 +33,32 @@ namespace DotRPG.EditorTools
                 "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
                 "\"3\":{\"minSeconds\":4,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
                 "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}," +
-                // [ROGUE] 어쌔신: 5 back hits in a row + 암살 on 5 marks; 닌자: 3 moves to the kunai with clones out (5.5 s apart) + 4 roots.
-                "\"5\":{\"minSeconds\":4,\"requiredNodes\":[\"a_veil\",\"a_assassinate\"]}," +
-                "\"6\":{\"minSeconds\":11,\"requiredNodes\":[\"n_clone\",\"n_bomb\"]}}";
-            return json.Substring(0, json.Length - 1) + trials + "}";
+                // [ROGUE] 어쌔신: 5 back hits in a row + 암살 on 5 marks; 닌자 (2026-10-23): 2 smoke leaps with clones out (8.5 s apart) + 4 roots.
+                "\"5\":{\"minSeconds\":4,\"requiredNodes\":[\"a_kunai\",\"a_assassinate\"]}," +
+                "\"6\":{\"minSeconds\":8,\"requiredNodes\":[\"n_clone\",\"n_bomb\"]}}";
+            return json.Substring(0, json.Length - 1) + trials + Recommend() + "}";
+        }
+
+        /// <summary>
+        /// [TEST TOOL] careers.json "recommend": SkillRecommend.Plan per career number as skill ids, so the test server's
+        /// character script (server/scripts/test-checkpoint.mjs) learns and places skills by the same rule as 추천 배치.
+        /// </summary>
+        static string Recommend()
+        {
+            var sb = new StringBuilder(",\"recommend\":{");
+            for (int c = 1; c <= 6; c++)
+            {
+                var skills = CareerCatalog.For((Career)c);
+                var (ranks, keys) = SkillRecommend.Plan((Career)c);
+                if (c > 1) sb.Append(',');
+                sb.Append('"').Append(c).Append("\":{\"ranks\":[");
+                for (int r = 0; r < ranks.GetLength(0); r++)
+                    sb.Append(r > 0 ? "," : "").Append("[\"").Append(skills[ranks[r, 0]].id).Append("\",").Append(ranks[r, 1]).Append(']');
+                sb.Append("],\"keys\":[");
+                for (int k = 0; k < keys.Length; k++) sb.Append(k > 0 ? "," : "").Append('"').Append(skills[keys[k]].id).Append('"');
+                sb.Append("]}");
+            }
+            return sb.Append('}').ToString();
         }
 
         static string OutDir => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "server", "data"));

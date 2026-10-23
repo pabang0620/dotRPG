@@ -242,5 +242,19 @@
  "스킨 뽑기 (도적)": "Sorteio de Skins (Ladino)",
  "별빛 그림자(교환소 전용)": "Sombra Luz Estelar (só na troca)",
  "밀정의 옷장": "Guarda-roupa do Espião",
- "칼춤의 의상": "Traje da Dança das Lâminas"
+ "칼춤의 의상": "Traje da Dança das Lâminas",
+ "새 스킬: {0}  (메뉴 → 스킬에서 원하는 키에 올릴 수 있습니다)": "Nova habilidade: {0}  (Menu → Habilidades: coloque-a na tecla que quiser)",
+ "가장 가까운 적 너머에 짚 허수아비를 세운다. 반경 4.2m 안의 적이 4초 동안 허수아비를 노린다(보스는 짧게). 맞으면 부서진다. 적이 등을 돌린 틈에 백어택을 넣는다.": "Ergue um Espantalho de palha logo além do inimigo mais próximo. Inimigos num raio de 4,2m atacam o Espantalho por 4s (chefes, por pouco tempo). Ele se quebra se apanhar o bastante. Aproveite que viram as costas para um Golpe pelas Costas.",
+ "허수아비": "Espantalho",
+ "2.76, 0.5초 무적, 1초 뒤 원래 자리로 돌아온다": "2.76, Invulnerável 0.5s, volta ao ponto original após 1s",
+ "4.6, 도착 뒤 2초 동안 그 적에게 등 뒤 판정": "4.6, conta como pelas costas contra esse inimigo por 2s após a chegada",
+ "가장 가까운 적 1체만 6초 도발(보스 1.8초), 허수아비 HP x2": "Provoca só o inimigo mais próximo por 6s (chefes 1.8s), PV do Espantalho x2",
+ "단단한 허수아비": "Espantalho Resistente",
+ "반경 x1.5 안 최대 3체를 2초씩 도발(보스 0.6초)": "Provoca até 3 inimigos em raio x1.5 por 2s cada (chefes 0.6s)",
+ "적마다 0.7 + 남은 그림자가 1초·1.5초 뒤 0.15씩 두 번": "0.7 por inimigo + as sombras restantes atingem duas vezes, 0.15 cada, após 1s e 1.5s",
+ "쿨 3초, 적마다 6.0, 마지막 적 0.5초 경직": "Recarga 3s, 6.0 por inimigo, o último inimigo cambaleia 0.5s",
+ "흩날리는 허수아비": "Espantalho Esvoaçante",
+ "분신 중 연막 도약 {0}/2 · 기폭 속박 {1}/4": "Saltos de Fumaça durante Clones {0}/2 · Imobilizações do Detonador {1}/4",
+ "시련: 분신술 지속 중에 연막 도약 2회 + 기폭 쿠나이로 4번 속박. 45초.": "Provação: 2 Saltos de Fumaça durante a Arte do Clone + 4 imobilizações do Kunai Detonador. 45s.",
+ "쿠나이 순간이동·암살을 해금하세요. (Lv.22, 노드 6개)": "Desbloqueie Teleporte do Kunai e Assassinato. (Lv.22, 6 nós)"
 }

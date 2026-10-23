@@ -138,7 +138,7 @@ namespace DotRPG
                 e.gem = g;
                 e.bg.gameObject.SetActive(g != null);
                 if (g == null) continue;
-                bool open = g.kind == GemKind.Active ? (g.IsUltimate ? prog.Awakened : prog.IsSlotOpen(g.slot)) : prog.IsUnlocked(g);
+                bool open = g.kind == GemKind.Active ? (g.IsUltimate ? prog.Awakened : prog.IsUnlocked(g)) : prog.IsUnlocked(g); // [ROGUE] 허수아비 opens (Lv12) before its default key (A, Lv20)
                 e.icon.sprite = Game.Art.Get(g.icon);
                 e.icon.color = open ? Color.white : new Color(.45f, .45f, .5f, 1f);
                 string worn = WornOn(prog, g);
@@ -174,7 +174,7 @@ namespace DotRPG
                 sb.Append(L.F("기본 피해 배율 {0:0}%{1}   MP {2}   재사용 {3:0.#}초", g.damageMult * 100, (g.hits > 1 ? L.F(" × {0}회", g.hits) : ""), g.manaCost, g.cooldown));
                 if (g.stun > 0) sb.Append(L.F("   기절 {0:0.#}초", g.stun));
                 if (g.freeze > 0) sb.Append(L.F("   빙결 {0:0.#}초", g.freeze));
-                sb.Append(prog.IsSlotOpen(g.slot) ? L.T("\n\n<color=#8fe28f>사용 가능</color>") : L.F("\n\n<color=#ff9f43>Lv.{0}에 칸이 열린다</color>", g.unlockLevel));
+                sb.Append(prog.IsUnlocked(g) ? L.T("\n\n<color=#8fe28f>사용 가능</color>") : L.F("\n\n<color=#ff9f43>Lv.{0}에 칸이 열린다</color>", g.unlockLevel));
             }
             string worn = WornOn(prog, g);
             if (worn.Length > 0) sb.Append($"   <color=#8fe28f>{worn}</color>");
