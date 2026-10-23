@@ -30,8 +30,9 @@ namespace DotRPG
         /// <summary>천인난무: cut-in 0.35 s, dash in 0.2 s, 12 cuts 0.07 s apart, closing pose 0.45 s (1.77 s in all).</summary>
         const float DanceCutIn = .35f, DanceDashIn = .2f, DanceGap = .07f, DanceFinish = .45f;
 
-        static readonly Color RogueGreen = new Color(.31f, .78f, .47f, 1f); // #50c878
-        static readonly Color ShadowTint = new Color(.45f, .55f, 1f, .6f);
+        /// <summary>[ROGUE 2026-10-23] Plain effect colours like the warrior's (user: "too flashy"): steel cuts, grey afterimages.</summary>
+        static readonly Color RogueGreen = new Color(.86f, .88f, .9f, 1f);
+        static readonly Color ShadowTint = new Color(.5f, .52f, .56f, .6f);
 
         EnemyController raidMark;
         float raidMarkUntil, shadowDashGuard;
@@ -120,7 +121,7 @@ namespace DotRPG
                 {
                     Vector2 dir = (next.Center - owner.Center).normalized;
                     CareerFx.Clip("f_x", next.Center, dir, .9f, 30f, VfxLayer.Top, true, n.spec != '\0' ? SpecTint(n, RogueGreen) : (Color?)null);
-                    Hit(next, n, owner.Center, 4f);
+                    CareerCombat.For(owner).Uncopied(() => Hit(next, n, owner.Center, 4f)); // [NINJA] 분신술 does not copy moving skills
                     if (n.spec == 'b') StartCoroutine(LeapTrail(n, next)); // [ROGUE SPEC] 잔영 도약
                     last = next;
                 }
@@ -178,7 +179,7 @@ namespace DotRPG
             Game.Audio.PlaySfx("swing");
             Vector2 dir = (target.Center - owner.Center).sqrMagnitude > .0001f ? (target.Center - owner.Center).normalized : castAim;
             CareerFx.Clip("f_x", target.Center, dir, 1.1f, 30f, VfxLayer.Top, true);
-            Hit(target, n, owner.Center, 4f);
+            CareerCombat.For(owner).Uncopied(() => Hit(target, n, owner.Center, 4f)); // [NINJA] 분신술 does not copy moving skills
             raidMark = target;
             raidMarkUntil = Time.time + (n.spec == 'a' ? RaidOpenWindow : RaidBehindWindow); // [ROGUE SPEC] 급습 2 s
             if (n.spec == 'b') StartCoroutine(RaidReturn(origin)); // [ROGUE SPEC] 그림자 귀환
@@ -291,7 +292,8 @@ namespace DotRPG
                 if (e == null || e.IsDead || owner == null || owner.IsDead) yield break;
                 int damage = Mathf.Max(1, Mathf.RoundToInt(owner.Data.Stats.AttackDamage(owner.Class) * ShadowDashHitScale));
                 if (e.IsBoss) damage = Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
-                bool landed = e.TakeDamage(new DamageInfo(damage, e.Center - direction, 1f, Team.Player, owner.gameObject));
+                bool landed = false;
+                CareerCombat.For(owner).Uncopied(() => landed = e.TakeDamage(new DamageInfo(damage, e.Center - direction, 1f, Team.Player, owner.gameObject))); // [NINJA] the dash is not copied
                 if (landed) CareerFx.Clip("f_x", e.Center, k % 2 == 0 ? direction : -direction, .7f, 30f, VfxLayer.Top, true, ShadowTint);
             }
         }

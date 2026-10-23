@@ -25,9 +25,16 @@ namespace DotRPG
         const float StealthSpeed = 1.3f;
         /// <summary>천영참: the closing burst on each monster cut is 480% (6x the 80% cuts).</summary>
         const float ShadowBurst = 4.8f / .8f;
+        /// <summary>환영 삼격: the outer phantoms run this many degrees off the aim; speed, push and afterimage spacing.</summary>
+        const float PhantomSpread = 25f, PhantomSpeed = 14f, PhantomPush = 8f, PhantomGhostGap = .05f;
 
-        public static readonly Color AssassinPink = new Color(.88f, .35f, .78f, .95f); // #e05ac8
-        static readonly Color AssassinShade = new Color(.75f, .3f, .85f, .55f);
+        /// <summary>[ROGUE 2026-10-23] Plain colours (user: no premium violet): dagger steel cuts, grey shadows and smoke.</summary>
+        public static readonly Color AssassinPink = CareerFx.DaggerSteel;
+        static readonly Color AssassinShade = new Color(.42f, .43f, .46f, .55f);
+        static readonly Color SmokeGray = new Color(.7f, .7f, .72f, .9f);
+        static readonly Color VenomGreen = new Color(.5f, .62f, .38f, 1f);
+        /// <summary>Dims the bright green poison picture (a_venom) toward a murky green.</summary>
+        static readonly Color VenomTint = new Color(.78f, .82f, .7f, 1f);
 
         // ---------- State ----------
 
@@ -128,7 +135,7 @@ namespace DotRPG
                 left -= tick;
                 if (tick <= 0) yield break;
                 SecondaryHit(e, tick, true);
-                CareerFx.Gen("a_venom", null, e.Center + Vector2.up * .2f, Vector2.zero, .55f, 0f, 14f, VfxLayer.Top, false);
+                CareerFx.Gen("a_venom", null, e.Center + Vector2.up * .2f, Vector2.zero, .55f, 0f, 14f, VfxLayer.Top, false, VenomTint);
             }
         }
 
@@ -247,7 +254,7 @@ namespace DotRPG
                 if (owner.IsLocal) { GameEvents.RaiseToast(L.T("이동할 자리가 없습니다.")); Game.Audio.PlaySfx("cancel"); }
                 return;
             }
-            CareerFx.Ghost(owner, new Color(1f, .6f, .3f, .7f), .3f);
+            CareerFx.Ghost(owner, new Color(.6f, .62f, .66f, .7f), .3f);
             NinjaClone.Puff(owner.Center);
             if (!owner.NetPuppet) owner.SkillTeleportTo(spot.Value, spot.Value + (spot.Value - owner.Position));
             NinjaClone.Puff(owner.Center);
@@ -261,7 +268,7 @@ namespace DotRPG
         {
             switch (c.s.effect)
             {
-                case "twin": yield return TwinStab(c); break;
+                case "phantom": yield return Phantoms(c); break;
                 case "kunaiport": yield return KunaiPort(c); break;
                 case "venom": Venom(c); break;
                 case "rend": yield return Rend(c); break;
@@ -272,22 +279,53 @@ namespace DotRPG
             }
         }
 
-        /// <summary>쌍인참: four stabs, 0.17 s apart, on the one monster in front.</summary>
-        IEnumerator TwinStab(Run c)
+        /// <summary>
+        /// 환영 삼격 (user skill 2026-10-23): three phantom copies of me run 5 m out on a fan (-25°, 0°, +25°), pushing back
+        /// and cutting the monsters on their way (each phantom cuts a monster once, bosses are not pushed). Up close the
+        /// three paths overlap, so a monster right in front takes all three cuts; the cuts ignore hit invulnerability.
+        /// </summary>
+        IEnumerator Phantoms(Run c)
         {
-            var target = Target(c.dir, c.n.range, out Vector2 point);
-            int stab = TwinDamage(c);
-            for (int i = 0; i < c.s.hits; i++)
+            Pose(.2f, 2);
+            Sound("c_dash", .8f);
+            // [ROGUE SPEC] 환영 일점 A: the phantoms run one line. 환영 오격 B: five on a wider fan, one cut per monster in all.
+            int count = Mathf.Max(1, c.n.spec == 'b' && c.n.projectiles > 0 ? c.n.projectiles : c.s.hits);
+            float spread = c.n.spec == 'a' ? 0f : c.n.spec == 'b' && !float.IsNaN(c.n.spreadDeg) ? c.n.spreadDeg : PhantomSpread;
+            int damage = PhantomDamage(c);
+            Vector2 from = owner.Center;
+            var shared = c.n.spec == 'b' ? new HashSet<EnemyController>() : null;
+            var dirs = new Vector2[count];
+            var lengths = new float[count];
+            var cut = new HashSet<EnemyController>[count];
+            for (int i = 0; i < count; i++)
+            {
+                float a = count == 1 ? 0f : -spread + 2f * spread * i / (count - 1);
+                dirs[i] = CareerFx.Tilt(c.dir, a);
+                lengths[i] = owner.SkillClearance(dirs[i], c.n.range);
+                cut[i] = new HashSet<EnemyController>();
+            }
+            float travelled = 0f, ghost = 0f;
+            while (travelled < c.n.range)
             {
                 if (!Live(c)) yield break;
-                Pose(.12f, i % 2);
-                Vector2 dir = target != null && !target.IsDead ? (target.Center - owner.Center).normalized : c.dir;
-                Vector2 at = target != null && !target.IsDead ? target.Center : owner.Center + c.dir * Mathf.Min(1f, c.n.range);
-                CareerFx.Clip("f_x", at, CareerFx.Tilt(dir, i % 2 == 0 ? 20f : -20f), .8f, 30f, VfxLayer.Top, true, Tint(c, AssassinPink));
-                Sound("c_slash", .6f);
-                if (target != null) Strike(c, target, stab, owner.Center, 2f, i == c.s.hits - 1 ? 1 : 0, "c_slash");
-                if (target != null) TwinSpec(c, target, stab, i == c.s.hits - 1); // [ROGUE SPEC] 쌍인 연참 / 쌍인 회선
-                if (i < c.s.hits - 1) yield return new WaitForSeconds(CutGap);
+                float step = Mathf.Min(PhantomSpeed * Time.deltaTime, c.n.range - travelled);
+                ghost -= Time.deltaTime;
+                bool drawn = ghost <= 0f;
+                if (drawn) ghost = PhantomGhostGap;
+                for (int i = 0; i < count; i++)
+                {
+                    if (travelled >= lengths[i]) continue;
+                    Vector2 a = from + dirs[i] * travelled, b = from + dirs[i] * Mathf.Min(lengths[i], travelled + step);
+                    if (drawn) ShadowAt(b, Tint(c, AssassinShade), .25f, dirs[i].x < 0f);
+                    foreach (var e in Corridor(a, b, c.n.radius))
+                    {
+                        if (!cut[i].Add(e) || (shared != null && !shared.Add(e))) continue;
+                        // Pushed straight along the phantom's line (the knockback runs away from the source point).
+                        Strike(c, e, damage, e.Position - dirs[i], e.IsBoss ? .01f : PhantomPush, 1, "c_slash", true);
+                    }
+                }
+                travelled += step;
+                yield return null;
             }
         }
 
@@ -300,9 +338,9 @@ namespace DotRPG
             venomEnd = Time.time + (c.n.spec == 'a' && !float.IsNaN(c.n.duration) ? c.n.duration : c.s.duration);
             venomBossOnly = c.n.spec == 'a'; // [ROGUE SPEC] 맹독 집중
             venomSpread = c.n.spec == 'b' ? Mathf.Max(1, c.n.targets) : 0; // [ROGUE SPEC] 맹독 전염
-            CareerFx.Gen("a_venom", null, owner.Center, Vector2.zero, 1f, 0f, 14f, VfxLayer.Top, false);
-            PowerAura.Play(owner, 1.2f, new Color(.55f, .9f, .3f), new Color(.85f, .4f, .9f));
-            SkillVisuals.Sparks(owner.Center, new Color(.6f, 1f, .4f, 1f), 10, 3.5f, .3f);
+            CareerFx.Gen("a_venom", null, owner.Center, Vector2.zero, 1f, 0f, 14f, VfxLayer.Top, false, VenomTint);
+            PowerAura.Play(owner, 1.2f, VenomGreen, new Color(.4f, .48f, .32f));
+            SkillVisuals.Sparks(owner.Center, VenomGreen, 10, 3.5f, .3f);
         }
 
         /// <summary>연환 베기 (main hunter): two cuts on a 120° fan in front, 0.17 s apart.</summary>
@@ -404,7 +442,7 @@ namespace DotRPG
         void Stealth(Run c)
         {
             Sound("c_dash", .6f);
-            CareerFx.Gen("a_smoke", null, owner.Center, Vector2.zero, 1.6f, 0f, 14f, VfxLayer.Top, false);
+            CareerFx.Gen("a_smoke", null, owner.Center, Vector2.zero, 1.6f, 0f, 14f, VfxLayer.Top, false, SmokeGray);
             stealthPct = Mathf.RoundToInt(c.s.power * c.Scale * (c.n.spec == 'a' ? StealthDeepScale : c.n.spec == 'b' ? StealthThreeScale : 1f));
             stealthEnd = Time.time + (c.n.spec == 'a' && !float.IsNaN(c.n.duration) ? c.n.duration : c.s.duration);
             stealthHitsLeft = c.n.spec == 'b' ? StealthThreeHits : 1; // [ROGUE SPEC] 암영 A / 연막 은신 B

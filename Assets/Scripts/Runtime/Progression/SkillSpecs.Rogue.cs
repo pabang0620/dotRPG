@@ -25,8 +25,9 @@ namespace DotRPG
         static SpecParams DanceB() => new SpecParams { damageMult = 1.1f, hits = 12, cooldown = 12f, extra = "dance_quick" };
 
         // ---------- 어쌔신 (ratios in CareerCombat.SpecRogue) ----------
-        static SpecParams ATwinA() => new SpecParams { targets = 1, extra = "twin_deep" };
-        static SpecParams ATwinB() => new SpecParams { targets = 3, radius = 1.6f, extra = "twin_sweep" };
+        // [ROGUE 2026-10-23] 환영 삼격 (replaced 쌍인참): A three phantoms on one line, B five on a ±50° fan, one cut per monster.
+        static SpecParams APhantomA() => new SpecParams { targets = 1, extra = "phantom_line" };
+        static SpecParams APhantomB() => new SpecParams { projectiles = 5, spreadDeg = 50f, extra = "phantom_fan" };
         static SpecParams ARendA() => new SpecParams { targets = 1, extra = "rend_point" };
         static SpecParams ARendB() => new SpecParams { targets = 5, range = Own("a_rend", s => s.range) * 1.2f, extra = "rend_whirl" };
         static SpecParams AKunaiA() => new SpecParams { extra = "port_pierce" };
@@ -43,8 +44,9 @@ namespace DotRPG
         static SpecParams AStealthB() => new SpecParams { extra = "stealth_three" };
 
         // ---------- 닌자 ----------
-        static SpecParams NVeilA() => new SpecParams { extra = "veil_through" };
+        static SpecParams NVeilA() => new SpecParams { extra = "veil_pierce" }; // [NINJA 2026-10-23] ranged: a piercing smoke kunai
         static SpecParams NVeilB() => new SpecParams { extra = "veil_double" };
+        // [NINJA 2026-10-23] Clones copy at 60% (user, fixed): A one clone twice as long, B three for two thirds of the time.
         static SpecParams NCloneA() => new SpecParams { targets = 1, extra = "clone_one" };
         static SpecParams NCloneB() => new SpecParams { targets = 3, extra = "clone_three" };
         static SpecParams NRecallA() => new SpecParams { targets = 1, extra = "recall_target" };

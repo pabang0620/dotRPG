@@ -214,7 +214,10 @@ namespace DotRPG
                 S(b,8,"b_awake","천상의 행진","빛기둥이 반경 12m를 덮는다. 적은 250% 피해와 밀어내기, 아군은 정화·회복·HP 25% 보호막. 8초 동안 비숍 발밑을 따라다니는 성역이 8번 회복하고, 성역 안의 아군은 공격 피해 +50%와 모든 상태 이상 면역, 성역 안의 적은 약화(주는 피해 -30%).","dawn",4.5f,60,70,0,12,.7f,8,8,"비숍의 회복과 보호를 한 번에"),
                 // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 2.3 (어쌔신) and 2.4 (닌자): raw values here, S() makes the "실제" column.
                 S(a,0,"a_vital","급소 간파","같은 적을 직접 맞힐 때마다 표식 1개(최대 5, 4초). 표식 하나마다 그 적이 내게 받는 피해 +4%.","vital",4,0,0,0,0,0,4),
-                S(a,1,"a_twin","쌍인참","눈앞의 적 하나를 양손 단검으로 4번 찌른다(0.17초 간격).","twin",1.0f,10,3,1.6f,0,.08f,0,4),
+                // [ROGUE 2026-10-23] User: "분신 환영이 3갈래로 나와서 적 밀어내고 때리는 스킬". It replaces 쌍인참 (index 1), the single-target
+                // stab that did the same job as the base 급소 찌르기 and the career's 급소 파열 / 암살. Raw 2.3 x 3 phantoms, cooldown 6 -> 4 s:
+                // a monster up close takes all three (8.2 every 4 s = 2.05/s, 쌍인참 was 4.08 every 2 s = 2.04/s). Plan 2.3.
+                S(a,1,"a_phantom","환영 삼격","분신 환영 셋이 앞쪽 세 갈래로 5m를 뻗어 나가며 길 위의 적을 밀어내고 벤다(환영마다 적 하나에 한 번, 보스는 밀리지 않는다). 바로 앞에 붙은 적은 세 환영에 모두 맞는다.","phantom",2.3f,18,6,5,.4f,.08f,0,3),
                 // [ROGUE 2026-10-23] User: 쿠나이 순간이동 is the assassin's skill. It takes 연막 도약's place (index 2, Lv18) and
                 // 연막 도약, a smoke bomb escape that fits the ninja, takes its old place there (index 1, Lv15). Raw numbers unchanged.
                 S(a,2,"a_kunai","쿠나이 순간이동","쿠나이를 10m 일직선으로 던져 지나간 적을 벤다. 한 번 더 누르면 쿠나이 위치로 이동한다(날아가는 중에도, 멈춘 뒤 3초까지). 벽에 박히면 근처 걸을 수 있는 자리로.","kunaiport",1.6f,14,8,10,.4f,.08f,3),
@@ -225,9 +228,15 @@ namespace DotRPG
                 S(a,7,"a_assassinate","암살","단검을 깊이 박는다. 등 뒤면 피해 1.5배, 표식 5개면 1.8배(표식 소모). 둘 다면 곱한다.","assassinate",1.85f,26,12,1.8f,0,.2f),
                 S(a,8,"a_awake","천영참","그림자 여섯이 반경 5.4m 적 사이를 오가며 3초 동안 벤 뒤, 맞은 적마다 표식을 터뜨린다(480%).","shadows",.8f,60,48,0,5.4f,0,2,12),
                 S(a,9,"a_stealth","은신","6초 동안 투명해져 일반 몬스터가 추적을 멈춘다(보스는 그대로). 이동 속도 +30%. 은신 중 첫 공격은 피해 +50%이고 항상 등 뒤 판정, 공격하면 풀린다.","stealth",50,20,20,0,0,.1f,6),
-                S(n,0,"n_throw","투척술","기본 공격이 쿠나이 투척으로 바뀐다(0.3초, 6m, 첫 적에게 꽂힘). 빗나간 쿠나이와 꽂힌 쿠나이는 그 자리에 4초 남는다.","throw",0,0,0,0,0,0,4),
-                S(n,1,"n_veil","연막 도약","뒤로 4m 물러나며 서 있던 자리에 연막(반경 2.5m)을 터뜨린다. 연막 안 적은 피해를 받고 2초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,2),
-                S(n,2,"n_clone","분신술","분신 둘이 8초 동안 쿠나이 투척을 따라 한다(분신마다 본체 피해의 25%). 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.","clone",25,20,24,0,0,.1f,8),
+                // [NINJA 2026-10-23] User: "기본 공격부터 쿠나이 던지는 애는 원거리". Every promoted ninja throws kunai (0.3 s, 6 m);
+                // 투척술 is now a plain upgrade: throw damage +10% (+5% a rank) and +1 m reach.
+                S(n,0,"n_throw","투척술","닌자의 기본 공격은 쿠나이 투척이다(0.3초, 6m, 첫 적에게 꽂힘, 빗나가거나 꽂힌 쿠나이는 4초 남는다). 투척 피해 +10%(랭크당 +5%), 사거리 +1m.","throw",10,0,0,0,0,0,4),
+                // [NINJA 2026-10-23] User: the ninja fights at range. The smoke bomb is thrown at the pack in front (up to 6 m) while I leap back.
+                S(n,1,"n_veil","연막 도약","뒤로 4m 물러나며 앞쪽 6m 안의 적 무리에 연막탄을 던진다(반경 2.5m). 연막 안 적은 피해를 받고 2초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,2),
+                // [NINJA 2026-10-23] User: "분신 버프, 분신은 데미지의 60%, 캐릭터와 동일한 스킬 사용". The clones copy every attack of mine
+                // (basic attack included, same skill, same direction) at 60% each; moving and setting skills are not copied.
+                // Cooldown 57 -> 40 s, 8 s (rank-scaled): 2 x 60% x 8/40 = +24% on average, the old 25% clones' 1.235 (plan 2.4, 3.2).
+                S(n,2,"n_clone","분신술","분신 둘이 8초 동안 내 기본 공격과 공격 스킬을 같은 방향으로 똑같이 따라 쓴다(분신마다 본체 피해의 60%). 이동·설치 스킬(연막 도약·회수·기폭 쿠나이·연쇄 도약·그림자 습격·그림자 질주·허수아비)과 각성기는 따라 하지 않는다. 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.","clone",60,30,57,0,0,.1f,8),
                 S(n,3,"n_recall","회수","8m 안에 남은 쿠나이를 모두(최대 12개) 손으로 끌어당긴다. 돌아오는 길의 적을 쿠나이마다 벤다. 회수한 쿠나이마다 MP 1% 회복.","recall",.6f,16,8,8,0,.15f),
                 S(n,4,"n_far","원거리 집중","6m 이상 떨어진 적에게 직접 공격 피해 +12%.","far",12,0,0,0,0,0),
                 S(n,5,"n_volley","연발 쿠나이","재사용 대기시간 없이 쿠나이 두 개를 0.17초 간격으로 8m 직선에 던진다. 첫 적에게 꽂힌다.","volley",.75f,18,0,8,.35f,.1f,0,2),

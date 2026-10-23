@@ -40,6 +40,27 @@ namespace DotRPG
         /// <summary>Forgets the painted ground (developer timing tests). The current map keeps its sprites until rebuilt.</summary>
         public static void ClearPaintedGroundCache() { paintedGround.Clear(); waterFields.Clear(); }
 
+        /// <summary>[MEMORY] Destroys the painted ground of maps <paramref name="keep"/> lets go (repainted on the next visit). Returns the maps dropped.</summary>
+        public static int TrimPaintedGround(System.Func<string, bool> keep)
+        {
+            int dropped = 0;
+            foreach (var id in new List<string>(paintedGround.Keys))
+            {
+                if (keep(id)) continue;
+                foreach (var (_, sprite) in paintedGround[id])
+                {
+                    if (sprite == null) continue;
+                    var texture = sprite.texture;
+                    Destroy(sprite);
+                    if (texture != null) Destroy(texture);
+                }
+                paintedGround.Remove(id);
+                waterFields.Remove(id);
+                dropped++;
+            }
+            return dropped;
+        }
+
         Color32[] PaintTownGround(char[,] ground, int w, int h, out int pw, out int ph) => TownTerrain.Paint(ground, w, h, ForestMap, out pw, out ph, StoreWaterField);
         void StoreWaterField(WaterField field) => waterFields[MapId] = field;
 

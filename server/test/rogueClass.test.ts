@@ -126,7 +126,7 @@ describe('어쌔신·닌자 전직', () => {
     expect(() => check(s, 18)).not.toThrow();
     s.nodes = [{ id: 'a_rend', rank: 1 }];
     expect(() => check(s, 30)).toThrow(); // 선행 a_ambush 없음
-    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_kunai', rank: 1 }, { id: 'a_venom', rank: 1 }];
+    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_phantom', rank: 1 }, { id: 'a_kunai', rank: 1 }, { id: 'a_venom', rank: 1 }];
     expect(() => check(s, 21)).toThrow();
     expect(() => check(s, 22)).not.toThrow();
     s.nodes = [{ id: 'a_awake', rank: 1 }];
@@ -135,7 +135,7 @@ describe('어쌔신·닌자 전직', () => {
     n.nodes = [{ id: 'n_far', rank: 1 }, { id: 'n_volley', rank: 1 }];
     expect(() => check(n, 17)).toThrow();
     expect(() => check(n, 18)).not.toThrow();
-    n.nodes = [{ id: 'a_twin', rank: 1 }];
+    n.nodes = [{ id: 'a_phantom', rank: 1 }];
     expect(() => check(n, 40)).toThrow(); // 다른 전직 노드
   });
 
@@ -143,7 +143,7 @@ describe('어쌔신·닌자 전직', () => {
     expect(careerIds[5]?.[2]).toBe('a_kunai');
     expect(careerIds[6]?.[1]).toBe('n_veil');
     const s = blank(5);
-    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_kunai', rank: 1 }];
+    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_phantom', rank: 1 }, { id: 'a_kunai', rank: 1 }];
     expect(() => check(s, 17)).toThrow();
     expect(() => check(s, 18)).not.toThrow();
     const n = blank(6);
@@ -157,7 +157,7 @@ describe('어쌔신·닌자 전직', () => {
     const s = blank(5);
     s.nodes = [{ id: 'a_stealth', rank: 1 }];
     expect(() => check(s, 30)).toThrow();
-    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_twin', rank: 1 }, { id: 'a_kunai', rank: 1 }, { id: 'a_stealth', rank: 1 }];
+    s.nodes = [{ id: 'a_vital', rank: 1 }, { id: 'a_phantom', rank: 1 }, { id: 'a_kunai', rank: 1 }, { id: 'a_stealth', rank: 1 }];
     expect(() => check(s, 18)).not.toThrow();
     expect(() => check(s, 17)).toThrow();
   });

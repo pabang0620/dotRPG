@@ -135,10 +135,11 @@ namespace DotRPG
 
         /// <summary>Mages shoot from range instead of walking into sword reach (they took every hit standing next to the pack).</summary>
         const float MageReach = 4.5f;
-        /// <summary>[ROGUE] Ninja basic attack throws kunai (6 m); the base rogue and the assassin stab up close (AttackReach).</summary>
+        /// <summary>[ROGUE] A promoted ninja's basic attack is always a kunai throw (6 m, 7 m with 투척술; 2026-10-23 no node
+        /// needed); the base rogue and the assassin stab up close (AttackReach).</summary>
         const float NinjaReach = 6f;
         static float BasicReach(PlayerController p) =>
-            p.Class == CharacterClass.Mage ? MageReach : p.Data.Progression.Career == Career.Ninja ? NinjaReach : AttackReach;
+            p.Class == CharacterClass.Mage ? MageReach : p.Data.Progression.IsPromoted && p.Data.Progression.Career == Career.Ninja ? NinjaReach : AttackReach;
 
         void Fight(PlayerController p, Vector2 pos, Vector2 center, float dist)
         {

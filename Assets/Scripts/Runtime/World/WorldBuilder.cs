@@ -80,6 +80,7 @@ namespace DotRPG
                 map = next;
                 Parse(LoadText(map));
             }
+            MemoryJanitor.NoteMap(map.id); // [MEMORY] recent maps keep their cached ground
             Rebuild();
         }
 

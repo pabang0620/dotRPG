@@ -35,7 +35,8 @@ export const careerIds = [[], ['f_rhythm','f_cross','f_rush','f_flurry','f_edge'
  ['b_mercy','b_heal','b_bloom','b_cleanse','b_grace','b_light','b_wing','b_bless','b_awake'],
  // 5 어쌔신(10노드, 9번 은신은 파이터와 같은 추가 노드 규칙), 6 닌자(9노드). Docs/PLAN_CLASS_ROGUE.md 2.3~2.4절
  // 2026-10-23 사용자 결정: 쿠나이 순간이동은 어쌔신 2번(a_kunai), 연막 도약은 닌자 1번(n_veil)으로 서로 자리를 바꿨다
- ['a_vital','a_twin','a_kunai','a_venom','a_ambush','a_rend','a_rupture','a_assassinate','a_awake','a_stealth'],
+ // 같은 날 사용자 결정: 어쌔신 1번 쌍인참(a_twin)을 환영 삼격(a_phantom)으로 바꿨다(클라이언트가 옛 저장의 a_twin을 a_phantom으로 옮긴다)
+ ['a_vital','a_phantom','a_kunai','a_venom','a_ambush','a_rend','a_rupture','a_assassinate','a_awake','a_stealth'],
  ['n_throw','n_veil','n_clone','n_recall','n_far','n_volley','n_fuma','n_bomb','n_awake']];
 const reject = (why: string): never => { throw new AppError(422, '전직 상태가 올바르지 않습니다.', 'INVALID_CAREER', {reason:why}); };
 /** 9단계: 서버가 기록한 전직(character_career). granted가 null이면 행 없음(미전직). log는 거절하지 않고 기록만 한다 */

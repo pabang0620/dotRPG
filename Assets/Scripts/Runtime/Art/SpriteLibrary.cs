@@ -273,6 +273,49 @@ namespace DotRPG
             return result;
         }
 
+        /// <summary>
+        /// [MEMORY] Called behind a map-change fade. Character frames ("char_*", one texture per look, facing and frame) grow with
+        /// every look met online; past <paramref name="frameCap"/> the frames of looks not on screen (asked only then) are forgotten. Hit-flash and
+        /// outline copies past <paramref name="flashCap"/>, or of forgotten / destroyed sprites, are forgotten too. Nothing is
+        /// destroyed here (a closed window may still show a frame): Resources.UnloadUnusedAssets frees what is no longer used,
+        /// and a forgotten frame is simply drawn again when needed. Returns the number of entries forgotten.
+        /// </summary>
+        public int TrimCaches(int frameCap, int flashCap, System.Func<HashSet<string>> liveLookIds)
+        {
+            int dropped = 0;
+            var forgotten = new HashSet<Sprite>();
+            int frames = 0;
+            foreach (var key in cache.Keys) if (key.StartsWith("char_", System.StringComparison.Ordinal)) frames++;
+            if (frames > frameCap)
+            {
+                var prefixes = new List<string>();
+                if (liveLookIds != null) foreach (var id in liveLookIds()) prefixes.Add("char_" + id + "_");
+                foreach (var key in new List<string>(cache.Keys))
+                {
+                    if (!key.StartsWith("char_", System.StringComparison.Ordinal)) continue;
+                    bool live = false;
+                    foreach (var prefix in prefixes) if (key.StartsWith(prefix, System.StringComparison.Ordinal)) { live = true; break; }
+                    if (live) continue;
+                    if (cache[key] != null) forgotten.Add(cache[key]);
+                    cache.Remove(key);
+                    dropped++;
+                }
+            }
+            dropped += TrimDerived(silhouettes, forgotten, flashCap);
+            dropped += TrimDerived(outlines, forgotten, flashCap);
+            return dropped;
+        }
+
+        static int TrimDerived(Dictionary<Sprite, Sprite> derived, HashSet<Sprite> forgotten, int cap)
+        {
+            if (derived.Count > cap) { int all = derived.Count; derived.Clear(); return all; }
+            var stale = new List<Sprite>();
+            // A destroyed source compares equal to null; its copy would otherwise be held forever.
+            foreach (var source in derived.Keys) if (source == null || forgotten.Contains(source)) stale.Add(source);
+            foreach (var source in stale) derived.Remove(source);
+            return stale.Count;
+        }
+
         /// <summary>A drawn image from Resources/Art if there is one (null otherwise: the caller keeps its text fallback).</summary>
         public Sprite Optional(string key)
         {

@@ -222,6 +222,10 @@ namespace DotRPG
             try { action(); }
             catch (Exception e) { Debug.LogException(e); }
             yield return null;
+            // [MEMORY] Behind the black screen: a full clean-up on entry and exit, only cache trimming between rooms.
+            float sweepStart = Time.realtimeSinceStartup;
+            yield return MemoryJanitor.Sweep(!InRun || holdBlack > 0f);
+            if (holdBlack > 0f) holdBlack = Mathf.Max(0f, holdBlack - (Time.realtimeSinceStartup - sweepStart));
             if (holdBlack > 0f) { yield return new WaitForSecondsRealtime(holdBlack); holdBlack = 0f; }
             yield return fader.Fade(0f, FadeSeconds);
             fader.HideCard();

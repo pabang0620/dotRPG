@@ -142,6 +142,7 @@ namespace DotRPG
             for (int i = 0; i < spawnPoints.Count; i++) { enemies.Add(null); respawnAt.Add(Time.time + 2.1f); }
             nextRecovery = Time.unscaledTime + 2f;
             nextSave = Time.unscaledTime + 5f;
+            yield return MemoryJanitor.Sweep(); // [MEMORY] behind the black screen (Busy keeps the spawns waiting)
             yield return Game.UI.Fader.Fade(0f, .2f);
             Busy = false;
             QuestAutoPilot.StartMiniDungeonHunt();
@@ -258,6 +259,7 @@ namespace DotRPG
             Game.Audio.PlayMusic(Game.World.Map.music);
             Game.UI.Hud.RefreshAll();
             SaveSnapshot();
+            yield return MemoryJanitor.Sweep(); // [MEMORY] behind the black screen
             yield return Game.UI.Fader.Fade(0f, .2f);
             Busy = false;
             Game.Quest.NotifyChanged(); // any level objective completed during training now resumes normally

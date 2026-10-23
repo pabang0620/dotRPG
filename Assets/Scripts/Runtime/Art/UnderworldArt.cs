@@ -10,6 +10,19 @@ namespace DotRPG
     {
         static readonly Dictionary<string,Sprite> floors=new Dictionary<string,Sprite>();
         static readonly Dictionary<int,Sprite> props=new Dictionary<int,Sprite>();
+        /// <summary>[MEMORY] Destroys the whole-map terrain of maps <paramref name="keep"/> lets go (redrawn on the next visit). Returns the maps dropped.</summary>
+        public static int TrimFloors(Func<string,bool> keep)
+        {
+            int dropped=0;
+            foreach(var id in new List<string>(floors.Keys))
+            {
+                if(keep(id))continue;
+                var sprite=floors[id];floors.Remove(id);dropped++;
+                if(sprite==null)continue;
+                var texture=sprite.texture;UnityEngine.Object.Destroy(sprite);if(texture!=null)UnityEngine.Object.Destroy(texture);
+            }
+            return dropped;
+        }
         static Texture2D atlas;
         static Sprite passage;
         static int Hash(int x,int y)=>unchecked((x*73856093^y*19349663)&int.MaxValue);

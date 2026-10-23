@@ -49,8 +49,8 @@ namespace DotRPG
                 case "bless":effect=L.F("아군 공격 피해 +{0}% · {1:0.#}초", Mathf.RoundToInt(s.power*scale), s.duration);break;
                 case "dawn":effect=L.F("적 피해 {0} · 회복 {1} · {2} · 성역 {3} × {4}회", Mathf.RoundToInt(d*2.5f/4.5f), Heal(d), Shield(.25f), Heal(d/6), s.hits);break;
                 // [ROGUE] 어쌔신 / 닌자 (Docs/PLAN_CLASS_ROGUE.md 2.3, 2.4)
-                case "twin":effect=L.F("피해 {0} × {1}회 · 거리 {2:0.#}m", d, s.hits, n.range);break;
-                case "veil":effect=L.F("연막 피해 {0} · 반경 {1:0.#}m · 공격 불가 {2:0.#}초 · 뒤로 {3:0.#}m", d, n.radius, s.duration, n.range);break;
+                case "phantom":effect=L.F("환영 {0}갈래 · 피해 {1} · 길이 {2:0.#}m · 밀어내기(보스 제외)", s.hits, d, n.range);break;
+                case "veil":effect=L.F("연막탄 피해 {0} · 앞 {1:0.#}m · 반경 {2:0.#}m · 공격 불가 {3:0.#}초 · 뒤로 {4:0.#}m", d, CareerCombat.VeilThrowRange, n.radius, s.duration, n.range);break;
                 case "venom":effect=L.F("직접 공격 피해의 {0}% 독(3초, 방어 무시) · {1:0.#}초", Mathf.RoundToInt(s.power*scale), s.duration);break;
                 case "rend":effect=L.F("피해 {0} × {1}회 · 부채꼴 {2:0.#}m", d, s.hits, n.range);break;
                 case "rupture":effect=L.F("피해 {0} + 표식당 {1} · 표식 5개 {2}", d, Mathf.RoundToInt(d*.2f), Mathf.RoundToInt(d*2f));break;
@@ -58,7 +58,7 @@ namespace DotRPG
                 case "shadows":effect=L.F("그림자 베기 {0} × {1} · 표식 폭발 {2} · 반경 {3:0.#}m", d, s.hits, Mathf.RoundToInt(d*6f), n.radius);break;
                 case "stealth":effect=L.F("은신 {0:0.#}초 · 이동 속도 +30% · 첫 공격 +{1}%(등 뒤)", s.duration, Mathf.RoundToInt(s.power*scale));break;
                 case "kunaiport":effect=L.F("관통 피해 {0} · {1:0.#}m · 다시 누르면 이동({2:0.#}초 안)", d, n.range, s.duration);break;
-                case "clone":effect=L.F("분신 2 · {0:0.#}초 · 쿠나이 투척을 본체 피해의 {1}%로 따라 함", s.duration, Mathf.RoundToInt(s.power*scale));break;
+                case "clone":effect=L.F("분신 2 · {0:0.#}초 · 기본 공격·공격 스킬을 본체 피해의 {1}%로 따라 씀", s.duration*scale, Mathf.RoundToInt(s.power));break;
                 case "recall":effect=L.F("쿠나이마다 피해 {0} · {1:0.#}m 안 최대 12개 · 1개당 MP 1%", d, n.range);break;
                 case "volley":effect=L.F("피해 {0} × {1}발 · 직선 {2:0.#}m", d, s.hits, n.range);break;
                 case "fuma":effect=L.F("관통 피해 {0} · 같은 적 최대 {1}회 · {2:0.#}m 왕복", d, s.hits, n.range);break;
@@ -71,7 +71,7 @@ namespace DotRPG
         public static string Passive(CareerSkill s,int rank)
         {
             int r=Mathf.Max(1,rank)-1;
-            switch(s.effect){case "swordflow":return L.F("기본 공격 3회 적중 후 다음 전직 스킬 피해 +{0}% · 검기 6초 유지", 20+5*r);case "opening":return L.F("HP 80% 이상 적에게 직접 피해 +{0}%", 15+5*r);case "rhythm":return L.F("중첩당 공격 속도 +{0}% (최대 5, 4초)", 3+r);case "critical":return L.F("치명 확률 {0}%, 치명 피해 150%", 8+4*r);case "steel":return L.F("받는 피해 추가 -{0}%", 6+2*r);case "retaliate":return L.F("피격 후 다음 직접 공격 +{0}% (재발동 2초)", 20+5*r);case "elements":return L.F("5초 이내 다른 원소 직접 공격 +{0}%", 12+4*r);case "flow":return L.F("전직 주문 MP -{0}%", 10+3*r);case "mercy":return L.F("회복량 +{0}%", 10+5*r);case "grace":return L.F("보호막량 +{0}%", 12+4*r);case "vital":return L.F("표식당 받는 피해 +{0}% (최대 5, 4초)", 4+r);case "ambush":return L.F("등 뒤 직접 공격 피해 +{0}%", 15+5*r);case "throw":return L.F("기본 공격이 쿠나이 투척 · 피해 +{0}%", 5*r);case "far":return L.F("6m 이상 떨어진 적에게 직접 피해 +{0}%", 12+4*r);default:return s.description;}
+            switch(s.effect){case "swordflow":return L.F("기본 공격 3회 적중 후 다음 전직 스킬 피해 +{0}% · 검기 6초 유지", 20+5*r);case "opening":return L.F("HP 80% 이상 적에게 직접 피해 +{0}%", 15+5*r);case "rhythm":return L.F("중첩당 공격 속도 +{0}% (최대 5, 4초)", 3+r);case "critical":return L.F("치명 확률 {0}%, 치명 피해 150%", 8+4*r);case "steel":return L.F("받는 피해 추가 -{0}%", 6+2*r);case "retaliate":return L.F("피격 후 다음 직접 공격 +{0}% (재발동 2초)", 20+5*r);case "elements":return L.F("5초 이내 다른 원소 직접 공격 +{0}%", 12+4*r);case "flow":return L.F("전직 주문 MP -{0}%", 10+3*r);case "mercy":return L.F("회복량 +{0}%", 10+5*r);case "grace":return L.F("보호막량 +{0}%", 12+4*r);case "vital":return L.F("표식당 받는 피해 +{0}% (최대 5, 4초)", 4+r);case "ambush":return L.F("등 뒤 직접 공격 피해 +{0}%", 15+5*r);case "throw":return L.F("쿠나이 투척 피해 +{0}% · 사거리 +1m", 10+5*r);case "far":return L.F("6m 이상 떨어진 적에게 직접 피해 +{0}%", 12+4*r);default:return s.description;}
         }
     }
 }

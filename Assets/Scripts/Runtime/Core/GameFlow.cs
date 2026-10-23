@@ -542,6 +542,7 @@ namespace DotRPG
                 Debug.LogException(e);
             }
             yield return null;
+            yield return MemoryJanitor.Sweep(); // [MEMORY] behind the black screen
             yield return fader.Fade(0f, 0.35f);
             transitioning = false;
         }

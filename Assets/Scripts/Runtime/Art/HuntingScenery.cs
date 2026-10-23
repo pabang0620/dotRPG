@@ -7,6 +7,17 @@ namespace DotRPG {
  public static class HuntingScenery {
   static readonly Dictionary<string,Sprite> art=new Dictionary<string,Sprite>();
   static readonly Dictionary<string,Sprite> floors=new Dictionary<string,Sprite>();
+  /// <summary>[MEMORY] Destroys the painted sanctuary ground of maps <paramref name="keep"/> lets go (repainted on the next visit). Returns the maps dropped.</summary>
+  public static int TrimFloors(Func<string,bool> keep){
+   int dropped=0;
+   foreach(var id in new List<string>(floors.Keys)){
+    if(keep(id))continue;
+    var sprite=floors[id];floors.Remove(id);dropped++;
+    if(sprite==null)continue;
+    var texture=sprite.texture;UnityEngine.Object.Destroy(sprite);if(texture!=null)UnityEngine.Object.Destroy(texture);
+   }
+   return dropped;
+  }
   static int Hash(int x,int y)=>unchecked((x*73856093^y*19349663)&0x7fffffff);
   static Color32 C(int r,int g,int b)=>new Color32((byte)Mathf.Clamp(r,0,255),(byte)Mathf.Clamp(g,0,255),(byte)Mathf.Clamp(b,0,255),255);
   public static bool Solid(char c)=>c=='W'||c=='%';

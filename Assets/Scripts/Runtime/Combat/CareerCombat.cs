@@ -188,6 +188,7 @@ namespace DotRPG
         public int ModifyDamage(EnemyController enemy, int amount)
         {
             if (secondaryDamage) return amount;
+            echoRaw = amount; // [NINJA] 분신술 copies 60% of this hit (CloneEcho)
             float mult = Time.time < blessEnd ? 1 + bless / 100f : 1;
             if (Time.time < frenzyEnd && (!frenzyBossOnly || enemy.IsBoss)) mult *= 1 + frenzy / 100f; // [CH3 SPEC] 귀검 집중 A: bosses only
             if (Time.time < sanctumEnd) mult *= 1.5f;
@@ -215,6 +216,7 @@ namespace DotRPG
             }
             CareerTrials.Record(owner, "hit", 1);
             if (CareerCatalog.Base(Mine) == CharacterClass.Rogue && Prog.IsPromoted) RogueLanded(enemy); // [ROGUE]
+            CloneEcho(enemy); // [NINJA] 분신술: the clones do the same blow at 60%
         }
 
 
@@ -328,7 +330,8 @@ namespace DotRPG
         /// One career hit on a monster: damage with a real knockback, sparks, the impact sound and hit stop. Returns true
         /// when it landed (or, on a party member's PC, when the monster was there to be hit).
         /// </summary>
-        bool Strike(Run c, EnemyController e, int damage, Vector2 from, float knockback, int weight, string sound = "hit")
+        /// <param name="rapid">The hit leaves no hit invulnerability (several cuts on one monster in the same instant, 환영 삼격).</param>
+        bool Strike(Run c, EnemyController e, int damage, Vector2 from, float knockback, int weight, string sound = "hit", bool rapid = false)
         {
             if (e == null || e.IsDead) return false;
             Vector2 dir = e.Center - from;
@@ -339,7 +342,7 @@ namespace DotRPG
                 string previous = currentSkill;
                 currentSkill = c.s.id;
                 if (e.IsBoss) damage = Mathf.RoundToInt(damage * owner.Data.Stats.BossMul); // [LEGEND] 토벌형 weapon
-                try { landed = e.TakeDamage(new DamageInfo(damage, from, knockback, Team.Player, owner.gameObject)); }
+                try { landed = e.TakeDamage(new DamageInfo(damage, from, knockback, Team.Player, owner.gameObject) { noHitInvulnerability = rapid }); }
                 finally { currentSkill = previous; }
             }
             if (!landed) return false;

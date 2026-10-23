@@ -33,9 +33,10 @@ namespace DotRPG.EditorTools
                 "\"2\":{\"minSeconds\":20,\"requiredNodes\":[\"g_taunt\",\"g_wall\"]}," +
                 "\"3\":{\"minSeconds\":4,\"requiredNodes\":[\"m_fire\",\"m_ice\",\"m_storm\"]}," +
                 "\"4\":{\"minSeconds\":20,\"requiredNodes\":[\"b_cleanse\",\"b_wing\"]}," +
-                // [ROGUE] 어쌔신: 5 back hits in a row + 암살 on 5 marks; 닌자 (2026-10-23): 2 smoke leaps with clones out (8.5 s apart) + 4 roots.
+                // [ROGUE] 어쌔신: 5 back hits in a row + 암살 on 5 marks; 닌자 (2026-10-23): a smoke leap with clones out + 4 roots
+                // (one leap: the clones now last 8 s, shorter than the 8.5 s between two leaps).
                 "\"5\":{\"minSeconds\":4,\"requiredNodes\":[\"a_kunai\",\"a_assassinate\"]}," +
-                "\"6\":{\"minSeconds\":8,\"requiredNodes\":[\"n_clone\",\"n_bomb\"]}}";
+                "\"6\":{\"minSeconds\":4,\"requiredNodes\":[\"n_clone\",\"n_bomb\"]}}";
             return json.Substring(0, json.Length - 1) + trials + Recommend() + "}";
         }
 

@@ -4,7 +4,7 @@ namespace DotRPG
 {
     /// <summary>
     /// [NINJA] One 분신술 clone (Docs/PLAN_CLASS_ROGUE.md 2.4): the body's own frame drawn see-through (alpha 0.55) with a
-    /// navy tint, following 1.2 m to one side of the body. No HP, never hit, never taunts; its throws are cast by
+    /// grey tint, following 1.2 m to one side of the body. No HP, never hit, never taunts; its throws are cast by
     /// <see cref="CareerCombat"/> as the body's own damage.
     /// </summary>
     public sealed class NinjaClone : MonoBehaviour
@@ -12,7 +12,7 @@ namespace DotRPG
         public const float SideOffset = 1.2f;
         /// <summary>How fast the clone catches up with its place beside the body (per second).</summary>
         const float FollowRate = 9f;
-        static readonly Color Tint = new Color(.55f, .6f, 1f, .55f);
+        static readonly Color Tint = new Color(.72f, .74f, .78f, .55f); // [2026-10-23] plain grey (was navy)
 
         PlayerController owner;
         SpriteRenderer sr, body;

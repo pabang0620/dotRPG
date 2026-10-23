@@ -5,9 +5,9 @@ using UnityEngine;
 namespace DotRPG
 {
     /// <summary>
-    /// 닌자 (rogue career, Docs/PLAN_CLASS_ROGUE.md 2.4): thrown kunai at range. 투척술 turns the basic attack into a
-    /// kunai throw; 연막 도약 is the escape; 분신술 (user skill) puts two clones beside me that copy my kunai throws at 25%
-    /// of my damage. Clone damage is my own damage. 쿠나이 순간이동 moved to the assassin (2026-10-23) but its anchor state
+    /// 닌자 (rogue career, Docs/PLAN_CLASS_ROGUE.md 2.4): thrown kunai at range. The ninja's basic attack is always a kunai
+    /// throw (투척술 only makes it stronger); 연막 도약 is the escape; 분신술 (user skill) puts two clones beside me that copy
+    /// every attack of mine (basic attack and attack skills, same direction) at 60% of my damage. Clone damage is my own damage. 쿠나이 순간이동 moved to the assassin (2026-10-23) but its anchor state
     /// and the free-spot search stay here, next to the clone swap that shares them.
     /// </summary>
     public sealed partial class CareerCombat
@@ -29,9 +29,24 @@ namespace DotRPG
         const float BombRing = 2.5f, BombTrigger = 1.2f, BombFuse = 2f, BombChain = .12f, BombRoot = 1f, BombRootBoss = .3f;
         /// <summary>분신 난무: the closing burst on each monster hit is 280% (the 55% throws x 5.09).</summary>
         const float CloneBurst = 2.8f / .55f;
+        /// <summary>투척술 (2026-10-23 a plain upgrade): throw damage +10% at rank 1, +5% a rank more, and 1 m more reach.</summary>
+        const float ThrowRankPct = 10f, ThrowRankStep = 5f, ThrowRankReach = 1f;
+        /// <summary>연막 도약: the smoke bomb lands on the pack in front, at most this far (the ninja fights at range).</summary>
+        public const float VeilThrowRange = 6f;
+        const float VeilBombSpeed = 16f;
+        /// <summary>분신술: a clone's copy of a hit lands this long after mine, the next clone a little later.</summary>
+        const float EchoDelay = .05f, EchoStep = .04f;
+        /// <summary>
+        /// 분신술 does not copy these: moving and setting skills (user: copy the attacks) and the awakening (its own clones).
+        /// 투척 / 연발 쿠나이 / 풍마 수리검 are copied as real throws from each clone (Throw, FumaFlight), not as echoes.
+        /// The base kit's moving skills (연쇄 도약, 그림자 습격, 그림자 질주) are muted by SkillCaster (<see cref="Uncopied"/>).
+        /// </summary>
+        static readonly HashSet<string> NotEchoed = new HashSet<string> { "n_veil", "n_recall", "n_bomb", "n_awake", "n_clone", "n_throw", "n_volley", "n_fuma" };
 
-        public static readonly Color NinjaOrange = new Color(1f, .55f, .2f, .95f); // #ff8c32
-        static readonly Color CloneTint = new Color(.55f, .6f, 1f, .55f);
+        /// <summary>[NINJA 2026-10-23] Plain colours (user: no flashy tints): the 기폭 blasts keep the fire art's own colour,
+        /// trails are pale steel, the clones a see-through grey.</summary>
+        public static readonly Color NinjaOrange = Color.white;
+        static readonly Color CloneTint = new Color(.72f, .74f, .78f, .55f);
 
         // ---------- State ----------
 
@@ -42,6 +57,11 @@ namespace DotRPG
         readonly List<NinjaClone> clones = new List<NinjaClone>();
         float clonesEnd, cloneShare;
         bool cloneSwapUsed;
+        /// <summary>The amount of the direct hit being dealt, before my multipliers (ModifyDamage): a clone copies 60% of it.</summary>
+        int echoRaw;
+        /// <summary>A clone's copy is landing (it is not copied again) / a moving skill's hit is landing (not copied).</summary>
+        bool echoing;
+        int echoMuted;
 
         public float ClonesLeft => clones.Count > 0 ? Mathf.Max(0f, clonesEnd - Time.time) : 0f;
         bool ClonesUp => ClonesLeft > 0f;
@@ -77,7 +97,10 @@ namespace DotRPG
         // ---------- 투척술: the basic attack ----------
 
         /// <summary>True while 투척술 replaces the basic attack (promoted ninja with the node learned).</summary>
-        public bool ThrowsKunai => Mine == Career.Ninja && owner.Data.Progression.IsPromoted && Prog.Rank("n_throw") > 0;
+        public bool ThrowsKunai => Mine == Career.Ninja && owner.Data.Progression.IsPromoted;
+
+        /// <summary>The basic throw's reach: 6 m, 7 m with 투척술.</summary>
+        public float ThrowReach => ThrowRange + (Prog.Rank("n_throw") > 0 ? ThrowRankReach : 0f);
 
         /// <summary>
         /// [NINJA] Called by PlayerCombat on an attack press. Returns true when the press was taken by 투척술 (a kunai flew,
@@ -89,16 +112,17 @@ namespace DotRPG
             if (Time.time < nextThrowAt) return true;
             nextThrowAt = Time.time + ThrowGap() * owner.Data.Stats.CooldownMultiplier; // [ROGUE SPEC] 무거운 쿠나이 / 연속 투척
             var s = CareerCatalog.Get("n_throw");
-            Vector2 dir = owner.AutoAim(ThrowRange + 1f);
+            float reach = ThrowReach;
+            Vector2 dir = owner.AutoAim(reach + 1f);
             if (!owner.NetPuppet) owner.FaceTowards(owner.Position + dir);
             owner.GetComponent<CharacterAnimator>()?.BeginCareerPose(.16f, 0, 0, WarriorAttackMotion.Contact);
             Sound("swing", .6f);
             int rank = Prog.Rank("n_throw");
-            float scale = CharacterClassInfo.Get(owner.Class).basicHitScale * (1f + .05f * (rank - 1)) * ThrowHitScale();
+            float scale = CharacterClassInfo.Get(owner.Class).basicHitScale * (rank > 0 ? 1f + (ThrowRankPct + ThrowRankStep * (rank - 1)) / 100f : 1f) * ThrowHitScale();
             int damage = Mathf.Max(1, Mathf.RoundToInt(owner.Data.Stats.AttackDamage(owner.Class) * scale));
             var run = QuickRun(s, default, dir);
-            StartCoroutine(Throw(run, owner.Center + dir * .3f, dir, ThrowRange, ThrowSpeed, damage, true, null, ThrowPierce()));
-            ForClones(clone => StartCoroutine(Throw(run, clone.Center + dir * .3f, dir, ThrowRange, ThrowSpeed, CloneDamage(damage), false, clone)));
+            StartCoroutine(Throw(run, owner.Center + dir * .3f, dir, reach, ThrowSpeed, damage, true, null, ThrowPierce()));
+            ForClones(clone => StartCoroutine(Throw(run, clone.Center + dir * .3f, dir, reach, ThrowSpeed, CloneDamage(damage), false, clone)));
             return true;
         }
 
@@ -171,19 +195,59 @@ namespace DotRPG
             foreach (var clone in clones.ToArray()) if (clone != null) action(clone);
         }
 
-        /// <summary>분신술: two clones beside me for 8 s that copy my kunai throws at 25% of the damage.</summary>
+        /// <summary>
+        /// 분신술: two clones beside me for 8 s (longer with ranks) that copy every attack of mine at 60% of the damage
+        /// (user, fixed: the ranks and the specializations change the time and the count, never the share).
+        /// </summary>
         void Clones(Run c)
         {
             DismissClones();
-            cloneShare = c.s.power * c.Scale / 100f * (c.n.spec == 'a' ? CloneOneScale : c.n.spec == 'b' ? CloneThreeScale : 1f);
-            clonesEnd = Time.time + c.s.duration;
+            cloneShare = c.s.power / 100f;
+            clonesEnd = Time.time + c.s.duration * c.Scale * (c.n.spec == 'a' ? CloneOneTime : c.n.spec == 'b' ? CloneThreeTime : 1f);
             cloneSwapUsed = false;
-            // [ROGUE SPEC] 단일 분신 A: one clone at 50%. 분신 셋 B: three at 17%.
+            // [ROGUE SPEC] 단일 분신 A: one clone for twice as long. 분신 셋 B: three for two thirds of the time.
             if (c.n.spec != 'a') clones.Add(NinjaClone.Spawn(owner, -1));
             clones.Add(NinjaClone.Spawn(owner, 1));
             if (c.n.spec == 'b') clones.Add(NinjaClone.Spawn(owner, -2));
             Sound("c_dash", .6f);
             if (owner.IsLocal) GameEvents.RaiseToast(L.T("분신술 · 한 번 더 누르면 분신과 자리 바꾸기"));
+        }
+
+        /// <summary>[NINJA] Runs a hit of a moving skill of the base kit (연쇄 도약, 그림자 습격, 그림자 질주): the clones do not copy it.</summary>
+        public void Uncopied(System.Action hit)
+        {
+            echoMuted++;
+            try { hit(); }
+            finally { echoMuted--; }
+        }
+
+        /// <summary>
+        /// [NINJA] A direct hit of mine landed while the clones are out: each clone does the same blow on the same monster
+        /// a moment later at 60% (the base kit's stab, backstab, dance and the like). Career skills copy themselves (the
+        /// throws) or are not copied (<see cref="NotEchoed"/>), and a clone's copy is never copied again.
+        /// </summary>
+        void CloneEcho(EnemyController enemy)
+        {
+            int raw = echoRaw;
+            echoRaw = 0;
+            if (echoing || echoMuted > 0 || raw <= 0 || !ClonesUp || Mine != Career.Ninja || enemy == null) return;
+            if (!string.IsNullOrEmpty(currentSkill) && (NotEchoed.Contains(currentSkill) || CareerCatalog.Get(currentSkill)?.career == Career.Ninja)) return;
+            int damage = CloneDamage(raw);
+            int i = 0;
+            foreach (var clone in clones.ToArray()) if (clone != null) StartCoroutine(EchoHit(clone, enemy, damage, EchoDelay + EchoStep * i++));
+        }
+
+        IEnumerator EchoHit(NinjaClone clone, EnemyController e, int damage, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (clone == null || e == null || e.IsDead || owner == null || owner.IsDead || !ClonesUp) yield break;
+            Vector2 dir = e.Center - clone.Center;
+            dir = dir.sqrMagnitude > .0001f ? dir.normalized : owner.AimDirection;
+            CareerFx.Line(clone.Center, e.Center, CloneTint, .04f, .08f);
+            CareerFx.Clip("f_x", e.Center, dir, .8f, 30f, VfxLayer.Top, true, CloneTint);
+            echoing = true;
+            try { e.TakeDamage(new DamageInfo(damage, clone.Center, .01f, Team.Player, owner.gameObject) { noHitInvulnerability = true }); }
+            finally { echoing = false; }
         }
 
         /// <summary>
@@ -274,18 +338,20 @@ namespace DotRPG
 
         // ---------- 연막 도약 ----------
 
-        /// <summary>[NINJA] 연막 도약 (moved from the assassin 2026-10-23): jump 4 m back and burst smoke where I stood; monsters in it are hit and can't attack for 2 s.</summary>
+        /// <summary>
+        /// [NINJA] 연막 도약 (moved from the assassin 2026-10-23): jump 4 m back while a smoke bomb flies to the pack in front
+        /// (the nearest monster in 6 m, else 4 m ahead); monsters in its smoke are hit and can't attack for 2 s.
+        /// [2026-10-23] User: the ninja fights at range, so the smoke goes on the monsters, not where I stood.
+        /// </summary>
         IEnumerator SmokeLeap(Run c)
         {
-            if (c.n.spec == 'a') { yield return SmokeThrough(c); yield break; } // [ROGUE SPEC] 연막 돌파
-            Vector2 spot = owner.Center, feet = owner.Position;
+            if (c.n.spec == 'a') { yield return SmokeThrough(c); yield break; } // [ROGUE SPEC] 연막 관통탄
             int smokeDamage = c.n.spec == 'b' ? Mathf.Max(1, Mathf.RoundToInt(c.n.damage * VeilDoubleShare)) : c.n.damage;
-            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false);
-            SkillFx.Spawn("fx_ring", feet, new Color(.6f, .45f, .7f, .7f), .5f, SkillFx.GroundOrder + 14)
-                .Scale(new Vector2(c.n.radius * .3f, c.n.radius * .2f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
+            var target = Target(c.dir, VeilThrowRange, out _);
+            Vector2 from = owner.Center;
+            Vector2 spot = target != null ? target.Center : from + c.dir * owner.SkillClearance(c.dir, Mathf.Min(4f, VeilThrowRange));
+            StartCoroutine(SmokeBomb(c, from, spot, smokeDamage));
             Sound("c_dash", .8f);
-            foreach (var e in Enemies(spot, c.n.radius))
-                if (Strike(c, e, smokeDamage, spot, 3f, 1, "hit")) Stun(c, e, c.s.duration);
             CareerFx.Ghost(owner, CloneTint, .35f);
             float distance = Dash(-c.dir, c.n.range);
             float seconds = DashSeconds(distance);
@@ -296,6 +362,29 @@ namespace DotRPG
             }
             if (c.n.spec == 'b') SmokeArrival(c); // [ROGUE SPEC] 이중 연막
             if (ClonesUp) CareerTrials.Record(owner, "veil", 1); // the ninja trial: smoke leaps with the clones out
+        }
+
+        /// <summary>연막 도약's bomb: a kunai with a smoke tag flies to <paramref name="spot"/>, then the smoke bursts there.</summary>
+        IEnumerator SmokeBomb(Run c, Vector2 from, Vector2 spot, int damage)
+        {
+            Vector2 dir = spot - from;
+            float length = dir.magnitude;
+            dir = length > .0001f ? dir / length : c.dir;
+            var k = KunaiProjectile.Spawn(owner, from, dir, ThrowsStars, SpecTint(c));
+            for (float t = 0f; t < length; t += VeilBombSpeed * Time.deltaTime)
+            {
+                if (!Live(c) || k == null) { if (k != null) k.Vanish(); yield break; }
+                k.Place(from + dir * t);
+                yield return null;
+            }
+            if (k != null) k.Vanish();
+            if (!Live(c)) yield break;
+            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false, SmokeGray);
+            SkillFx.Spawn("fx_ring", spot - new Vector2(0f, .45f), new Color(.6f, .6f, .62f, .6f), .5f, SkillFx.GroundOrder + 14)
+                .Scale(new Vector2(c.n.radius * .3f, c.n.radius * .2f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
+            ImpactSound("c_heavy", .5f);
+            foreach (var e in Enemies(spot, c.n.radius))
+                if (Strike(c, e, damage, spot, 3f, 1, "hit")) Stun(c, e, c.s.duration);
         }
 
         // ---------- Casts ----------
@@ -520,7 +609,7 @@ namespace DotRPG
                 var k = KunaiProjectile.Spawn(owner, to, dir, ThrowsStars);
                 k.Stick(stormFor + 1f, false);
                 stuck.Add(k);
-                CareerFx.Line(from, to, new Color(1f, .7f, .4f, .6f), .06f, .1f);
+                CareerFx.Line(from, to, new Color(.8f, .82f, .86f, .6f), .06f, .1f);
                 Sound("swing", .35f);
                 if (foe != null && StrikeRapid(c, foe, throwDamage, from)) struck.Add(foe);
                 yield return new WaitForSeconds(gap);
@@ -536,7 +625,7 @@ namespace DotRPG
             Feel(2, Vector2.up);
             float burst = CloneBurst * (c.n.spec == 'a' ? StormVolleyBurst : c.n.spec == 'b' ? StormLongBurst : 1f);
             foreach (var e in struck) if (e != null && !e.IsDead) StrikeRapid(c, e, Mathf.RoundToInt(c.n.damage * burst), center, 2);
-            SkillVisuals.UltFinish(owner.Center, Tint(c, NinjaOrange), c.n.radius);
+            SkillVisuals.UltFinish(owner.Center, Tint(c, CareerFx.KunaiSteel), c.n.radius);
         }
     }
 }

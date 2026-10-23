@@ -157,6 +157,8 @@ namespace DotRPG
             GameEvents.RaiseMapEntered(BossRushCatalog.ArenaMap);
             Game.Audio.PlayMusic(Game.World.Map.music);
             Game.UI.Hud.RefreshAll();
+            yield return MemoryJanitor.Sweep(); // [MEMORY] behind the black screen, before the boss appears
+            if (gen != generation) yield break;
             SpawnBoss();
             clockRunning = false;
             yield return Game.UI.Fader.Fade(0f, .2f);
@@ -279,6 +281,7 @@ namespace DotRPG
             GameEvents.RaiseMapEntered(destination);
             Game.Audio.PlayMusic(Game.World.Map.music);
             Game.UI.Hud.RefreshAll();
+            yield return MemoryJanitor.Sweep(); // [MEMORY] behind the black screen
             yield return Game.UI.Fader.Fade(0f, .2f);
             Busy = false;
             finishing = false;

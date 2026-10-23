@@ -51,7 +51,7 @@ namespace DotRPG
                 var trail = n;
                 trail.damage = cut;
                 CareerFx.Clip("f_x", e.Center, Random.insideUnitCircle.normalized, .7f, 30f, VfxLayer.Top, true, shade);
-                HitRapid(e, trail, e.Center, 0f);
+                CareerCombat.For(owner).Uncopied(() => HitRapid(e, trail, e.Center, 0f)); // [NINJA] part of 연쇄 도약: not copied
                 if (i == 0) yield return new WaitForSeconds(LeapTrailGap);
             }
         }

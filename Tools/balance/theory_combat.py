@@ -143,7 +143,7 @@ HEAL, BUFF = {"heal", "bloom", "cleanse"}, {"guard", "oath", "bless", "counter",
 # [ROGUE 2026-10-23] Assassin (a) and ninja (n) rows from Docs/PLAN_CLASS_ROGUE.md 2.3/2.4 in the CareerData S() format.
 # Used only until CareerData.cs carries them (7절 5단계); once it does, the rows are read from the code like the others.
 ROGUE_ROWS = """
-S(a,1,"a_twin","쌍인참","","twin",1.0f,10,3,1.6f,0,.08f,0,4),
+S(a,1,"a_phantom","환영 삼격","","phantom",2.3f,18,6,5,.4f,.08f,0,3),
 S(a,2,"a_kunai","쿠나이 순간이동","","kunai",1.6f,14,8,10,.4f,.08f),
 S(a,3,"a_venom","맹독 도포","","venom",20,20,62,0,0,.1f,120),
 S(a,5,"a_rend","연환 베기","","rend",.8f,18,0,2,.9f,.1f,0,2),
@@ -152,7 +152,7 @@ S(a,7,"a_assassinate","암살","","assassinate",1.85f,26,12,1.8f,0,.2f),
 S(a,8,"a_awake","천영참","","shadowdance",.8f,60,48,0,5.4f,0f,2,12),
 S(a,9,"a_stealth","은신","","stealth",50,20,20,0,0,.1f,6),
 S(n,1,"n_veil","연막 도약","","veil",1.7f,14,12,4,2.5f,.05f,2),
-S(n,2,"n_clone","분신술","","clone",25,20,24,0,0,.1f,8),
+S(n,2,"n_clone","분신술","","clone",60,30,57,0,0,.1f,8),
 S(n,3,"n_recall","회수","","recall",.6f,16,8,8,0,.15f),
 S(n,5,"n_volley","연발 쿠나이","","volley",.75f,18,0,8,.35f,.1f,0,2),
 S(n,6,"n_fuma","풍마 수리검","","fuma",.55f,22,9,7,.7f,.2f,0,6),
@@ -160,7 +160,7 @@ S(n,7,"n_bomb","기폭 쿠나이","","bomb",1.4f,26,12,7,1.2f,.25f,0,5),
 S(n,8,"n_awake","분신 난무","","clonestorm",.55f,60,48,0,6.2f,0f,2,16),
 """
 SK = {}
-_ROWS = CD if 'S(a,1,"a_twin"' in CD else CD + ROGUE_ROWS
+_ROWS = CD if 'S(a,1,"a_phantom"' in CD else CD + ROGUE_ROWS
 for m in re.finditer(r'S\(([fgmban]),(\d+),"(\w+)","([^"]+)","[^"]*","(\w+)",([^)]*)\)', _ROWS):
     nums = [x.strip().rstrip("f") for x in m.group(6).split(",")]
     i, eff = int(m.group(2)), m.group(5)
@@ -192,6 +192,8 @@ MP_SHARE.setdefault("n_volley", .0228)
 # [ROGUE] Rupture and assassinate are counted with every condition met (5 marks, from behind): 3.47 and 7.86 (2.3절).
 COND_MUL = {"a_rupture": 2.0, "a_assassinate": 1.5 * 1.8}
 
+# [NINJA 2026-10-23] 분신술 average: clones x 60% x uptime (duration x rank 3 / cooldown). --clone-share etc. to test.
+CLONE_MORE = 1 + arg("--clones", 2) * arg("--clone-share", .6) * arg("--clone-time", 8.0) * 1.24 / arg("--clone-cd", 40.0)
 # spam skill, its single-target hits per cast, average targets in a 3-pack, extra cooldown skills on keys
 CAREERS = {
     # [2026-10-12] 8 skill keys: the A/S cooldown skills join the rotation (fighter 일섬·단죄, mage 중력 균열·차원도약,
@@ -204,14 +206,17 @@ CAREERS = {
                  cds=["m_ice", "m_orbit", "m_rift", "m_veil"], cd_hits={"m_ice": 1, "m_orbit": 2.2, "m_rift": 6}, cd_splash=2.4, more=1.0, dr=0, shield=.35),
     "비숍": dict(cls="m", hpmul=1.05, mpcls="m", spam="b_light", spam_hits=1, splash=2.0,
                 cds=["b_cleanse"], cd_hits={}, cd_splash=2.0, more=1.18, dr=0, shield=0),
-    # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 3절: assassin more = venom 1.2 x marks 1.15 x ambush 1.05, ninja = clones 1.235 x .96.
+    # [ROGUE 2026-10-23] PLAN_CLASS_ROGUE 3절: assassin more = venom 1.2 x marks 1.15 x ambush 1.05, ninja = clones x .96.
+    # Same day (user): 환영 삼격 replaced 쌍인참 (3 phantoms; a monster up close takes all 3, a 3-pack takes about 5 in all),
+    # 분신술 = 2 clones copying every attack at 60% for 8 s x rank 3 (1.24) every 40 s: 1 + 2 x .6 x 9.92 / 40 = 1.298,
+    # x .96 for 연막 도약·회수·기폭 (not copied).
     # Same day (user): 쿠나이 순간이동 moved to the assassin (one monster on its line here), 연막 도약 to the ninja (smoke on the pack).
     "어쌔신": dict(cls="r", hpmul=1.15, mpcls="r", spam="a_rend", spam_hits=2, splash=1.4,
-                 cds=["a_twin", "a_kunai", "a_rupture", "a_assassinate"], cd_hits={"a_twin": 4}, cd_splash=1.0, more=1.2 * 1.15 * 1.05, dr=0, shield=0,
+                 cds=["a_phantom", "a_kunai", "a_rupture", "a_assassinate"], cd_hits={"a_phantom": 3}, cd_pack={"a_phantom": 5}, cd_splash=1.0, more=1.2 * 1.15 * 1.05, dr=0, shield=0,
                  basic=(.24, 1.1)),
     "닌자": dict(cls="r", hpmul=1.0, mpcls="r", spam="n_volley", spam_hits=2, splash=1.6,
-                cds=["n_veil", "n_fuma", "n_bomb", "n_recall"], cd_hits={"n_fuma": 6, "n_bomb": 3, "n_recall": 6}, cd_splash=2.0, more=1.235 * .96, dr=0, shield=0,
-                basic=(.3, 1.0)),
+                cds=["n_veil", "n_fuma", "n_bomb", "n_recall"], cd_hits={"n_fuma": 6, "n_bomb": 3, "n_recall": 6}, cd_splash=2.0, more=CLONE_MORE * .96, dr=0, shield=0,
+                basic=(.3, 1.0, 1.2)),  # [NINJA 2026-10-23] every ninja throws; 투척술 rank 3 = +20% on the throw
 }
 # --old-mp: the warrior MP formula this tool used before 2026-10-23 (40 + 10, 4 per level). The code (CharacterStatsCalc) is
 # 40 + 40, 4 + 2 per level for warriors and rogues; the 3.1 table in PLAN_CLASS_ROGUE.md was made with the old one.
@@ -253,7 +258,8 @@ def rotation(lv, c, window):
         budget -= n * k["mp"]
         d = n * A * k["power"] * COND_MUL.get(cid, 1) * RANK3 * c["more"] * c["cd_hits"].get(cid, 1)
         single += d
-        pack += d * c["cd_splash"]
+        # cd_pack: total hits on a 3-pack where a skill differs from its single-target count x cd_splash (환영 삼격)
+        pack += d * c["cd_pack"][cid] / c["cd_hits"].get(cid, 1) if cid in c.get("cd_pack", {}) else d * c["cd_splash"]
     left = max(0.0, window - busy)
     share = MP_SHARE.get(c["spam"])
     spam_mp = mp * share * 1.3 if share else s["mp"]  # [2026-10-12] CareerSkill.MainHunterMpShare x one support gem (x1.3)
@@ -262,7 +268,7 @@ def rotation(lv, c, window):
     pack += casts * per_cast * c["splash"]
     basic_time = left - casts * cycle
     if "basic" in c:  # [ROGUE] dagger .65 / .24 s (pack x1.1), ninja kunai .65 / .3 s
-        basic = A * .65 / c["basic"][0] * basic_time
+        basic = A * .65 * (c["basic"][2] if len(c["basic"]) > 2 else 1) / c["basic"][0] * basic_time
         single += basic
         pack += basic * c["basic"][1]
         return single, pack

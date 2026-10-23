@@ -15,12 +15,16 @@ namespace DotRPG
         public static readonly Color HolyWarm = new Color(1f, 0.72f, 0.3f, 0.85f);
         public static readonly Color Life = new Color(0.6f, 1f, 0.6f, 0.9f);
 
-        /// <summary>[ROGUE] Assassin magenta #e05ac8, ninja orange #ff8c32 (Docs/PLAN_CLASS_ROGUE.md 1.6).</summary>
-        public static readonly Color Magenta = new Color(0.88f, 0.35f, 0.78f, 0.95f);
-        public static readonly Color Orange = new Color(1f, 0.55f, 0.2f, 0.95f);
+        /// <summary>
+        /// [ROGUE 2026-10-23] Skill effect colours of the rogue careers. User: "too flashy, keep it basic like the warrior and
+        /// the mage" - plain blade steel for the assassin, a pale blue-grey for the ninja's thrown steel (no violet or magenta).
+        /// The career's own palette (body, UI) is <see cref="CareerCatalog.Color"/> and stays.
+        /// </summary>
+        public static readonly Color DaggerSteel = new Color(0.86f, 0.88f, 0.9f, 0.95f);
+        public static readonly Color KunaiSteel = new Color(0.74f, 0.8f, 0.86f, 0.95f);
 
         public static Color Main(Career c) => c == Career.Fighter ? Steel : c == Career.Guardian ? Teal : c == Career.Arcanist ? Violet
-            : c == Career.Assassin ? Magenta : c == Career.Ninja ? Orange : Holy;
+            : c == Career.Assassin ? DaggerSteel : c == Career.Ninja ? KunaiSteel : Holy;
         /// <summary>[CH3 SPEC] Main colour of a career cast: the specialization's crimson / silver when one is chosen, else
         /// the career colour. Career cast functions pass this where they passed <see cref="Main"/>.</summary>
         public static Color SkillColor(Career c, SkillNumbers n) => SkillSpecs.Tint(n, Main(c));
@@ -294,8 +298,14 @@ namespace DotRPG
     /// <summary>Career skill icons (Resources/Art/Careers/Icons) and the after-cast recovery of each skill.</summary>
     public static class CareerMoves
     {
-        public static Sprite Icon(string key) =>
-            key != null && key.StartsWith("career_") ? Resources.Load<Sprite>("Art/Careers/Icons/" + key) : null;
+        public static Sprite Icon(string key)
+        {
+            if (key == null || !key.StartsWith("career_")) return null;
+            var art = Resources.Load<Sprite>("Art/Careers/Icons/" + key);
+            // [ROGUE 2026-10-23] A new skill without its own icon yet shows the icon of the skill it replaced.
+            if (art == null && key == "career_a_phantom") art = Resources.Load<Sprite>("Art/Careers/Icons/career_a_twin");
+            return art;
+        }
 
         /// <summary>Seconds the body stays in the skill after the cast moment (short so skills chain into attacks).</summary>
         public static float Recovery(CareerSkill s)

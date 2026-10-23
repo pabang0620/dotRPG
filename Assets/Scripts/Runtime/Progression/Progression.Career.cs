@@ -91,9 +91,26 @@ namespace DotRPG
             if(careerState.questStage==5) { careerState.awakened=true; slots[4,0]=CareerCatalog.For(Career)[8].id; }
             Changed?.Invoke(); return true;
         }
+        /// <summary>[ROGUE 2026-10-23] Career skills that were replaced: a save keeps its points on the new skill in the same place.</summary>
+        internal static string Renamed(string id) => id=="a_twin" ? "a_phantom" : id;
+
+        static void RenameLegacy(CareerSave old)
+        {
+            if(old==null) return;
+            foreach(var n in old.nodes ?? new List<CareerRank>()) n.id=Renamed(n.id);
+            foreach(var x in old.specs ?? new List<SpecChoice>()) x.skill=Renamed(x.skill);
+            foreach(var st in old.styles ?? new List<CareerStyle>())
+            {
+                foreach(var n in st.nodes ?? new List<CareerRank>()) n.id=Renamed(n.id);
+                foreach(var x in st.specs ?? new List<SpecChoice>()) x.skill=Renamed(x.skill);
+                if(st.gems!=null) for(int i=0;i<st.gems.Count;i++) st.gems[i]=Renamed(st.gems[i]);
+            }
+        }
+
         void RestoreCareer(SaveData save)
         {
             var old=save.career;
+            RenameLegacy(old);
             careerState=new CareerSave();
             if(old!=null) RestoreStyles(old);
             if(old==null || old.schema<1)

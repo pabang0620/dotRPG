@@ -252,7 +252,7 @@ namespace DotRPG
                 for (int i = 0; i < data.gemSlots.Count && i < slots.Length; i++)
                 {
                     int s = i / (1 + SkillGems.SupportsPerSlot), k = i % (1 + SkillGems.SupportsPerSlot);
-                    if (k == 0) { EquipSkill(s,data.gemSlots[i]); continue; }
+                    if (k == 0) { EquipSkill(s,Renamed(data.gemSlots[i])); continue; }
                     var g = SkillGems.Get(data.gemSlots[i]);
                     slots[s, k] = g != null && g.kind == GemKind.Support && IsUnlocked(g) ? g.id : null;
                 }

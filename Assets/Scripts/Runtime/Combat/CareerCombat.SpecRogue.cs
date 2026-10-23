@@ -6,15 +6,16 @@ namespace DotRPG
 {
     /// <summary>
     /// [ROGUE SPEC] 어쌔신·닌자 specializations (Docs/ch3/SKILL_SPECIALIZATION.md 3.6). Career skills keep their built
-    /// numbers; these ratios turn the built damage into the design's A / B values (e.g. 쌍인 연참 1.3 of the 1.02 stab).
+    /// numbers; these ratios turn the built damage into the design's A / B values (e.g. 환영 일점 3.5 of the 2.74 cut).
     /// With no side chosen ('\0', or chapter 3 closed) every helper returns the old value, so the base kit is unchanged.
     /// </summary>
     public sealed partial class CareerCombat
     {
         // ---------- 어쌔신 ----------
-        const float TwinDeepMul = 1.3f / 1.02f, TwinSweepMul = .43f / 1.02f;
+        /// <summary>환영 삼격 A/B (2026-10-23, replaced 쌍인참): each cut 3.5 of the built 2.74 (A three on one line, B one per monster).</summary>
+        const float PhantomSpecMul = 3.5f / 2.74f;
         const float RendPointMul = 1.1f / .68f, RendWhirlMul = .37f / .68f;
-        const float VeilThroughMul = 4.0f / 2.67f, VeilDoubleShare = 2.4f / 2.67f, VeilThroughHalf = .6f;
+        const float VeilThroughMul = 4.0f / 2.67f, VeilDoubleShare = 2.4f / 2.67f, VeilThroughHalf = .6f, VeilPierceRange = 8f;
         const int VeilDoubleGuard = 30;
         const float VeilDoubleGuardSeconds = 1.5f, VeilDoubleStun = 1f;
         const float VenomBossScale = 1.8f, VenomSpreadScale = .6f, VenomSpreadRadius = 2f;
@@ -30,7 +31,8 @@ namespace DotRPG
 
         // ---------- 닌자 ----------
         const float ThrowHeavyGap = .4f, ThrowHeavyScale = 1.33f, ThrowQuickGap = .24f, ThrowQuickScale = .8f;
-        const float CloneOneScale = 2f, CloneThreeScale = .68f;
+        /// <summary>분신술 A/B (2026-10-23): the share stays 60% (user); one clone lasts twice as long, three last two thirds.</summary>
+        const float CloneOneTime = 2f, CloneThreeTime = 2f / 3f;
         const float PortPierceMul = 3.2f / 2.11f, PortAnchorMul = 1.92f / 2.11f, PortAnchorGuardSeconds = 1.5f;
         const int PortAnchorGuard = 40;
         const float RecallTargetMul = 1.0f / .79f, RecallWideMul = .33f / .79f, RecallWideHalf = 1.2f;
@@ -117,23 +119,7 @@ namespace DotRPG
 
         // ---------- 어쌔신 casts ----------
 
-        int TwinDamage(Run c) => Mathf.Max(1, Mathf.RoundToInt(c.n.damage * (c.n.spec == 'a' ? TwinDeepMul : c.n.spec == 'b' ? TwinSweepMul : 1f)));
-
-        /// <summary>쌍인 연참 A: the last stab cuts one more mark. 쌍인 회선 B: every stab also cuts up to 2 monsters around the target.</summary>
-        void TwinSpec(Run c, EnemyController target, int stab, bool last)
-        {
-            if (c.n.spec == 'a' && last && c.authority && Prog.Rank("a_vital") > 0) AddMark(target, 1);
-            if (c.n.spec != 'b') return;
-            int extra = Mathf.Max(0, (c.n.targets > 0 ? c.n.targets : 3) - 1);
-            float radius = c.n.radius > 0f ? c.n.radius : 1.6f;
-            foreach (var e in Enemies(target.Center, radius))
-            {
-                if (extra <= 0) break;
-                if (e == target) continue;
-                Strike(c, e, stab, target.Center, 1.5f, 0, "c_slash");
-                extra--;
-            }
-        }
+        int PhantomDamage(Run c) => Mathf.Max(1, Mathf.RoundToInt(c.n.damage * (c.n.spec != '\0' ? PhantomSpecMul : 1f)));
 
         /// <summary>연환 일점 A: two cuts on the one monster in front. 연환 선풍 B: two full turns around me, up to 5 monsters.</summary>
         IEnumerator RendSpec(Run c)
@@ -171,32 +157,40 @@ namespace DotRPG
             }
         }
 
-        /// <summary>연막 돌파 A: smoke where I stood (no damage), then dash 4 m forward through the monsters (4.0 each).</summary>
+        /// <summary>
+        /// 연막 관통탄 A (2026-10-23 ranged, was 연막 돌파's dash): no leap; a smoke kunai flies 8 m forward through the
+        /// monsters (4.0 each) and its smoke bursts where it stops (no damage, can't attack 2 s).
+        /// </summary>
         IEnumerator SmokeThrough(Run c)
         {
-            Vector2 spot = owner.Center;
-            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false, Tint(c, Color.white));
-            Sound("c_dash", .8f);
-            foreach (var e in Enemies(spot, c.n.radius)) Stun(c, e, c.s.duration);
-            CareerFx.Ghost(owner, AssassinShade, .35f);
-            float distance = Dash(c.dir, c.n.range);
-            Vector2 end = spot + c.dir * distance;
+            Vector2 from = owner.Center;
+            float length = owner.SkillClearance(c.dir, VeilPierceRange);
             int damage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * VeilThroughMul));
-            CareerFx.Clip("f_line", spot, c.dir, 1f, 26f, VfxLayer.Top, true, Tint(c, AssassinPink)).Squash(Mathf.Max(.5f, distance) / 6f, 1f);
-            foreach (var e in Corridor(spot, end, VeilThroughHalf)) Strike(c, e, damage, spot, 4f, 1, "c_slash");
-            float seconds = DashSeconds(distance);
-            for (float t = 0; t < seconds; t += Time.deltaTime)
+            var k = KunaiProjectile.Spawn(owner, from, c.dir, ThrowsStars, Tint(c, Color.white));
+            Sound("swing", .8f);
+            var hit = new HashSet<EnemyController>();
+            float travelled = 0f;
+            while (travelled < length)
             {
-                if (!Live(c)) yield break;
+                if (!Live(c) || k == null) { if (k != null) k.Vanish(); yield break; }
+                float step = Mathf.Min(VolleySpeed * Time.deltaTime, length - travelled);
+                Vector2 a = from + c.dir * travelled, b = a + c.dir * step;
+                foreach (var e in Corridor(a, b, VeilThroughHalf)) if (hit.Add(e)) Strike(c, e, damage, a, 2f, 1, "c_slash");
+                travelled += step;
+                k.Place(b);
                 yield return null;
             }
+            Vector2 spot = from + c.dir * length;
+            if (k != null) k.Vanish();
+            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false, SmokeGray);
+            foreach (var e in Enemies(spot, c.n.radius)) Stun(c, e, c.s.duration);
         }
 
         /// <summary>이중 연막 B: a second smoke where I land (1 s no attacking, no damage) and -30% damage taken for 1.5 s.</summary>
         void SmokeArrival(Run c)
         {
             Vector2 at = owner.Center;
-            CareerFx.Gen("a_smoke", null, at, Vector2.zero, c.n.radius * 1.6f, 0f, 14f, VfxLayer.Top, false, Tint(c, Color.white));
+            CareerFx.Gen("a_smoke", null, at, Vector2.zero, c.n.radius * 1.6f, 0f, 14f, VfxLayer.Top, false, Tint(c, SmokeGray));
             foreach (var e in Enemies(at, c.n.radius * .8f)) Stun(c, e, VeilDoubleStun);
             if (c.authority) AddGuard(VeilDoubleGuard, VeilDoubleGuardSeconds);
         }

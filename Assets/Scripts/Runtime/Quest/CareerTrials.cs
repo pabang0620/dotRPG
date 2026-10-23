@@ -24,7 +24,7 @@ namespace DotRPG
             string[] b={L.T("아이비: 사람과 마족 모두 상처 앞에서는 같은 숨을 쉬더라.\n나: 누구의 상처인지 묻기 전에 살펴보겠습니다."),L.T("아이비: 저주가 회복을 막고 있어. 치료의 순서를 판단해 줘.\n나: 해로운 것을 걷어내고, 숨을 이어 지키겠습니다."),L.T("시련: 아이비 저주 정화, 실제 HP 90 회복, 보호막으로 25 피해 흡수, 20초 생존. Lv.22 정화 필요."),L.T("아이비: 다시 아침을 볼 수 있겠어.\n나: 모두가 그 문 너머의 아침을 볼 수 있기를."),L.T("아이비: 날개는 위에서 내려온 게 아니야. 끝까지 곁에 있던 손에서 피어난 거야."),L.T("새잎과 천사의 품이 성역에 피었다. T 슬롯에서 천상의 행진 사용 가능.")};
             // [ROGUE] Docs/PLAN_CLASS_ROGUE.md 5: 돈 "그림자는 지키는 사람 뒤에 선다", 모 "분신은 도망이 아니라 동료가 올 때까지 버티는 법".
             string[] a={L.T("돈: 등을 노리는 칼은 비겁하다고들 하지. 그런데 너는 누구의 등을 노리나?\n나: 동료를 해치려는 자의 등입니다."),L.T("돈: 그림자는 지키는 사람 뒤에 선다. 정면이 섞이면 처음부터다. 등 뒤만 다섯 번 이어라.\n나: 다섯 번, 한 번도 앞에 서지 않겠습니다."),L.T("시련: 등 뒤 공격 5회를 끊기지 않고 성공(정면 공격이 섞이면 처음부터) + 표식 5개 상태에서 암살 1회. 45초."),L.T("나: 앞에 선 동료가 있어서 등 뒤가 열렸습니다.\n돈: 그래, 그림자는 혼자서는 생기지 않는다."),L.T("돈: 네 칼끝이 향하는 곳을 잊지 마라. 지키는 사람의 뒤, 그곳이 네 자리다."),L.T("여섯 그림자가 한 칼로 모였다. T 슬롯에서 천영참 사용 가능.")};
-            string[] n={L.T("모: 분신을 도망치는 재주라고 생각하나?\n나: 혼자서 여럿을 상대하는 재주라고 생각했습니다."),L.T("모: 분신은 도망이 아니라 동료가 올 때까지 버티는 법이다. 분신이 서 있는 동안 자리를 바꾸고, 함정으로 길을 막아라.\n나: 셋이 하나처럼 움직이겠습니다."),L.T("시련: 분신술 지속 중에 연막 도약 2회 + 기폭 쿠나이로 4번 속박. 45초."),L.T("나: 혼자였지만 혼자 싸우지 않았습니다.\n모: 이제야 분신이 네 편이 되었구나."),L.T("모: 여럿이 되는 법을 배웠으니, 이제 동료가 오는 길을 지켜라."),L.T("여섯 분신이 원을 그리며 쿠나이를 던진다. T 슬롯에서 분신 난무 사용 가능.")};
+            string[] n={L.T("모: 분신을 도망치는 재주라고 생각하나?\n나: 혼자서 여럿을 상대하는 재주라고 생각했습니다."),L.T("모: 분신은 도망이 아니라 동료가 올 때까지 버티는 법이다. 분신이 서 있는 동안 자리를 바꾸고, 함정으로 길을 막아라.\n나: 셋이 하나처럼 움직이겠습니다."),L.T("시련: 분신술 지속 중에 연막 도약 1회 + 기폭 쿠나이로 4번 속박. 45초."),L.T("나: 혼자였지만 혼자 싸우지 않았습니다.\n모: 이제야 분신이 네 편이 되었구나."),L.T("모: 여럿이 되는 법을 배웠으니, 이제 동료가 오는 길을 지켜라."),L.T("여섯 분신이 원을 그리며 쿠나이를 던진다. T 슬롯에서 분신 난무 사용 가능.")};
             return (c==Career.Fighter?f:c==Career.Guardian?g:c==Career.Arcanist?m:c==Career.Assassin?a:c==Career.Ninja?n:b)[Mathf.Clamp(stage,0,5)];
         }
         public static string Begin()
@@ -102,9 +102,9 @@ namespace DotRPG
                 if(target.Health.Current<=1){Finish(false);return;}
             }
             bool success=c==Career.Fighter?chain>=5:c==Career.Guardian?taunts>=2&&absorbed>=40&&elapsed>=20:c==Career.Arcanist?sequence>=3
-                :c==Career.Assassin?behindDone&&assassinations>0:c==Career.Ninja?ports>=2&&roots>=4:cleansed>0&&healed>=90&&absorbed>=25&&elapsed>=20;
+                :c==Career.Assassin?behindDone&&assassinations>0:c==Career.Ninja?ports>=1&&roots>=4:cleansed>0&&healed>=90&&absorbed>=25&&elapsed>=20;
             if(behindChain>=5)behindDone=true;
-            status=c==Career.Assassin?L.F("등 뒤 연속 {0}/5 · 표식 5개 암살 {1}/1", (behindDone?5:Mathf.Min(behindChain,5)), Mathf.Min(assassinations,1)):c==Career.Ninja?L.F("분신 중 연막 도약 {0}/2 · 기폭 속박 {1}/4", Mathf.Min(ports,2), Mathf.Min(roots,4)):c==Career.Fighter?L.F("열린 틈 {0} · 연격 {1}/5", ((elapsed%4)<2?L.T("공격!"):L.T("대기")), chain):c==Career.Guardian?L.F("도발 {0}/2 · 흡수 {1}/40 · 버티기 {2:0}/20초", taunts, absorbed, elapsed):c==Career.Arcanist?L.F("원소 정렬 {0}/3", Mathf.Min(sequence,3)):L.F("정화 {0}/1 · 회복 {1}/90 · 흡수 {2}/25", cleansed, healed, absorbed);
+            status=c==Career.Assassin?L.F("등 뒤 연속 {0}/5 · 표식 5개 암살 {1}/1", (behindDone?5:Mathf.Min(behindChain,5)), Mathf.Min(assassinations,1)):c==Career.Ninja?L.F("분신 중 연막 도약 {0}/1 · 기폭 속박 {1}/4", Mathf.Min(ports,1), Mathf.Min(roots,4)):c==Career.Fighter?L.F("열린 틈 {0} · 연격 {1}/5", ((elapsed%4)<2?L.T("공격!"):L.T("대기")), chain):c==Career.Guardian?L.F("도발 {0}/2 · 흡수 {1}/40 · 버티기 {2:0}/20초", taunts, absorbed, elapsed):c==Career.Arcanist?L.F("원소 정렬 {0}/3", Mathf.Min(sequence,3)):L.F("정화 {0}/1 · 회복 {1}/90 · 흡수 {2}/25", cleansed, healed, absorbed);
             if(success)Finish(true);
         }
         void Finish(bool success)

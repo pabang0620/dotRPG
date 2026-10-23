@@ -25,7 +25,7 @@ namespace DotRPG
                 // Q W E R all at rank 1 first, then the spammable 연쇄전격 and the charge shot; 매직 배리어 (9) on D.
                 case Career.Arcanist: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 9, 1 }, { 5, 1 }, { 3, 3 }, { 5, 3 }, { 1, 3 }, { 2, 2 }, { 0, 3 }, { 4, 3 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 2, 3, 5, 7, 6, 9 });
                 case Career.Bishop: return (new[,] { { 0, 1 }, { 1, 2 }, { 2, 1 }, { 3, 1 }, { 4, 1 }, { 5, 3 }, { 6, 2 }, { 0, 3 }, { 1, 3 }, { 7, 1 }, { 4, 2 } }, new[] { 5, 1, 2, 6, 7, 3 });
-                // [ROGUE] 어쌔신: the marks build (쌍인참, 연환 베기) then the cash-in (파열, 암살); 맹독 도포, 쿠나이 순간이동 (2) and 은신 on the late keys.
+                // [ROGUE] 어쌔신: 환영 삼격 (1, 2026-10-23: the push that opens a pack, three cuts up close) and 연환 베기 build the marks, then the cash-in (파열, 암살); 맹독 도포, 쿠나이 순간이동 (2) and 은신 on the late keys.
                 case Career.Assassin: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 4, 1 }, { 3, 1 }, { 5, 3 }, { 9, 1 }, { 1, 3 }, { 0, 3 }, { 4, 3 }, { 3, 3 }, { 2, 2 }, { 6, 1 }, { 7, 1 } }, new[] { 1, 5, 6, 7, 3, 2, 9 });
                 // [ROGUE] 닌자: 연막 도약 (1, since 2026-10-23) and the spammable 연발 쿠나이 first, 분신술 next, the traps last.
                 case Career.Ninja: return (new[,] { { 0, 1 }, { 1, 1 }, { 2, 1 }, { 4, 1 }, { 5, 3 }, { 1, 3 }, { 2, 3 }, { 0, 3 }, { 4, 3 }, { 3, 1 }, { 6, 1 }, { 7, 1 }, { 6, 2 }, { 7, 2 } }, new[] { 1, 5, 2, 6, 7, 3 });

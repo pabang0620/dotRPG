@@ -18,6 +18,9 @@ namespace DotRPG
 
         static bool Android => Application.platform == RuntimePlatform.Android;
 
+        /// <summary>[MEMORY] Forgets bytes kept by an Exists / Length / ReadHeader that no read collected (read again when asked).</summary>
+        public static void ClearCache() => androidCache.Clear();
+
         public static bool Exists(string path)
         {
             if (!Android) return File.Exists(path);
