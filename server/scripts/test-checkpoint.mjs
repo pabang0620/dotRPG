@@ -1,7 +1,7 @@
 // 시험 서버 전용: 구간 시작 캐릭터를 만든다(플레이 시험을 처음부터 하지 않고 구간마다 30~60분씩 하려고).
-// 사용: node scripts/test-checkpoint.mjs <로그인 아이디> <새 캐릭터 이름> <구간> [전직 1~4]
+// 사용: node scripts/test-checkpoint.mjs <로그인 아이디> <새 캐릭터 이름> <구간> [전직 1~6]
 //   구간: career(Lv15 전직 직후) fortress(Lv20 성채 앞) winter(Lv25 눈꽃 마을) lake(Lv31 호숫가) peak(Lv35 봉우리 길목 뒤) sanctum(Lv37 성소 입구 뒤)
-//   전직: 1·2 전사, 3·4 마법사. 생략하면 1(전사).
+//   전직: 1·2 전사, 3·4 마법사, 5·6 도적(어쌔신·닌자). 생략하면 1(전사).
 // 넣는 것: 레벨, 그 구간까지의 메인 퀘스트 완료(서버 청구 기록 + 클라이언트 퀘스트 상태 + 이야기 플래그), 처치·던전 누적,
 // 전직(스테이지 0), 그 레벨 구간의 레어 장비 한 벌(무기 +5), 물약, 골드. 경험치·아이템 원장에는 test_boost로 남긴다.
 // DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다.
@@ -24,6 +24,7 @@ const CHECKPOINTS = {
 const GEAR = {
   warrior: { weapon: 'sword', top: 'plate', bottom: 'greaves' },
   mage: { weapon: 'staff', top: 'robe', bottom: 'skirt' },
+  rogue: { weapon: 'dagger', top: 'plate', bottom: 'greaves' },
 };
 const TIERS = [1, 10, 15, 20, 25, 30, 35, 40];
 
@@ -40,11 +41,11 @@ const data = (f) => JSON.parse(readFileSync(new URL(`../data/${f}`, import.meta.
 const [login, name, cpId, careerArg] = process.argv.slice(2);
 const cp = CHECKPOINTS[cpId];
 const career = Number(careerArg ?? 1);
-if (!login || !name || !cp || !(career >= 1 && career <= 4)) {
-  console.error(`사용: node scripts/test-checkpoint.mjs <로그인 아이디> <새 캐릭터 이름> <${Object.keys(CHECKPOINTS).join('|')}> [전직 1~4]`);
+if (!login || !name || !cp || !(career >= 1 && career <= 6)) {
+  console.error(`사용: node scripts/test-checkpoint.mjs <로그인 아이디> <새 캐릭터 이름> <${Object.keys(CHECKPOINTS).join('|')}> [전직 1~6]`);
   process.exit(1);
 }
-const cls = career <= 2 ? 'warrior' : 'mage';
+const cls = career <= 2 ? 'warrior' : career <= 4 ? 'mage' : 'rogue';
 if (!/^[가-힣A-Za-z0-9]{2,8}$/.test(name)) {
   console.error('캐릭터 이름은 한글·영문·숫자 2~8자입니다.');
   process.exit(1);
@@ -97,7 +98,7 @@ try {
   if (acc.rows.length !== 1) throw new Error(`로그인 아이디 '${login}'을(를) 찾지 못했습니다.`);
   const accountId = acc.rows[0].account_id;
   const alive = await client.query('SELECT count(*)::int AS n FROM characters WHERE account_id = $1 AND deleted_at IS NULL', [accountId]);
-  if (alive.rows[0].n >= 4) throw new Error('캐릭터 슬롯(4개)이 가득 찼습니다. 다른 아이디를 쓰거나 캐릭터를 지우세요.');
+  if (alive.rows[0].n >= 6) throw new Error('캐릭터 슬롯(6개)이 가득 찼습니다. 다른 아이디를 쓰거나 캐릭터를 지우세요.');
   const taken = await client.query('SELECT 1 FROM characters WHERE name = $1 AND deleted_at IS NULL', [name]);
   if (taken.rows.length > 0) throw new Error(`이미 있는 이름입니다: ${name}`);
 
