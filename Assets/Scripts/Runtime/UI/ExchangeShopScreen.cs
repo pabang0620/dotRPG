@@ -153,13 +153,14 @@ namespace DotRPG
         }
 
         static string Hex(string rarity) =>
-            rarity == "legendary" || rarity == "Legendary" ? "#ff8c3a" : rarity == "unique" || rarity == "Unique" ? "#ffb347"
+            rarity == "legend" ? "#ff6b5e" : rarity == "legendary" || rarity == "Legendary" ? "#ff8c3a" : rarity == "unique" || rarity == "Unique" ? "#ffb347"
             : rarity == "epic" || rarity == "Epic" ? "#c58cff" : rarity == "rare" || rarity == "Rare" ? "#9fc4ff"
             : rarity == "Uncommon" ? "#8fe28f" : "#cfd6e2";
 
         static string KindText(ExchangeGood g) =>
             g.kind == "cosmetic" ? (string.IsNullOrEmpty(g.itemId) ? L.T("원하는 외형을 골라 받습니다") : L.T("교환소 전용 외형 · 영구 소장"))
             : g.kind == "skin_gauge" ? L.F("스킨 선택 게이지 {0}칸을 채웁니다", g.count)
+            : g.kind == "hidden_gauge" ? L.F("히든 게이지 {0}칸을 채웁니다", g.count)
             : g.kind == "gear_gauge" ? L.F("장비 뽑기 천장 {0}칸을 채웁니다 (확률은 그대로)", g.count)
             : L.F("{0} {1}개를 가방으로 받습니다", L.T(DungeonDatabase.ItemName(g.itemId)), g.count);
 

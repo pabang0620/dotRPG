@@ -5,8 +5,8 @@ namespace DotRPG
 {
     /// <summary>
     /// The motes of a costume skin: a few pixel particles around the wearer, more while walking (gold sparks,
-    /// moon motes, twinkling stars, rising embers), and (unique skins only) while moving a fading afterimage of the body in the
-    /// skin's colour left along the path. Purely visual: no colliders, no combat random numbers.
+    /// moon motes, twinkling stars, rising embers), and (epic and up, graded by SkinGhost) while moving a fading afterimage
+    /// of the body in the skin's colour left along the path. Purely visual: no colliders, no combat random numbers.
     /// </summary>
     public sealed class SkinTrail : MonoBehaviour
     {
@@ -18,7 +18,7 @@ namespace DotRPG
         readonly List<Mote> motes = new List<Mote>();
         sealed class Ghost { public SpriteRenderer r; public float age; }
         readonly List<Ghost> ghosts = new List<Ghost>();
-        const float GhostEvery = 0.07f, GhostLife = 0.38f;
+        SkinGhost ghost;
         float ghostAcc;
         SkinDef skin;
         SpriteRenderer body;
@@ -43,9 +43,11 @@ namespace DotRPG
         public static void Set(PlayerController who, SpriteRenderer body, SkinDef skin)
         {
             var t = who.GetComponent<SkinTrail>();
-            if (skin == null || skin.trail == SkinTrailKind.None) { if (t != null) t.Clear(); return; }
+            var g = skin != null ? skin.Ghost : SkinGhost.None;
+            if (skin == null || (skin.trail == SkinTrailKind.None && g.max <= 0)) { if (t != null) t.Clear(); return; }
             if (t == null) t = who.gameObject.AddComponent<SkinTrail>();
             t.skin = skin;
+            t.ghost = g;
             t.body = body;
             t.lastPos = who.transform.position;
         }
@@ -70,28 +72,28 @@ namespace DotRPG
             lastPos = pos;
             bool visible = body != null && body.enabled && body.gameObject.activeInHierarchy;
             // Idle: a slow trickle. Walking: a trail behind the feet.
-            spawnAcc += dt * (visible ? (moved > .0005f ? 22f : 5f) : 0f);
+            spawnAcc += dt * (visible && skin.trail != SkinTrailKind.None ? (moved > .0005f ? 22f : 5f) : 0f);
             while (spawnAcc >= 1f && motes.Count < Max) { spawnAcc -= 1f; Spawn(moved > .0005f); }
             if (spawnAcc >= 1f) spawnAcc = 0f;
-            // Afterimages along the path while moving (unique skins only).
-            if (visible && skin.afterimage && moved > .002f)
+            // Afterimages along the path while moving (epic and up, strength by grade).
+            if (visible && ghost.max > 0 && moved > .002f)
             {
                 ghostAcc += dt;
-                if (ghostAcc >= GhostEvery) { ghostAcc = 0f; SpawnGhost(); }
+                if (ghostAcc >= ghost.every) { ghostAcc = 0f; SpawnGhost(); }
             }
             for (int i = ghosts.Count - 1; i >= 0; i--)
             {
                 var g = ghosts[i];
                 g.age += dt;
-                if (g.age >= GhostLife || g.r == null)
+                if (g.age >= ghost.life || g.r == null)
                 {
                     if (g.r != null) Destroy(g.r.gameObject);
                     ghosts.RemoveAt(i);
                     continue;
                 }
-                float k = g.age / GhostLife;
+                float k = g.age / ghost.life;
                 var c = Color.Lerp(skin.trailA, skin.trailB, k);
-                c.a = .55f * (1f - k) * (1f - k);
+                c.a = ghost.alpha * (1f - k) * (1f - k);
                 g.r.color = c;
             }
             for (int i = motes.Count - 1; i >= 0; i--)
@@ -120,7 +122,7 @@ namespace DotRPG
 
         void SpawnGhost()
         {
-            if (body == null || body.sprite == null || ghosts.Count >= 8) return;
+            if (body == null || body.sprite == null || ghosts.Count >= ghost.max) return;
             var go = new GameObject("SkinAfterimage");
             go.transform.position = body.transform.position;
             go.transform.localScale = body.transform.lossyScale;

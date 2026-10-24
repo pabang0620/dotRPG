@@ -12,9 +12,18 @@ import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import {
   AURA_GAUGE_MAX,
-  BANNER_WEIGHT,
+  BANNER_ROWS,
   DUPLICATE_REFUND,
-  GAUGE,
+  GAUGES,
+  HIDDEN_GAUGE_MAX,
+  RARITIES,
+  damageOf,
+  dismantleCrystalsOf,
+  dismantleStarsOf,
+  gaugeCap,
+  skinsOf,
+  slotName,
+  type GaugeId,
   GEAR_BANNERS,
   GEAR_CEILING,
   GEAR_RARITY_NAME,
@@ -22,7 +31,6 @@ import {
   GEAR_RATE_SCALE,
   PITY_MAX,
   PULL_PRICE,
-  RARITY_NAME,
   RATE_SCALE,
   RATES_VERSION,
   SKIN_GAUGE_MAX,
@@ -38,6 +46,8 @@ import {
   cosmeticsOf,
   exchangePriceOf,
   type SynthFrom,
+  type SynthTier,
+  type CosmeticDef,
   type Banner,
   type CosmeticBanner,
   type Rarity,
@@ -49,16 +59,57 @@ import * as wallets from './starWallet';
 import type { ClaimBody, ExchangeBody, PullBody } from './starshopValidation';
 import { usableBy } from '../../utils/characterClass';
 
-const RARITIES: Rarity[] = ['unique', 'epic', 'rare', 'common'];
 type GearBanner = Exclude<Banner, CosmeticBanner>;
 
-/** 등급별 뽑기 풀: 오라 뽑기는 오라만, 스킨 뽑기는 모든 등급이 내 직업 스킨 */
-function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string) {
-  if (banner === 'skin') return STAR_COSMETICS.filter((c) => c.skin === cls && c.rarity === rarity && !c.exchangeOnly);
-  return cosmeticsOf(rarity);
+/** 한 칸의 뽑기 풀: 오라 뽑기는 오라만(히든 없음), 스킨 뽑기는 모든 칸이 내 직업 스킨(retired·교환소 전용 제외) */
+function poolOf(banner: CosmeticBanner, rarity: Rarity, cls: string, hidden = false) {
+  if (banner === 'skin') return skinsOf(cls, rarity, hidden);
+  return hidden ? [] : cosmeticsOf(rarity);
 }
 
 export { poolOf };
+
+export interface SlotRow {
+  rarity: Rarity;
+  hidden: boolean;
+  /** 이 직업에서 실제로 쓰는 몫(십만분율) */
+  weight: number;
+  items: CosmeticDef[];
+}
+
+/**
+ * 이 직업의 실제 뽑기 칸 표(높은 칸부터, 외형이 있는 칸만). 히든 풀이 비면 그 몫은 같은 등급 보통으로, 보통 풀이
+ * 비면 그 몫은 한 등급 아래 보통으로 간다(히든 몫은 그대로). 뽑기·화면 확률표·공시가 모두 이 표를 쓴다
+ */
+export function slotTable(banner: CosmeticBanner, cls: string): SlotRow[] {
+  const w = new Map<string, number>();
+  const key = (r: Rarity, h: boolean) => `${r}:${h}`;
+  for (const row of BANNER_ROWS[banner]) w.set(key(row.rarity, row.hidden), (w.get(key(row.rarity, row.hidden)) ?? 0) + row.weight);
+  const out: SlotRow[] = [];
+  let carry = 0;
+  for (let i = 0; i < RARITIES.length; i++) {
+    const r = RARITIES[i]!;
+    const hiddenItems = poolOf(banner, r, cls, true);
+    const normalItems = poolOf(banner, r, cls, false);
+    let hw = w.get(key(r, true)) ?? 0;
+    let nw = (w.get(key(r, false)) ?? 0) + carry;
+    carry = 0;
+    if (hiddenItems.length === 0) {
+      nw += hw;
+      hw = 0;
+    }
+    if (normalItems.length === 0) {
+      carry = nw;
+      nw = 0;
+    }
+    if (hw > 0) out.push({ rarity: r, hidden: true, weight: hw, items: hiddenItems });
+    if (nw > 0) out.push({ rarity: r, hidden: false, weight: nw, items: normalItems });
+  }
+  return out;
+}
+
+/** 10+1의 보너스 1회에서 빠지는 칸: 일반(보통) */
+const isBonusExcluded = (r: SlotRow): boolean => r.rarity === 'common' && !r.hidden;
 
 /** 뽑기 본문의 rates_version 확인(11.4). STAR_RATES_ACK_REQUIRED 이면 없는 요청을 거절한다 */
 function assertRatesAck(seen: string | undefined): void {
@@ -69,13 +120,39 @@ function assertRatesAck(seen: string | undefined): void {
   if (seen !== RATES_VERSION) throw new AppError(409, '확률표가 바뀌었습니다. 다시 확인해 주세요.', 'RATES_CHANGED', { rates_version: RATES_VERSION });
 }
 
-/** 오라·스킨 뽑기 확률표(%). 하나 = 등급 확률 / 그 등급 수(중복 방지 전 기준). 확률 0인 등급은 싣지 않는다 */
-function auraTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
-  return RARITIES.filter((r) => BANNER_WEIGHT[banner][r] > 0).map((rarity) => {
-    const items = poolOf(banner, rarity, cls);
-    const tier = (BANNER_WEIGHT[banner][rarity] * 100) / RATE_SCALE;
-    return { rarity, name: RARITY_NAME[rarity], rate: tier, items: items.map((c) => ({ id: c.id, rate: tier / Math.max(1, items.length) })) };
+/** 오라·스킨 뽑기 확률표(%). 칸마다: 칸 확률, 보너스 1회 칸 확률, 외형별 확률(중복 방지 전 기준) */
+export function rateTable(banner: CosmeticBanner = 'aura', cls = 'warrior') {
+  const rows = slotTable(banner, cls);
+  const bonusTotal = rows.filter((r) => !isBonusExcluded(r)).reduce((a, r) => a + r.weight, 0);
+  return rows.map((row) => {
+    const rate = (row.weight * 100) / RATE_SCALE;
+    const bonus = isBonusExcluded(row) || bonusTotal <= 0 ? 0 : (row.weight * 100) / bonusTotal;
+    const n = Math.max(1, row.items.length);
+    return {
+      rarity: row.rarity,
+      hidden: row.hidden,
+      name: slotName(row.rarity, row.hidden),
+      rate,
+      bonus_rate: bonus,
+      items: row.items.map((c) => ({ id: c.id, rate: rate / n, bonus_rate: bonus / n })),
+    };
   });
+}
+
+/** 게이지 하나의 목표와 고를 수 있는 외형(이 직업) */
+export function gaugeView(g: GaugeId, cls: string, value: number) {
+  const banner: CosmeticBanner = g === 'aura' ? 'aura' : 'skin';
+  return {
+    value,
+    targets: GAUGES[g].map((t) => ({
+      rarity: t.rarity,
+      hidden: t.hidden,
+      name: slotName(t.rarity, t.hidden),
+      cost: t.cost,
+      ready: value >= t.cost,
+      items: poolOf(banner, t.rarity, cls, t.hidden).map((c) => c.id),
+    })).filter((t) => t.items.length > 0),
+  };
 }
 
 /**
@@ -142,9 +219,17 @@ export async function summary(accountId: number, characterUuid: string) {
     payments: { enabled: getConfig().pay.enabled },
     pity: wallet.pity,
     skin_pity: wallet.skinPity,
+    hidden_pity: wallet.hiddenPity,
     pity_max: PITY_MAX,
     aura_gauge_max: AURA_GAUGE_MAX,
     skin_gauge_max: SKIN_GAUGE_MAX,
+    hidden_gauge_max: HIDDEN_GAUGE_MAX,
+    // 2026-10-24: 게이지 목표(스킨: 유니크·전설, 히든: 에픽·유니크·전설 히든). 이 직업에 외형이 없는 목표는 싣지 않는다
+    gauges: {
+      aura: gaugeView('aura', ch.class, wallet.pity),
+      skin: gaugeView('skin', ch.class, wallet.skinPity),
+      hidden: gaugeView('hidden', ch.class, wallet.hiddenPity),
+    },
     rates_version: RATES_VERSION,
     gear_ceiling: gearCeilingView((await ceilings.readCeilings(db, accountId)).gear),
     price_one: PULL_PRICE,
@@ -158,7 +243,7 @@ export async function summary(accountId: number, characterUuid: string) {
       count: SYNTH_COUNT,
       rate: SYNTH[from].permille / 10,
       pity: SYNTH[from].pity,
-      fails: wallet.synthFail[SYNTH[from].to as 'rare' | 'epic' | 'unique'],
+      fails: wallet.synthFail[SYNTH[from].to as SynthTier],
     })),
     collections: COLLECTIONS.map((c) => ({
       id: c.id,
@@ -167,10 +252,11 @@ export async function summary(accountId: number, characterUuid: string) {
       requires: c.requires ?? [],
       attack: c.attack,
       health: c.health,
+      hidden: c.hidden === true,
       registered: registered.has(c.id),
     })),
-    rates: auraTable('aura', ch.class),
-    skin_rates: auraTable('skin', ch.class),
+    rates: rateTable('aura', ch.class),
+    skin_rates: rateTable('skin', ch.class),
     // 장비 뽑기는 레벨 단계를 골라 뽑는다: 모든 단계를 고를 수 있다(2026-10-14, 내 레벨 위 단계도). 기본 선택은 my_tier
     my_tier: tierOfLevel(ch.level),
     tier_levels: TIER_LEVELS.slice(0, CHAPTER2_TIER_COUNT), // 3장 단계(45·50)는 3장 별빛 상점 단계에서 연다
@@ -193,6 +279,11 @@ export async function summary(accountId: number, characterUuid: string) {
       exchange_price: exchangePriceOf(c),
       skin: c.skin ?? null,
       exchange_only: c.exchangeOnly === true,
+      hidden: c.hidden === true,
+      retired: c.retired === true,
+      damage: damageOf(c),
+      dismantle_stars: dismantleStarsOf(c),
+      dismantle_crystals: dismantleCrystalsOf(c),
     })),
   };
 }
@@ -202,17 +293,21 @@ export function gearCeilingView(gauge: number) {
   return { gauge, max: GEAR_CEILING.max, ready: gauge >= GEAR_CEILING.max, rarity: GEAR_CEILING.rarity };
 }
 
-/** 등급 굴림. rareOrBetter: 10+1의 보너스 1회(일반 제외, 나머지는 같은 비율) */
-export function rollRarity(banner: CosmeticBanner, rareOrBetter = false): Rarity {
-  const w = BANNER_WEIGHT[banner];
-  const order = RARITIES.filter((r) => w[r] > 0 && !(rareOrBetter && r === 'common'));
-  const total = order.reduce((a, r) => a + w[r], 0);
+/** 칸 굴림(이 직업의 칸 표). bonus: 10+1의 보너스 1회(일반 보통 제외, 나머지는 같은 비율) */
+export function rollSlot(banner: CosmeticBanner, cls: string, bonus = false): SlotRow {
+  const order = slotTable(banner, cls).filter((r) => !(bonus && isBonusExcluded(r)));
+  const total = order.reduce((a, r) => a + r.weight, 0);
   let roll = getRng().int(0, total);
   for (const r of order) {
-    if (roll < w[r]) return r;
-    roll -= w[r];
+    if (roll < r.weight) return r;
+    roll -= r.weight;
   }
   return order[order.length - 1]!;
+}
+
+/** 등급만 필요할 때(예전 호출) */
+export function rollRarity(banner: CosmeticBanner, rareOrBetter = false, cls = 'warrior'): Rarity {
+  return rollSlot(banner, cls, rareOrBetter).rarity;
 }
 
 /**
@@ -246,10 +341,16 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       const rows: repo.PullRow[] = [];
       let gearCeiling: number | null = null;
       let pity = banner === 'skin' ? wallet.skinPity : wallet.pity;
+      let hiddenPity: number | null = null;
       if (banner === 'aura' || banner === 'skin') {
         const r = await rollAuras(ctx, accountId, banner, times, pity, rows);
         pity = r.pity;
-        await wallets.setPity(db, accountId, pity, banner === 'skin');
+        await wallets.setPity(db, accountId, pity, banner);
+        // 스킨 뽑기 1회에 히든 게이지도 1칸
+        if (banner === 'skin') {
+          hiddenPity = wallet.hiddenPity + times;
+          await wallets.setPity(db, accountId, hiddenPity, 'hidden');
+        }
         // 중복 환급은 하지 않는다(refund는 항상 0, 여분으로 쌓인다). gacha_refund 원장은 새로 쓰지 않는다
       } else {
         // 내 레벨 위 단계도 뽑을 수 있다. 장비는 가방에 두고 착용 레벨이 되면 낀다
@@ -263,11 +364,20 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
         status: 200,
         data: {
           banner,
-          results: rows.map((r) => ({ item_id: r.itemId, rarity: r.rarity, by_pity: r.byPity, duplicate: r.duplicate, refund: r.refund, gear: r.kind === 'gear' })),
+          results: rows.map((r) => ({
+            item_id: r.itemId,
+            rarity: r.rarity,
+            hidden: r.kind === 'cosmetic' && STAR_COSMETIC_BY_ID.get(r.itemId)?.hidden === true,
+            by_pity: r.byPity,
+            duplicate: r.duplicate,
+            refund: r.refund,
+            gear: r.kind === 'gear',
+          })),
           delta: ctx.delta(),
           balance,
           pity,
           pity_max: banner === 'skin' ? SKIN_GAUGE_MAX : AURA_GAUGE_MAX,
+          ...(hiddenPity === null ? {} : { hidden_pity: hiddenPity }),
           ...(gearCeiling === null ? {} : { gear_ceiling: gearCeilingView(gearCeiling) }),
           rates_version: RATES_VERSION,
         },
@@ -284,8 +394,9 @@ async function rollAuras(ctx: EconCtx, accountId: number, banner: 'aura' | 'skin
     const pityBefore = pity;
     const byPity = false; // no automatic pity: the gauge fills and the player chooses (claim)
     const bonus = times > 1 && i === times - 1;
-    const rarity: Rarity = rollRarity(banner, bonus);
-    const all = poolOf(banner, rarity, ctx.char.class);
+    const slot = rollSlot(banner, ctx.char.class, bonus);
+    const rarity: Rarity = slot.rarity;
+    const all = slot.items;
     const fresh = all.filter((c) => !owned.has(c.id));
     const duplicate = fresh.length === 0;
     const from = duplicate ? all : fresh;
@@ -358,7 +469,10 @@ export function exchange(accountId: number, characterUuid: string, body: Exchang
   });
 }
 
-/** 선택 게이지가 가득 찼을 때 최상위 하나를 고른다(오라: 유니크 오라, 스킨: 내 직업 스킨). 가진 것은 고를 수 없다 */
+/**
+ * 선택 게이지로 고르기. 오라: 에픽 오라(50칸), 스킨: 내 직업 유니크(100칸)·전설(1,000칸), 히든: 내 직업 에픽 히든(350)·
+ * 유니크 히든(2,000)·전설 히든(3,000). 고른 외형의 칸만큼 쓰고 남은 칸은 이월한다. 가진 것은 고를 수 없다
+ */
 export function claim(accountId: number, characterUuid: string, body: ClaimBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;
   return runEconomy({
@@ -370,23 +484,24 @@ export function claim(accountId: number, characterUuid: string, body: ClaimBody)
     handler: async (ctx) => {
       await assertNoHold(ctx.client, ctx.char.accountId, ctx.char.id);
       const db = ctx.client;
-      const max = GAUGE[body.banner].max;
+      const g: GaugeId = body.banner;
       const wallet = await wallets.lockWallet(db, accountId);
       wallets.assertNoStarDebt(wallet);
-      const gauge = body.banner === 'skin' ? wallet.skinPity : wallet.pity;
-      if (gauge < max) throw new AppError(422, '선택 게이지가 아직 다 차지 않았습니다.', 'GAUGE_NOT_FULL', { need: max, have: gauge });
-      const choices = poolOf(body.banner, GAUGE[body.banner].rarity, ctx.char.class);
-      const def = choices.find((c) => c.id === body.item_id);
-      if (!def) throw new AppError(422, '고를 수 없는 항목입니다.', 'CLAIM_NOT_ALLOWED');
+      const gauge = g === 'skin' ? wallet.skinPity : g === 'hidden' ? wallet.hiddenPity : wallet.pity;
+      const pool: CosmeticBanner = g === 'aura' ? 'aura' : 'skin';
+      const target = GAUGES[g].find((t) => poolOf(pool, t.rarity, ctx.char.class, t.hidden).some((c) => c.id === body.item_id));
+      if (!target) throw new AppError(422, '고를 수 없는 항목입니다.', 'CLAIM_NOT_ALLOWED');
+      if (gauge < target.cost) throw new AppError(422, '선택 게이지가 아직 다 차지 않았습니다.', 'GAUGE_NOT_FULL', { need: target.cost, have: gauge });
+      const def = STAR_COSMETIC_BY_ID.get(body.item_id)!;
       const owned = await repo.ownedOf(db, accountId);
       if (owned.has(def.id)) throw new AppError(409, '이미 가진 외형입니다.', 'COSMETIC_OWNED');
       await repo.addCosmetic(db, accountId, def.id, 'gacha');
-      const left = gauge - max;
-      await wallets.setPity(db, accountId, left, body.banner === 'skin');
-      await repo.insertPulls(db, accountId, requestId, RATES_VERSION, body.banner, [
-        { seq: 0, rarity: GAUGE[body.banner].rarity, itemId: def.id, pityBefore: gauge, pityAfter: left, byPity: true, duplicate: false, refund: 0, kind: 'cosmetic' },
+      const left = gauge - target.cost;
+      await wallets.setPity(db, accountId, left, g);
+      await repo.insertPulls(db, accountId, requestId, RATES_VERSION, pool, [
+        { seq: 0, rarity: target.rarity, itemId: def.id, pityBefore: gauge, pityAfter: left, byPity: true, duplicate: false, refund: 0, kind: 'cosmetic' },
       ]);
-      return { status: 200, data: { item_id: def.id, banner: body.banner, pity: left, pity_max: max } };
+      return { status: 200, data: { item_id: def.id, banner: g, pity: left, pity_max: target.cost, cost: target.cost, max_cost: gaugeCap(g) } };
     },
   });
 }

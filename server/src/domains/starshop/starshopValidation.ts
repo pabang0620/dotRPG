@@ -18,7 +18,8 @@ export const exchangeBody = z.strictObject({
 
 export const claimBody = z.strictObject({
   request_id: requestId,
-  banner: z.enum(['aura', 'skin']),
+  /** hidden = 히든 게이지(스킨 뽑기가 채운다) */
+  banner: z.enum(['aura', 'skin', 'hidden']),
   item_id: itemIdSchema,
 });
 export type ClaimBody = z.infer<typeof claimBody>;
@@ -34,7 +35,7 @@ export type GearCeilingBody = z.infer<typeof gearCeilingBody>;
 
 export const synthBody = z.strictObject({
   request_id: requestId,
-  rarity: z.enum(['common', 'rare', 'epic']),
+  rarity: z.enum(['common', 'rare', 'epic', 'unique']),
   times: z.number().int().min(1).max(20),
 });
 export const dismantleBody = z.strictObject({

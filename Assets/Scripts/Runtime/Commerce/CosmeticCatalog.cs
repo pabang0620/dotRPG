@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    /// <summary>Grades low to high. Legend is reserved for a later release (nothing uses it yet).</summary>
+    /// <summary>Grades low to high (Legend: the top skin grade, 2026-10-24). Each grade can also hold Hidden designs.</summary>
     public enum CosmeticRarity { Free, Common, Rare, Epic, Unique, Legend }
 
     /// <summary>Legend auras move: a rainbow hue cycle or a slow glow pulse. Purely visual.</summary>
@@ -17,9 +17,11 @@ namespace DotRPG
         public bool IsFree { get; }
         public CosmeticRarity Rarity { get; }
         public CosmeticEffect Effect { get; }
+        /// <summary>A Hidden design: rarer than the grade's others (1/5 of one regular share), one step higher attack.</summary>
+        public bool Hidden { get; }
 
         public CosmeticProduct(string id, string name, Color color, bool isFree = false,
-            CosmeticRarity rarity = CosmeticRarity.Rare, CosmeticEffect effect = CosmeticEffect.None)
+            CosmeticRarity rarity = CosmeticRarity.Rare, CosmeticEffect effect = CosmeticEffect.None, bool hidden = false)
         {
             Id = id;
             Name = name;
@@ -27,19 +29,31 @@ namespace DotRPG
             IsFree = isFree;
             Rarity = isFree ? CosmeticRarity.Free : rarity;
             Effect = effect;
+            Hidden = hidden;
         }
+
+        /// <summary>Taken out of the draws (art kept): owners keep wearing it, nothing new hands it out.</summary>
+        public bool Retired => StarShopClient.Retired.Contains(Id) || System.Array.IndexOf(CosmeticCatalog.RetiredIds, Id) >= 0;
 
         /// <summary>A costume skin (whole-body repaint for one class) rather than a foot aura.</summary>
         public SkinDef Skin => SkinCatalog.Find(Id);
         public bool IsSkin => Skin != null;
 
-        /// <summary>Attack bonus (%) while worn: auras common 1, rare 2, epic 3; skins common/rare 0, epic 4, unique 5 (server: starshopDefs).</summary>
+        /// <summary>
+        /// Attack bonus (%) while worn: auras common 1, rare 2, epic 3; skins common/rare 0, epic 4, unique 5, legend 6,
+        /// a Hidden skin one step higher (1, 1, 5, 6, 7). Server: starshopDefs SKIN_DAMAGE / SKIN_HIDDEN_DAMAGE.
+        /// </summary>
         public int DamagePercent => IsSkin
-            ? (Rarity == CosmeticRarity.Epic ? 4 : Rarity >= CosmeticRarity.Unique ? 5 : 0)
+            ? (Hidden
+                ? (Rarity == CosmeticRarity.Legend ? 7 : Rarity == CosmeticRarity.Unique ? 6 : Rarity == CosmeticRarity.Epic ? 5 : 1)
+                : (Rarity == CosmeticRarity.Legend ? 6 : Rarity == CosmeticRarity.Unique ? 5 : Rarity == CosmeticRarity.Epic ? 4 : 0))
             : Rarity >= CosmeticRarity.Epic ? 3 : Rarity == CosmeticRarity.Rare ? 2 : Rarity == CosmeticRarity.Common ? 1 : 0;
 
-        /// <summary>Unique skins come only from the selection gauge; everything else can also be exchanged.</summary>
-        public bool GaugeOnly => IsSkin && Rarity == CosmeticRarity.Unique;
+        /// <summary>Unique / legend / Hidden skins come only from the gauges (and synthesis); the rest can also be exchanged.</summary>
+        public bool GaugeOnly => IsSkin && (Rarity >= CosmeticRarity.Unique || Hidden);
+
+        /// <summary>"전설", "에픽 히든".</summary>
+        public string GradeName => Hidden ? L.F("{0} 히든", CosmeticCatalog.RarityName(Rarity)) : CosmeticCatalog.RarityName(Rarity);
 
         /// <summary>Starlight Exchange only: bought with Star Crystals, never drawn, synthesized or exchanged for Star Shards.</summary>
         public bool ExchangeOnly => StarShopClient.ExchangeOnly.Contains(Id) || System.Array.IndexOf(CosmeticCatalog.ExchangeOnlyIds, Id) >= 0;
@@ -66,9 +80,9 @@ namespace DotRPG
     /// Permanent, cosmetic-only items. The paid ones come from the 별조각 cash shop (gacha or direct exchange); the
     /// server owns ownership, rates and prices (server/src/domains/starshop/starshopDefs.ts, ids must match).
     /// </summary>
-    public static class CosmeticCatalog
+    public static partial class CosmeticCatalog
     {
-        public static IReadOnlyList<CosmeticProduct> All { get; } = System.Array.AsReadOnly(new[]
+        public static IReadOnlyList<CosmeticProduct> All { get; } = System.Array.AsReadOnly(Concat(new[]
         {
             new CosmeticProduct("aura_none", L.T("기본 모습"), Color.clear, true),
             new CosmeticProduct("aura_sky", L.T("하늘빛 오라"), new Color32(120, 200, 255, 190), true),
@@ -118,12 +132,12 @@ namespace DotRPG
             // Costume skins (SkinCatalog): common/rare skins (recoloured class body) fill the skin draw's lower tiers,
             // epic skins drop at 1% or are exchanged; unique skins mostly come from the gauge.
             new CosmeticProduct("skin_w_sand", L.T("모래빛 여행복"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_w_moss", L.T("숲지기 옷"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_moss", L.T("이끼 전투복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_w_rust", L.T("적갈 견습복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_m_ash", L.T("잿빛 견습 로브"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_m_pilgrim", L.T("순례자의 로브"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_m_sprout", L.T("새싹 로브"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_w_crimson", L.T("진홍 용병복"), Color.white, false, CosmeticRarity.Rare),
+            new CosmeticProduct("skin_w_crimson", L.T("진홍 전투복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_w_amethyst", L.T("자수정 기사복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_w_brass", L.T("황동 경비복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_m_rose", L.T("장밋빛 로브"), Color.white, false, CosmeticRarity.Rare),
@@ -153,18 +167,18 @@ namespace DotRPG
             new CosmeticProduct("skin_w_sunguard", L.T("태양 기사단복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_w_shade", L.T("그림자 자객복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_w_valkyrie", L.T("발키리 갑주"), Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_w_snowblade", L.T("백설 무사"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_w_snowblade", L.T("설화 검객"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_w_dragonscale", L.T("용비늘 갑주"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_w_roseknight", L.T("장미 기사"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_w_phoenix", L.T("불사조 성기사"), Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_w_aurora", L.T("오로라 여제"), Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_w_voidblade", L.T("심연의 검성"), Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_m_lavender", L.T("라벤더 후드 로브"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_m_student", L.T("마법학교 교복"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_w_voidblade", L.T("심연의 검성"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_lavender", L.T("라벤더 후드 로브"), Color.white, false, CosmeticRarity.Epic),
+            new CosmeticProduct("skin_m_student", L.T("마법학교 교복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_m_herbalist", L.T("약초꾼 로브"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_m_tea", L.T("찻잎 견습 로브"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_m_snowcloak", L.T("눈송이 망토"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_m_autumn", L.T("가을 낙엽 로브"), Color.white, false, CosmeticRarity.Common),
+            new CosmeticProduct("skin_m_snowcloak", L.T("눈송이 망토"), Color.white, false, CosmeticRarity.Common, hidden: true),
+            new CosmeticProduct("skin_m_autumn", L.T("가을 낙엽 로브"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_m_dusk", L.T("밤하늘 견습 로브"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_m_sky", L.T("하늘빛 마녀"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_m_cherry", L.T("벚꽃 마녀"), Color.white, false, CosmeticRarity.Rare),
@@ -183,40 +197,33 @@ namespace DotRPG
             new CosmeticProduct("skin_w_starwarden", L.T("별빛 수호 기사"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_m_starsage", L.T("별의 현자"), Color.white, false, CosmeticRarity.Epic),
             // [ROGUE 2026-10-23] Rogue skins (server starshopDefs skin_r_*).
-            new CosmeticProduct("skin_r_navy", L.T("남색 밀정복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_r_wine", L.T("와인빛 밀정복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_r_moss", L.T("숲길 정찰복"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_r_sand", L.T("사막 행상복"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_r_slate", L.T("회청 잠행복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_r_rust", L.T("적갈 사냥꾼복"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_r_ivory", L.T("상아 견습복"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_r_plum", L.T("자두빛 두건복"), Color.white, false, CosmeticRarity.Common),
-            new CosmeticProduct("skin_r_teal", L.T("청록 밀수꾼복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_r_coal", L.T("숯빛 야행복"), Color.white, false, CosmeticRarity.Common),
             new CosmeticProduct("skin_r_crimson", L.T("진홍 그림자복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_violet", L.T("보랏빛 야행복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_gold", L.T("황금 도둑복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_frost", L.T("서리 밀정복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_rose", L.T("장미 가면복"), Color.white, false, CosmeticRarity.Rare),
-            new CosmeticProduct("skin_r_jade", L.T("비취 독사복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_ember", L.T("불씨 두건복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_azure", L.T("하늘빛 바람복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_onyx", L.T("흑요 암살복"), Color.white, false, CosmeticRarity.Rare),
             new CosmeticProduct("skin_r_lilac", L.T("라일락 무희복"), Color.white, false, CosmeticRarity.Rare),
-            new CosmeticProduct("skin_r_sakura", L.T("벚꽃 쿠노이치"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_r_moonshade", L.T("달그림자 밀정"), Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_r_dunedancer", L.T("모래바람 칼춤꾼"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_r_corsair", L.T("바다의 칼잡이"), Color.white, false, CosmeticRarity.Epic),
             new CosmeticProduct("skin_r_raven", L.T("까마귀 깃 암살자"), Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_r_foxmask", L.T("여우 가면 무희"), Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_r_frosthunter", L.T("서리 사냥꾼"), Color.white, false, CosmeticRarity.Epic),
-            new CosmeticProduct("skin_r_nightqueen", L.T("칠흑의 그림자 여왕"), Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_r_thunder", L.T("뇌신 닌자"), Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_r_crimsonmoon", L.T("진홍 달의 처형자"), Color.white, false, CosmeticRarity.Unique),
-            new CosmeticProduct("skin_r_butterfly", L.T("비단 나비 무희"), Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_r_scorpion", L.T("황금 전갈"), Color.white, false, CosmeticRarity.Unique),
             new CosmeticProduct("skin_r_starshade", L.T("별빛 그림자"), Color.white, false, CosmeticRarity.Epic),
-        });
+        }, TierProducts()));
+
+        static CosmeticProduct[] Concat(CosmeticProduct[] a, CosmeticProduct[] b)
+        {
+            var all = new CosmeticProduct[a.Length + b.Length];
+            a.CopyTo(all, 0);
+            b.CopyTo(all, a.Length);
+            return all;
+        }
 
         /// <summary>Exchange-only cosmetics (server starshopDefs exchangeOnly), known before the server answers.</summary>
         public static readonly string[] ExchangeOnlyIds = { "aura_crystal", "aura_nova", "skin_w_starwarden", "skin_m_starsage", "skin_r_starshade" };
@@ -228,10 +235,13 @@ namespace DotRPG
             return null;
         }
 
+        /// <summary>The colour of a Hidden mark next to the grade.</summary>
+        public const string HiddenHex = "#ffe27a";
+
         public static string RarityName(CosmeticRarity r) =>
             r == CosmeticRarity.Legend ? L.T("전설") : r == CosmeticRarity.Unique ? L.T("유니크") : r == CosmeticRarity.Epic ? L.T("에픽") : r == CosmeticRarity.Rare ? L.T("희귀") : r == CosmeticRarity.Common ? L.T("일반") : L.T("무료");
 
         public static string RarityHex(CosmeticRarity r) =>
-            r == CosmeticRarity.Legend ? "#7dffb0" : r == CosmeticRarity.Unique ? "#ffb347" : r == CosmeticRarity.Epic ? "#c58cff" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";
+            r == CosmeticRarity.Legend ? "#ff6b5e" : r == CosmeticRarity.Unique ? "#ffb347" : r == CosmeticRarity.Epic ? "#c58cff" : r == CosmeticRarity.Rare ? "#9fc4ff" : r == CosmeticRarity.Common ? "#cfd6e2" : "#8fe28f";
     }
 }

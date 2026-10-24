@@ -14,8 +14,10 @@ export interface Wallet {
   debt: number;
   pity: number;
   skinPity: number;
-  /** 등급별 연속 합성 실패 수(천장): 희귀·에픽·유니크로 가는 합성 */
-  synthFail: { rare: number; epic: number; unique: number };
+  /** 히든 게이지(0054): 스킨 뽑기 1회에 1칸 */
+  hiddenPity: number;
+  /** 등급별 연속 합성 실패 수(천장): 희귀·에픽·유니크·전설로 가는 합성 */
+  synthFail: { rare: number; epic: number; unique: number; legend: number };
 }
 
 type WalletRow = {
@@ -24,11 +26,13 @@ type WalletRow = {
   debt: string;
   pity: number;
   skin_pity: number;
+  hidden_pity: number;
+  synth_fail_legend: number;
   synth_fail_rare: number;
   synth_fail_epic: number;
   synth_fail_unique: number;
 };
-const WALLET_COLS = 'balance, paid_balance, debt, pity, skin_pity, synth_fail_rare, synth_fail_epic, synth_fail_unique';
+const WALLET_COLS = 'balance, paid_balance, debt, pity, skin_pity, hidden_pity, synth_fail_rare, synth_fail_epic, synth_fail_unique, synth_fail_legend';
 function walletOf(row: WalletRow | undefined): Wallet {
   return {
     balance: Number(row?.balance ?? 0),
@@ -36,7 +40,8 @@ function walletOf(row: WalletRow | undefined): Wallet {
     debt: Number(row?.debt ?? 0),
     pity: row?.pity ?? 0,
     skinPity: row?.skin_pity ?? 0,
-    synthFail: { rare: row?.synth_fail_rare ?? 0, epic: row?.synth_fail_epic ?? 0, unique: row?.synth_fail_unique ?? 0 },
+    hiddenPity: row?.hidden_pity ?? 0,
+    synthFail: { rare: row?.synth_fail_rare ?? 0, epic: row?.synth_fail_epic ?? 0, unique: row?.synth_fail_unique ?? 0, legend: row?.synth_fail_legend ?? 0 },
   };
 }
 
@@ -52,11 +57,14 @@ export async function readWallet(db: Queryable, accountId: number): Promise<Wall
   return walletOf(r.rows[0]);
 }
 
-export async function setPity(db: Queryable, accountId: number, pity: number, skin = false): Promise<void> {
-  await db.query(`UPDATE star_wallets SET ${skin ? 'skin_pity' : 'pity'} = $2, updated_at = now() WHERE account_id = $1`, [accountId, pity]);
+const PITY_COL = { aura: 'pity', skin: 'skin_pity', hidden: 'hidden_pity' } as const;
+/** 게이지 값 쓰기. 예전 호출의 true/false 는 스킨/오라 */
+export async function setPity(db: Queryable, accountId: number, pity: number, gauge: boolean | 'aura' | 'skin' | 'hidden' = false): Promise<void> {
+  const g = gauge === true ? 'skin' : gauge === false ? 'aura' : gauge;
+  await db.query(`UPDATE star_wallets SET ${PITY_COL[g]} = $2, updated_at = now() WHERE account_id = $1`, [accountId, pity]);
 }
 
-export async function setSynthFail(db: Queryable, accountId: number, tier: 'rare' | 'epic' | 'unique', fails: number): Promise<void> {
+export async function setSynthFail(db: Queryable, accountId: number, tier: 'rare' | 'epic' | 'unique' | 'legend', fails: number): Promise<void> {
   await db.query(`UPDATE star_wallets SET synth_fail_${tier} = $2, updated_at = now() WHERE account_id = $1`, [accountId, fails]);
 }
 

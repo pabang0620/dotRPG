@@ -19,11 +19,14 @@ import {
   COLLECTIONS,
   COLLECTION_DUP_BONUS,
   DISMANTLE_CRYSTALS,
+  SKIN_DISMANTLE,
+  HIDDEN_DISMANTLE_MULT,
+  dismantleCrystalsOf,
+  gaugeCap,
   EXCHANGE_GOODS,
   EXCHANGE_GOOD_BY_ID,
   GEAR_DISMANTLE,
   GEAR_DISMANTLE_ENHANCE_BONUS,
-  SKIN_GAUGE_MAX,
   STAR_COSMETICS,
   STAR_COSMETIC_BY_ID,
   type CosmeticDef,
@@ -129,7 +132,7 @@ export const codexHealth = (entries: number): number => Math.min(CODEX_HEALTH_MA
 /** 여분 count개 분해의 결정: 등급 값 x 개수, 그 외형이 등록한 컬렉션 세트에 들어 있으면 +20% */
 export function cosmeticCrystals(def: CosmeticDef, count: number, registeredSets: Set<string>): number {
   const inSet = COLLECTIONS.some((c) => registeredSets.has(c.id) && c.members.includes(def.id));
-  return Math.floor(DISMANTLE_CRYSTALS[def.rarity] * count * (inSet ? 1 + COLLECTION_DUP_BONUS : 1));
+  return Math.floor(dismantleCrystalsOf(def) * count * (inSet ? 1 + COLLECTION_DUP_BONUS : 1));
 }
 
 // ---------------- 뽑기 장비 분해 ----------------
@@ -242,7 +245,7 @@ async function boughtThisWeek(db: Queryable, accountId: number, week: string): P
   return new Map(r.rows.map((x) => [x.good_id, Number(x.n)]));
 }
 
-/** 고를 수 있는 외형(교환소 전용이 아닌 그 등급·종류, 아직 없는 것) */
+/** 고를 수 있는 외형(교환소 전용·히든·retired가 아닌 그 등급·종류, 아직 없는 것) */
 export function pickChoices(good: ExchangeGood, owned: Set<string>): CosmeticDef[] {
   if (good.kind !== 'cosmetic') return [];
   if (good.itemId) {
@@ -251,7 +254,7 @@ export function pickChoices(good: ExchangeGood, owned: Set<string>): CosmeticDef
   }
   const p = good.pick as { rarity: Rarity; skin: boolean | null };
   return STAR_COSMETICS.filter(
-    (c) => !c.exchangeOnly && c.rarity === p.rarity && !owned.has(c.id) && (p.skin === null || (p.skin ? !!c.skin : !c.skin)),
+    (c) => !c.exchangeOnly && !c.hidden && !c.retired && c.rarity === p.rarity && !owned.has(c.id) && (p.skin === null || (p.skin ? !!c.skin : !c.skin)),
   );
 }
 
@@ -285,7 +288,7 @@ export async function exchangeShopView(accountId: number, characterUuid: string)
       count: g.count ?? null,
       choices: pickChoices(g, owned).map((c) => ({ id: c.id, name: c.name, rarity: c.rarity, skin: c.skin ?? null })),
     })),
-    dismantle: { cosmetic: DISMANTLE_CRYSTALS, collection_bonus: COLLECTION_DUP_BONUS, gear: GEAR_DISMANTLE, enhance_bonus: GEAR_DISMANTLE_ENHANCE_BONUS },
+    dismantle: { cosmetic: DISMANTLE_CRYSTALS, skin: SKIN_DISMANTLE.crystals, hidden_mult: HIDDEN_DISMANTLE_MULT, collection_bonus: COLLECTION_DUP_BONUS, gear: GEAR_DISMANTLE, enhance_bonus: GEAR_DISMANTLE_ENHANCE_BONUS },
     dismantlable,
     codex: { entries: codex, health: codexHealth(codex.length), per: CODEX_HEALTH_PER, max: CODEX_HEALTH_MAX },
   };
@@ -329,7 +332,8 @@ export function buyExchangeGood(accountId: number, characterUuid: string, body: 
       }
       const w = await crystals.debitCrystals(db, { accountId, price: good.price, ref: good.id, requestId });
       if (good.kind === 'cosmetic') await repo.addCosmetic(db, accountId, itemId as string, 'crystal_shop');
-      else if (good.kind === 'skin_gauge') await wallets.setPity(db, accountId, Math.min(SKIN_GAUGE_MAX, star.skinPity + (good.count ?? 0)), true);
+      else if (good.kind === 'skin_gauge') await wallets.setPity(db, accountId, Math.min(gaugeCap('skin'), star.skinPity + (good.count ?? 0)), 'skin');
+      else if (good.kind === 'hidden_gauge') await wallets.setPity(db, accountId, Math.min(gaugeCap('hidden'), star.hiddenPity + (good.count ?? 0)), 'hidden');
       else if (good.kind === 'gear_gauge') {
         const c = await ceilings.lockCeilings(db, accountId);
         await ceilings.setGauge(db, accountId, 'gear', c.gear + (good.count ?? 0));

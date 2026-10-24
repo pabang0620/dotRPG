@@ -77,10 +77,13 @@ namespace DotRPG
         public static void ResetCache() { data = femaleData = rogueData = null; bodySheet = attackSheet = rogueBody = rogueAttack = null; skinSheets.Clear(); rogueSkinSheets.Clear(); }
         static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> skinSheets =
             new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
-        /// <summary>A costume skin's sheets (same layout as the shipped ones); null when the skin has none.</summary>
+        /// <summary>
+        /// A costume skin's sheets (same layout as the shipped ones); null when the skin has none. A drawn sheet wins over
+        /// the approved-body palette of the same name (a palette skin whose own drawing has landed, 2026-10-24).
+        /// </summary>
         static (Texture2D body, Texture2D attack)? SkinSheets(string skin)
         {
-            if (string.IsNullOrEmpty(skin) || FemaleWarriorPalette.UsesApprovedBody(skin)) return null;
+            if (string.IsNullOrEmpty(skin)) return null;
             if (!skinSheets.TryGetValue(skin, out var s))
             {
                 s = (Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/body"), Resources.Load<Texture2D>("SilverWarrior/Skins/" + skin + "/attack"));
@@ -89,6 +92,8 @@ namespace DotRPG
             if (s.body == null || s.attack == null) return null;
             return s;
         }
+        /// <summary>Whether this warrior skin sheet has been drawn (SilverWarrior/Skins/&lt;sheet&gt;/body,attack).</summary>
+        public static bool HasSkinSheet(string sheet) => SkinSheets(sheet).HasValue;
         static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> rogueSkinSheets =
             new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
         /// <summary>[ROGUE] A rogue costume skin's sheets (Resources/Rogue/Skins/&lt;sheet&gt;/body,attack); null when missing.</summary>
@@ -238,12 +243,13 @@ namespace DotRPG
         public static PixelCanvas Compose(CharacterLook look, string direction, string frame)
         {
             var src = Pixels(SheetFrame(direction, frame), look.skinSheet, look.id);
+            bool drawn = !IsRogue(look.id) && SkinSheets(look.skinSheet).HasValue; // own drawing: no palette on top
             var oriented = new PixelCanvas(Size, Size).WithPivot(32, 6);
             bool flip = Mirror(FacingOf(direction));
             for (int y = 0; y < Size; y++) for (int x = 0; x < Size; x++)
             {
                 var p = src[y * Size + (flip ? Size - 1 - x : x)];
-                if (p.a > 0) oriented.Set(x, y, RoguePalette.Handles(look.skinSheet) ? RoguePalette.Apply(p, look.skinSheet) : FemaleWarriorPalette.Apply(p, look.skinSheet)); // [ROGUE] career recolour
+                if (p.a > 0) oriented.Set(x, y, RoguePalette.Handles(look.skinSheet) ? RoguePalette.Apply(p, look.skinSheet) : drawn ? p : FemaleWarriorPalette.Apply(p, look.skinSheet)); // [ROGUE] career recolour
             }
             return oriented;
         }

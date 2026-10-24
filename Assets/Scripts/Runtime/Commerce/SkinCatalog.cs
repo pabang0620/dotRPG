@@ -18,15 +18,45 @@ namespace DotRPG
         public Color32 sleeve, leg, boot, trim, cape;
         public SkinTrailKind trail;
         public Color trailA, trailB;
-        /// <summary>Unique skins also leave a fading afterimage while moving; epic skins only have motes.</summary>
-        public bool afterimage;
+        /// <summary>The sheet shown until <see cref="sheet"/> is drawn (a reused id whose art is being replaced).</summary>
+        public string legacySheet;
+
+        /// <summary>The fading afterimage left while moving, graded by the skin's grade (none for common / rare).</summary>
+        public SkinGhost Ghost => SkinGhost.Of(CosmeticCatalog.Find(id));
+        public bool afterimage => Ghost.max > 0;
     }
 
-    public static class SkinCatalog
+    /// <summary>
+    /// Afterimage strength per grade (Docs/PLAN_SKIN_TIERS_2026-10-23.md (b)): epic barely visible, unique a little,
+    /// legend a lot. A Hidden skin uses the next grade up (common / rare Hidden get the faint epic one).
+    /// </summary>
+    public readonly struct SkinGhost
+    {
+        public readonly float every, life, alpha;
+        public readonly int max;
+        SkinGhost(float every, float life, float alpha, int max) { this.every = every; this.life = life; this.alpha = alpha; this.max = max; }
+
+        public static readonly SkinGhost None = new SkinGhost(1f, 0f, 0f, 0);
+        public static readonly SkinGhost Epic = new SkinGhost(0.16f, 0.20f, 0.12f, 2);
+        public static readonly SkinGhost Unique = new SkinGhost(0.10f, 0.30f, 0.30f, 4);
+        public static readonly SkinGhost Legend = new SkinGhost(0.05f, 0.45f, 0.65f, 10);
+        public static readonly SkinGhost LegendHidden = new SkinGhost(0.04f, 0.55f, 0.80f, 12);
+
+        public static SkinGhost Of(CosmeticProduct p)
+        {
+            if (p == null) return None;
+            int step = p.Rarity == CosmeticRarity.Legend ? 3 : p.Rarity == CosmeticRarity.Unique ? 2 : p.Rarity == CosmeticRarity.Epic ? 1 : 0;
+            if (p.Hidden) step = Mathf.Max(step + 1, 1);
+            return step >= 4 ? LegendHidden : step == 3 ? Legend : step == 2 ? Unique : step == 1 ? Epic : None;
+        }
+    }
+
+    public static partial class SkinCatalog
     {
         static Color32 C(string hex) => PixelCanvas.Hex(hex);
 
         /// <summary>Common skin: approved warrior runtime palette or mage frames, no motes.</summary>
+        // Warrior and rogue sheets are named after the id without "skin_" (Resources/SilverWarrior/Skins/w_<name>).
         static SkinDef Plain(string id, string name, CharacterClass cls, string blurb) => new SkinDef
         {
             id = id, name = name, cls = cls, blurb = blurb, trail = SkinTrailKind.None,
@@ -41,15 +71,15 @@ namespace DotRPG
             return s;
         }
 
-        public static readonly IReadOnlyList<SkinDef> All = new[]
+        public static readonly IReadOnlyList<SkinDef> All = Concat(new[]
         {
             Plain("skin_w_sand", L.T("모래빛 여행복"), CharacterClass.Warrior, L.T("먼 길을 걸어 온 모래빛 조끼와 바지.")),
-            Plain("skin_w_moss", L.T("숲지기 옷"), CharacterClass.Warrior, L.T("숲을 지키는 이의 초록 조끼와 바지.")),
+            Plain("skin_w_moss", L.T("이끼 전투복"), CharacterClass.Warrior, L.T("기본 모습 그대로 옷만 바꾼 전투복.")),
             Plain("skin_w_rust", L.T("적갈 견습복"), CharacterClass.Warrior, L.T("훈련장에서 닳은 적갈색 견습복.")),
             Plain("skin_m_ash", L.T("잿빛 견습 로브"), CharacterClass.Mage, L.T("마탑 견습생이 입는 잿빛 로브와 모자.")),
             Plain("skin_m_pilgrim", L.T("순례자의 로브"), CharacterClass.Mage, L.T("먼 길을 떠나는 순례자의 갈색 로브와 모자.")),
             Plain("skin_m_sprout", L.T("새싹 로브"), CharacterClass.Mage, L.T("봄 새싹 빛깔의 연둣빛 로브와 모자.")),
-            Tinted("skin_w_crimson", L.T("진홍 용병복"), CharacterClass.Warrior, L.T("이름난 용병단의 진홍 조끼. 곁에 붉은 빛 조각이 떠오른다."), new Color(1f, .4f, .4f), new Color(1f, .85f, .8f)),
+            Plain("skin_w_crimson", L.T("진홍 전투복"), CharacterClass.Warrior, L.T("기본 모습 그대로 옷만 바꾼 전투복.")),
             Tinted("skin_w_amethyst", L.T("자수정 기사복"), CharacterClass.Warrior, L.T("자수정빛 기사 견습복. 곁에 보랏빛 빛 조각이 떠오른다."), new Color(.75f, .5f, 1f), new Color(.95f, .9f, 1f)),
             Tinted("skin_w_brass", L.T("황동 경비복"), CharacterClass.Warrior, L.T("성문 경비대의 황동빛 조끼. 곁에 금빛 빛 조각이 떠오른다."), new Color(1f, .8f, .4f), new Color(1f, .95f, .8f)),
             Tinted("skin_m_rose", L.T("장밋빛 로브"), CharacterClass.Mage, L.T("장밋빛 로브와 모자. 주위에 분홍 빛망울이 맴돈다."), new Color(1f, .55f, .75f), new Color(1f, .9f, .95f)),
@@ -57,29 +87,29 @@ namespace DotRPG
             Tinted("skin_m_sunset", L.T("노을 로브"), CharacterClass.Mage, L.T("노을빛 로브와 모자. 주위에 주황 빛망울이 맴돈다."), new Color(1f, .6f, .3f), new Color(1f, .9f, .75f)),
             new SkinDef
             {
-                id = "skin_lion", name = L.T("황금 사자 기사"), cls = CharacterClass.Warrior, sheet = "lion",
+                id = "skin_lion", name = L.T("황금 사자 기사"), cls = CharacterClass.Warrior, sheet = "w_lion", legacySheet = "lion",
                 blurb = L.T("금테 두른 은백 판금 갑옷과 진홍 망토, 금빛 서클릿. 걸음마다 금빛 불티가 흩날린다."),
                 sleeve = C("#d1dae3"), leg = C("#bdc6d0"), boot = C("#8a96a6"), trim = C("#f6ab3e"), cape = C("#9c1d22"),
-                trail = SkinTrailKind.GoldSparks, trailA = new Color(1f, .85f, .35f), trailB = new Color(1f, .97f, .8f), afterimage = true,
+                trail = SkinTrailKind.GoldSparks, trailA = new Color(1f, .85f, .35f), trailB = new Color(1f, .97f, .8f),
             },
             new SkinDef
             {
                 id = "skin_moon", name = L.T("월광 검귀"), cls = CharacterClass.Warrior, sheet = "moon",
                 blurb = L.T("청록 룬이 빛나는 남색 갑주와 별빛 망토. 달빛 조각이 곁을 맴돈다."),
                 sleeve = C("#1d2547"), leg = C("#202a4e"), boot = C("#151b33"), trim = C("#6ff0ff"), cape = C("#1b2241"),
-                trail = SkinTrailKind.MoonMotes, trailA = new Color(.45f, .95f, 1f), trailB = new Color(.9f, .97f, 1f), afterimage = true,
+                trail = SkinTrailKind.MoonMotes, trailA = new Color(.45f, .95f, 1f), trailB = new Color(.9f, .97f, 1f),
             },
             new SkinDef
             {
                 id = "skin_starnight", name = L.T("성야의 마녀"), cls = CharacterClass.Mage,
                 blurb = L.T("별자리가 수놓인 남빛 로브와 초승달 모자. 주위에 작은 별이 반짝인다."),
-                trail = SkinTrailKind.Stars, trailA = new Color(1f, .9f, .55f), trailB = new Color(.75f, .9f, 1f), afterimage = true,
+                trail = SkinTrailKind.Stars, trailA = new Color(1f, .9f, .55f), trailB = new Color(.75f, .9f, 1f),
             },
             new SkinDef
             {
                 id = "skin_crimson", name = L.T("홍염의 마녀"), cls = CharacterClass.Mage,
                 blurb = L.T("금빛 불꽃 자수의 진홍 로브와 불사조 깃털. 발밑에서 불씨가 피어오른다."),
-                trail = SkinTrailKind.Embers, trailA = new Color(1f, .45f, .12f), trailB = new Color(1f, .82f, .3f), afterimage = true,
+                trail = SkinTrailKind.Embers, trailA = new Color(1f, .45f, .12f), trailB = new Color(1f, .82f, .3f),
             },
             new SkinDef
             {
@@ -99,7 +129,7 @@ namespace DotRPG
             },
             new SkinDef
             {
-                id = "skin_obsidian", name = L.T("흑요 기사"), cls = CharacterClass.Warrior, sheet = "obsidian",
+                id = "skin_obsidian", name = L.T("흑요 기사"), cls = CharacterClass.Warrior, sheet = "w_obsidian", legacySheet = "obsidian",
                 blurb = L.T("은테 두른 흑요석 갑옷과 청록 보석. 곁에 푸른 빛 조각이 떠오른다."),
                 sleeve = C("#343438"), leg = C("#3a3a40"), boot = C("#18181c"), trim = C("#c8d0d8"),
                 trail = SkinTrailKind.MoonMotes, trailA = new Color(.35f, .9f, .85f), trailB = new Color(.85f, .95f, .95f),
@@ -132,18 +162,18 @@ namespace DotRPG
             Tinted("skin_w_sunguard", L.T("태양 기사단복"), CharacterClass.Warrior, L.T("태양 기사단의 금빛 제복. 곁에 금빛 조각이 떠오른다."), new Color(1.00f, 0.82f, 0.29f), new Color(1.00f, 0.96f, 0.82f)),
             Tinted("skin_w_shade", L.T("그림자 자객복"), CharacterClass.Warrior, L.T("밤에 움직이는 자객의 검은 옷. 곁에 어스름한 빛 조각이 떠오른다."), new Color(0.54f, 0.48f, 0.66f), new Color(0.85f, 0.82f, 0.91f)),
             new SkinDef { id = "skin_w_valkyrie", name = L.T("발키리 갑주"), cls = CharacterClass.Warrior, sheet = "w_valkyrie", blurb = L.T("날개 투구와 은빛 흉갑. 걸음마다 하얀 깃털빛이 흩날린다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 1.00f, 1.00f), trailB = new Color(0.75f, 0.88f, 1.00f) },
-            new SkinDef { id = "skin_w_snowblade", name = L.T("백설 무사"), cls = CharacterClass.Warrior, sheet = "w_snowblade", blurb = L.T("눈처럼 흰 하오리와 은빛 머리끈. 곁에 눈송이가 반짝인다."), trail = SkinTrailKind.Stars, trailA = new Color(0.87f, 0.95f, 1.00f), trailB = new Color(1.00f, 1.00f, 1.00f) },
+            new SkinDef { id = "skin_w_snowblade", name = L.T("설화 검객"), cls = CharacterClass.Warrior, sheet = "w_snowblade_v2", legacySheet = "w_snowblade", blurb = L.T("눈처럼 흰 하오리와 은빛 머리끈. 곁에 눈송이가 반짝인다."), trail = SkinTrailKind.Stars, trailA = new Color(0.87f, 0.95f, 1.00f), trailB = new Color(1.00f, 1.00f, 1.00f) },
             new SkinDef { id = "skin_w_dragonscale", name = L.T("용비늘 갑주"), cls = CharacterClass.Warrior, sheet = "w_dragonscale", blurb = L.T("붉은 용비늘로 짠 갑옷. 발밑에서 불씨가 피어오른다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.35f, 0.12f), trailB = new Color(1.00f, 0.75f, 0.29f) },
             new SkinDef { id = "skin_w_roseknight", name = L.T("장미 기사"), cls = CharacterClass.Warrior, sheet = "w_roseknight", blurb = L.T("장미 문장의 분홍 갑옷과 흰 망토. 분홍 꽃잎빛이 맴돈다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 0.56f, 0.75f), trailB = new Color(1.00f, 0.88f, 0.93f) },
-            new SkinDef { id = "skin_w_phoenix", name = L.T("불사조 성기사"), cls = CharacterClass.Warrior, sheet = "w_phoenix", blurb = L.T("불사조 날개 장식의 금홍 갑주. 걸음마다 불꽃 깃털과 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.48f, 0.10f), trailB = new Color(1.00f, 0.89f, 0.48f), afterimage = true },
-            new SkinDef { id = "skin_w_aurora", name = L.T("오로라 여제"), cls = CharacterClass.Warrior, sheet = "w_aurora", blurb = L.T("오로라빛이 흐르는 수정 갑옷과 별빛 망토. 무지갯빛 잔상이 남는다."), trail = SkinTrailKind.Stars, trailA = new Color(0.48f, 1.00f, 0.84f), trailB = new Color(0.84f, 0.66f, 1.00f), afterimage = true },
-            new SkinDef { id = "skin_w_voidblade", name = L.T("심연의 검성"), cls = CharacterClass.Warrior, sheet = "w_voidblade", blurb = L.T("보랏빛 심연 문양의 흑갑과 찢어진 망토. 어둠의 잔상이 남는다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.60f, 0.36f, 1.00f), trailB = new Color(0.88f, 0.78f, 1.00f), afterimage = true },
-            Plain("skin_m_lavender", L.T("라벤더 후드 로브"), CharacterClass.Mage, L.T("라벤더빛 후드가 달린 흰 견습 로브.")),
-            Plain("skin_m_student", L.T("마법학교 교복"), CharacterClass.Mage, L.T("마법학교 신입생의 남색 교복과 베레모.")),
+            new SkinDef { id = "skin_w_phoenix", name = L.T("불사조 성기사"), cls = CharacterClass.Warrior, sheet = "w_phoenix_v2", legacySheet = "w_phoenix", blurb = L.T("불사조 날개 장식의 금홍 갑주. 걸음마다 불꽃 깃털과 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.48f, 0.10f), trailB = new Color(1.00f, 0.89f, 0.48f) },
+            new SkinDef { id = "skin_w_aurora", name = L.T("오로라 여제"), cls = CharacterClass.Warrior, sheet = "w_aurora", blurb = L.T("오로라빛이 흐르는 수정 갑옷과 별빛 망토. 무지갯빛 잔상이 남는다."), trail = SkinTrailKind.Stars, trailA = new Color(0.48f, 1.00f, 0.84f), trailB = new Color(0.84f, 0.66f, 1.00f) },
+            new SkinDef { id = "skin_w_voidblade", name = L.T("심연의 검성"), cls = CharacterClass.Warrior, sheet = "w_voidblade_v2", legacySheet = "w_voidblade", blurb = L.T("보랏빛 심연 문양의 흑갑과 찢어진 망토. 어둠의 잔상이 남는다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.60f, 0.36f, 1.00f), trailB = new Color(0.88f, 0.78f, 1.00f) },
+            new SkinDef { id = "skin_m_lavender", name = L.T("라벤더 후드 로브"), cls = CharacterClass.Mage, blurb = L.T("라벤더빛 후드가 달린 흰 견습 로브."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.80f, 0.68f, 1.00f), trailB = new Color(0.96f, 0.93f, 1.00f) },
+            Tinted("skin_m_student", L.T("마법학교 교복"), CharacterClass.Mage, L.T("마법학교 신입생의 남색 교복과 베레모."), new Color(0.50f, 0.62f, 1.00f), new Color(0.90f, 0.93f, 1.00f)),
             Plain("skin_m_herbalist", L.T("약초꾼 로브"), CharacterClass.Mage, L.T("약초 주머니를 단 연둣빛 로브.")),
             Plain("skin_m_tea", L.T("찻잎 견습 로브"), CharacterClass.Mage, L.T("찻집 견습생의 갈색 로브와 흰 앞치마.")),
-            Plain("skin_m_snowcloak", L.T("눈송이 망토"), CharacterClass.Mage, L.T("털 장식이 달린 하늘색 겨울 망토.")),
-            Plain("skin_m_autumn", L.T("가을 낙엽 로브"), CharacterClass.Mage, L.T("단풍잎 장식의 주황빛 로브와 모자.")),
+            Def("skin_m_snowcloak", L.T("눈송이 망토"), CharacterClass.Mage, L.T("털 장식이 달린 하늘색 겨울 망토."), SkinTrailKind.None, new Color(0.80f, 0.92f, 1.00f), new Color(1.00f, 1.00f, 1.00f), null), // Hidden common: a faint afterimage only
+            Tinted("skin_m_autumn", L.T("가을 낙엽 로브"), CharacterClass.Mage, L.T("단풍잎 장식의 주황빛 로브와 모자."), new Color(1.00f, 0.60f, 0.28f), new Color(1.00f, 0.90f, 0.75f)),
             Plain("skin_m_dusk", L.T("밤하늘 견습 로브"), CharacterClass.Mage, L.T("작은 별이 수놓인 짙은 보랏빛 로브.")),
             Tinted("skin_m_sky", L.T("하늘빛 마녀"), CharacterClass.Mage, L.T("구름 무늬의 하늘색 로브. 주위에 하늘빛 빛망울이 맴돈다."), new Color(0.56f, 0.82f, 1.00f), new Color(1.00f, 1.00f, 1.00f)),
             Tinted("skin_m_cherry", L.T("벚꽃 마녀"), CharacterClass.Mage, L.T("벚꽃 가지를 꽂은 분홍 로브. 주위에 분홍 빛망울이 맴돈다."), new Color(1.00f, 0.62f, 0.78f), new Color(1.00f, 0.94f, 0.96f)),
@@ -156,47 +186,49 @@ namespace DotRPG
             new SkinDef { id = "skin_m_storm", name = L.T("뇌운의 마녀"), cls = CharacterClass.Mage, blurb = L.T("번개 무늬의 남보랏빛 로브. 작은 번개빛이 튄다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.91f, 0.35f), trailB = new Color(0.60f, 0.82f, 1.00f) },
             new SkinDef { id = "skin_m_sakura", name = L.T("벚꽃 무녀"), cls = CharacterClass.Mage, blurb = L.T("벚꽃잎이 흩날리는 분홍 무녀복. 꽃잎빛이 맴돈다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 0.70f, 0.82f), trailB = new Color(1.00f, 0.94f, 0.96f) },
             new SkinDef { id = "skin_m_frostprincess", name = L.T("서리 공주"), cls = CharacterClass.Mage, blurb = L.T("얼음 결정 왕관과 푸른 드레스. 눈송이가 반짝인다."), trail = SkinTrailKind.Stars, trailA = new Color(0.75f, 0.91f, 1.00f), trailB = new Color(1.00f, 1.00f, 1.00f) },
-            new SkinDef { id = "skin_m_celestial", name = L.T("천공의 대마녀"), cls = CharacterClass.Mage, blurb = L.T("성좌가 흐르는 남금빛 로브와 별 모자. 별빛 잔상이 남는다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.89f, 0.48f), trailB = new Color(0.74f, 0.85f, 1.00f), afterimage = true },
-            new SkinDef { id = "skin_m_flameempress", name = L.T("화염 여제"), cls = CharacterClass.Mage, blurb = L.T("불꽃 왕관과 진홍 드레스. 불씨와 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.29f, 0.07f), trailB = new Color(1.00f, 0.82f, 0.29f), afterimage = true },
-            new SkinDef { id = "skin_m_dream", name = L.T("몽환의 마녀"), cls = CharacterClass.Mage, blurb = L.T("구름과 달이 떠 있는 파스텔 로브. 몽환적인 잔상이 남는다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 0.78f, 0.94f), trailB = new Color(0.78f, 0.90f, 1.00f), afterimage = true },
+            new SkinDef { id = "skin_m_celestial", name = L.T("천공의 대마녀"), cls = CharacterClass.Mage, blurb = L.T("성좌가 흐르는 남금빛 로브와 별 모자. 별빛 잔상이 남는다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.89f, 0.48f), trailB = new Color(0.74f, 0.85f, 1.00f) },
+            new SkinDef { id = "skin_m_flameempress", name = L.T("화염 여제"), cls = CharacterClass.Mage, blurb = L.T("불꽃 왕관과 진홍 드레스. 불씨와 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.29f, 0.07f), trailB = new Color(1.00f, 0.82f, 0.29f) },
+            new SkinDef { id = "skin_m_dream", name = L.T("몽환의 마녀"), cls = CharacterClass.Mage, blurb = L.T("구름과 달이 떠 있는 파스텔 로브. 몽환적인 잔상이 남는다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 0.78f, 0.94f), trailB = new Color(0.78f, 0.90f, 1.00f) },
             // [2026-10-14] Starlight Exchange only (bought with Star Crystals, never in draws or synthesis).
             new SkinDef { id = "skin_w_starwarden", name = L.T("별빛 수호 기사"), cls = CharacterClass.Warrior, sheet = "w_starwarden", blurb = L.T("별빛 교환소에서만 얻는 남청색 갑주 드레스. 걸음마다 작은 별빛이 흩날린다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.91f, 0.63f), trailB = new Color(0.72f, 0.78f, 1.00f) },
             new SkinDef { id = "skin_m_starsage", name = L.T("별의 현자"), cls = CharacterClass.Mage, blurb = L.T("별빛 교환소에서만 얻는 별자리 로브. 은은한 달빛 결정이 따라온다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.85f, 0.72f, 1.00f), trailB = new Color(1.00f, 1.00f, 1.00f) },
             // [ROGUE 2026-10-23] Rogue skins (Docs/PLAN_CLASS_ROGUE.md 6.1): common 10 + rare 10 recoloured bodies, epic 7 + unique 5 + exchange 1 own sheets (Rogue/Skins/<sheet>, base body until drawn).
-            Plain("skin_r_navy", L.T("남색 밀정복"), CharacterClass.Rogue, L.T("남색 두건과 가벼운 가죽 조끼의 밀정 옷.")),
             Plain("skin_r_wine", L.T("와인빛 밀정복"), CharacterClass.Rogue, L.T("와인빛 두건을 눌러쓴 밀정의 옷.")),
             Plain("skin_r_moss", L.T("숲길 정찰복"), CharacterClass.Rogue, L.T("숲길을 몰래 살피는 정찰병의 이끼빛 옷.")),
-            Plain("skin_r_sand", L.T("사막 행상복"), CharacterClass.Rogue, L.T("모래바람을 막는 사막 행상의 누런 두건 옷.")),
-            Plain("skin_r_slate", L.T("회청 잠행복"), CharacterClass.Rogue, L.T("돌담 그늘에 섞이는 회청색 잠행복.")),
             Plain("skin_r_rust", L.T("적갈 사냥꾼복"), CharacterClass.Rogue, L.T("덫을 놓는 사냥꾼의 적갈색 가죽옷.")),
-            Plain("skin_r_ivory", L.T("상아 견습복"), CharacterClass.Rogue, L.T("도적 길드 견습생이 처음 받는 상아색 옷.")),
-            Plain("skin_r_plum", L.T("자두빛 두건복"), CharacterClass.Rogue, L.T("자두빛 두건을 깊게 쓴 날렵한 옷.")),
-            Plain("skin_r_teal", L.T("청록 밀수꾼복"), CharacterClass.Rogue, L.T("항구 뒷골목 밀수꾼의 청록색 옷.")),
             Plain("skin_r_coal", L.T("숯빛 야행복"), CharacterClass.Rogue, L.T("밤길에 녹아드는 숯빛 야행복.")),
             Tinted("skin_r_crimson", L.T("진홍 그림자복"), CharacterClass.Rogue, L.T("진홍빛 그림자 무늬의 잠행복. 곁에 붉은 빛 조각이 떠오른다."), new Color(1.00f, 0.35f, 0.38f), new Color(1.00f, 0.86f, 0.86f)),
             Tinted("skin_r_violet", L.T("보랏빛 야행복"), CharacterClass.Rogue, L.T("보랏빛 밤하늘 같은 야행복. 곁에 보랏빛 조각이 떠오른다."), new Color(0.70f, 0.48f, 1.00f), new Color(0.94f, 0.90f, 1.00f)),
             Tinted("skin_r_gold", L.T("황금 도둑복"), CharacterClass.Rogue, L.T("금화를 노리는 큰도둑의 황금빛 옷. 곁에 금빛 조각이 떠오른다."), new Color(1.00f, 0.82f, 0.30f), new Color(1.00f, 0.96f, 0.82f)),
             Tinted("skin_r_frost", L.T("서리 밀정복"), CharacterClass.Rogue, L.T("설원을 건너는 밀정의 흰 두건 옷. 곁에 하얀 빛 조각이 떠오른다."), new Color(0.80f, 0.92f, 1.00f), new Color(1.00f, 1.00f, 1.00f)),
             Tinted("skin_r_rose", L.T("장미 가면복"), CharacterClass.Rogue, L.T("장미 가면을 쓴 괴도의 분홍 옷. 곁에 분홍 빛 조각이 떠오른다."), new Color(1.00f, 0.56f, 0.75f), new Color(1.00f, 0.90f, 0.94f)),
-            Tinted("skin_r_jade", L.T("비취 독사복"), CharacterClass.Rogue, L.T("독사를 닮은 비취색 잠행복. 곁에 비취빛 조각이 떠오른다."), new Color(0.31f, 0.88f, 0.60f), new Color(0.90f, 1.00f, 0.95f)),
             Tinted("skin_r_ember", L.T("불씨 두건복"), CharacterClass.Rogue, L.T("불씨처럼 붉은 두건 옷. 곁에 주황 빛 조각이 떠오른다."), new Color(1.00f, 0.55f, 0.25f), new Color(1.00f, 0.88f, 0.72f)),
             Tinted("skin_r_azure", L.T("하늘빛 바람복"), CharacterClass.Rogue, L.T("바람처럼 달리는 하늘빛 옷. 곁에 하늘빛 조각이 떠오른다."), new Color(0.50f, 0.80f, 1.00f), new Color(0.90f, 0.96f, 1.00f)),
             Tinted("skin_r_onyx", L.T("흑요 암살복"), CharacterClass.Rogue, L.T("흑요석처럼 검게 빛나는 암살복. 곁에 어스름한 빛 조각이 떠오른다."), new Color(0.54f, 0.48f, 0.70f), new Color(0.85f, 0.82f, 0.92f)),
             Tinted("skin_r_lilac", L.T("라일락 무희복"), CharacterClass.Rogue, L.T("칼춤을 추는 무희의 라일락빛 옷. 곁에 연보랏빛 조각이 떠오른다."), new Color(0.80f, 0.66f, 1.00f), new Color(0.96f, 0.93f, 1.00f)),
-            new SkinDef { id = "skin_r_sakura", name = L.T("벚꽃 쿠노이치"), cls = CharacterClass.Rogue, sheet = "r_sakura", blurb = L.T("벚꽃 무늬 쿠노이치 옷과 분홍 머리끈. 꽃잎빛이 맴돈다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 0.70f, 0.82f), trailB = new Color(1.00f, 0.94f, 0.96f) },
             new SkinDef { id = "skin_r_moonshade", name = L.T("달그림자 밀정"), cls = CharacterClass.Rogue, sheet = "r_moonshade", blurb = L.T("초승달 장식의 남빛 밀정복. 은빛 달빛 조각이 맴돈다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.75f, 0.85f, 1.00f), trailB = new Color(1.00f, 1.00f, 1.00f) },
-            new SkinDef { id = "skin_r_dunedancer", name = L.T("모래바람 칼춤꾼"), cls = CharacterClass.Rogue, sheet = "r_dunedancer", blurb = L.T("금실 베일과 모래빛 무희복. 발밑에 금빛 모래가 반짝인다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.84f, 0.45f), trailB = new Color(1.00f, 0.96f, 0.82f) },
             new SkinDef { id = "skin_r_corsair", name = L.T("바다의 칼잡이"), cls = CharacterClass.Rogue, sheet = "r_corsair", blurb = L.T("삼각모와 붉은 띠를 두른 해적 칼잡이 옷. 물빛 조각이 맴돈다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.35f, 0.80f, 0.95f), trailB = new Color(0.90f, 1.00f, 1.00f) },
             new SkinDef { id = "skin_r_raven", name = L.T("까마귀 깃 암살자"), cls = CharacterClass.Rogue, sheet = "r_raven", blurb = L.T("검은 깃털 망토의 암살자 옷. 어두운 깃털빛이 맴돈다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.55f, 0.45f, 0.75f), trailB = new Color(0.85f, 0.80f, 0.95f) },
-            new SkinDef { id = "skin_r_foxmask", name = L.T("여우 가면 무희"), cls = CharacterClass.Rogue, sheet = "r_foxmask", blurb = L.T("여우 가면과 붉은 하카마의 무희 옷. 발밑에서 여우불이 피어오른다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.50f, 0.20f), trailB = new Color(1.00f, 0.85f, 0.45f) },
-            new SkinDef { id = "skin_r_frosthunter", name = L.T("서리 사냥꾼"), cls = CharacterClass.Rogue, sheet = "r_frosthunter", blurb = L.T("흰 털 망토와 얼음 단검집의 사냥꾼 옷. 눈송이가 반짝인다."), trail = SkinTrailKind.Stars, trailA = new Color(0.78f, 0.92f, 1.00f), trailB = new Color(1.00f, 1.00f, 1.00f) },
-            new SkinDef { id = "skin_r_nightqueen", name = L.T("칠흑의 그림자 여왕"), cls = CharacterClass.Rogue, sheet = "r_nightqueen", blurb = L.T("칠흑의 왕관과 그림자 망토. 걸음마다 어둠의 잔상이 남는다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(0.60f, 0.36f, 1.00f), trailB = new Color(0.88f, 0.78f, 1.00f), afterimage = true },
-            new SkinDef { id = "skin_r_thunder", name = L.T("뇌신 닌자"), cls = CharacterClass.Rogue, sheet = "r_thunder", blurb = L.T("번개 문양의 남금빛 닌자복. 번개빛과 잔상이 남는다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.91f, 0.35f), trailB = new Color(0.60f, 0.82f, 1.00f), afterimage = true },
-            new SkinDef { id = "skin_r_crimsonmoon", name = L.T("진홍 달의 처형자"), cls = CharacterClass.Rogue, sheet = "r_crimsonmoon", blurb = L.T("붉은 달 문양의 흑적 처형자 옷. 핏빛 불티와 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.25f, 0.25f), trailB = new Color(1.00f, 0.70f, 0.55f), afterimage = true },
-            new SkinDef { id = "skin_r_butterfly", name = L.T("비단 나비 무희"), cls = CharacterClass.Rogue, sheet = "r_butterfly", blurb = L.T("나비 날개 같은 비단 무희복. 나비빛 잔상이 남는다."), trail = SkinTrailKind.MoonMotes, trailA = new Color(1.00f, 0.70f, 0.95f), trailB = new Color(0.75f, 0.90f, 1.00f), afterimage = true },
-            new SkinDef { id = "skin_r_scorpion", name = L.T("황금 전갈"), cls = CharacterClass.Rogue, sheet = "r_scorpion", blurb = L.T("황금 전갈 꼬리 장식의 사막 암살자 옷. 금빛 불티와 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.78f, 0.25f), trailB = new Color(1.00f, 0.95f, 0.70f), afterimage = true },
+            new SkinDef { id = "skin_r_scorpion", name = L.T("황금 전갈"), cls = CharacterClass.Rogue, sheet = "r_scorpion", blurb = L.T("황금 전갈 꼬리 장식의 사막 암살자 옷. 금빛 불티와 잔상이 남는다."), trail = SkinTrailKind.Embers, trailA = new Color(1.00f, 0.78f, 0.25f), trailB = new Color(1.00f, 0.95f, 0.70f) },
             new SkinDef { id = "skin_r_starshade", name = L.T("별빛 그림자"), cls = CharacterClass.Rogue, sheet = "r_starshade", blurb = L.T("별빛 교환소에서만 얻는 별무늬 밀정복. 걸음마다 작은 별빛이 흩날린다."), trail = SkinTrailKind.Stars, trailA = new Color(1.00f, 0.91f, 0.63f), trailB = new Color(0.72f, 0.78f, 1.00f) },
-        };
+        }, TierSkins());
+
+        static SkinDef[] Concat(SkinDef[] a, SkinDef[] b)
+        {
+            var all = new SkinDef[a.Length + b.Length];
+            a.CopyTo(all, 0);
+            b.CopyTo(all, a.Length);
+            return all;
+        }
+
+        static readonly Dictionary<string, bool> mageFrames = new Dictionary<string, bool>();
+        /// <summary>Whether a mage skin's own frames are in (new skins show the base mage until their art lands).</summary>
+        static bool MageFramesExist(string id)
+        {
+            if (!mageFrames.TryGetValue(id, out bool has))
+                mageFrames[id] = has = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + "char_" + id + "_down_idle0") != null;
+            return has;
+        }
 
         public static SkinDef Find(string id)
         {
@@ -247,7 +279,8 @@ namespace DotRPG
             {
                 var l = CharacterLook.Player.Clone();
                 l.id = "player_" + s.id; // the silver warrior renderer handles every "player_*" look
-                l.skinSheet = s.sheet;
+                // A sheet not drawn yet: the old drawing of a reused id, else the base body (SilverWarriorArt falls back).
+                l.skinSheet = s.legacySheet != null && !SilverWarriorArt.HasSkinSheet(s.sheet) ? s.legacySheet : s.sheet;
                 l.armor = ArmorStyle.None;
                 l.bottomTier = -1;
                 l.skinSleeve = s.sleeve; l.skinLeg = s.leg; l.skinBoot = s.boot; l.skinTrim = s.trim; l.skinCape = s.cape;
@@ -264,7 +297,7 @@ namespace DotRPG
                 return r;
             }
             var m = CharacterLook.Mage.Clone();
-            m.id = s.id; // Art/char_<skin>_<dir>_<frame>
+            if (MageFramesExist(s.id)) m.id = s.id; // Art/char_<skin>_<dir>_<frame>; the base mage until drawn
             return m;
         }
     }

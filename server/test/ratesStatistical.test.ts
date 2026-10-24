@@ -3,8 +3,8 @@
 import path from 'node:path';
 import { getConfig, initConfig } from '../src/config/env';
 import { buildRatesMarkdown } from '../src/domains/policies/ratesDisclosure';
-import { BANNER_WEIGHT, GEAR_RARITY_NAME, RARITY_NAME, type CosmeticBanner, type Rarity } from '../src/domains/starshop/starshopDefs';
-import { gearTable, pickGearTier, rollRarity } from '../src/domains/starshop/starshopService';
+import { BANNER_WEIGHT, GEAR_RARITY_NAME, RARITIES, slotName, type CosmeticBanner } from '../src/domains/starshop/starshopDefs';
+import { gearTable, pickGearTier, rollSlot } from '../src/domains/starshop/starshopService';
 import { luckBoxHit, pickRow } from '../src/domains/sealedbox/sealedBoxService';
 import { rollEnhance } from '../src/domains/enhance/enhanceService';
 import { rollShopRarity } from '../src/domains/raidshop/raidShopService';
@@ -153,7 +153,8 @@ function subSections(lines: string[]): { title: string; rows: string[][] }[] {
   return out;
 }
 
-const RARITY_BY_NAME = new Map<string, Rarity>((Object.entries(RARITY_NAME) as [Rarity, string][]).map(([r, n]) => [n, r]));
+/** 문서의 칸 이름("에픽 히든")과 추첨 결과 칸(rarity:hidden) */
+const SLOT_BY_NAME = new Map<string, string>(RARITIES.flatMap((r) => [[slotName(r, false), `${r}:false`], [slotName(r, true), `${r}:true`]] as [string, string][]));
 const GEAR_BY_NAME = new Map<string, string>(Object.entries(GEAR_RARITY_NAME).map(([r, n]) => [n, r]));
 
 let md = '';
@@ -165,24 +166,34 @@ beforeAll(() => {
 afterEach(() => setRng(null));
 
 describe('공개 확률 문서 vs 실제 추첨 빈도', () => {
-  it('외형 뽑기: 오라·스킨의 등급 확률과 보너스 1회 등급 확률', () => {
+  it('외형 뽑기: 오라·직업별 스킨의 칸(등급·히든) 확률, 보너스 1회 칸 확률, 외형별 확률', () => {
     const subs = subSections(section(md, '외형 뽑기'));
-    expect(subs.length).toBeGreaterThanOrEqual(3);
+    expect(subs.length).toBeGreaterThanOrEqual(4);
+    const clsOf = (title: string): string => (title.includes('마법사') ? 'mage' : title.includes('도적') ? 'rogue' : 'warrior');
     subs.forEach((s, idx) => {
       const banner: CosmeticBanner = s.title.startsWith('오라') ? 'aura' : 'skin';
+      const cls = clsOf(s.title);
       const grade = new Map<string, number>();
       const bonus = new Map<string, number>();
+      let perItem = 0;
       for (const r of s.rows) {
-        const rar = RARITY_BY_NAME.get(r[0] as string) as Rarity;
-        grade.set(rar, pctNum(r[1] as string));
-        bonus.set(rar, pctNum(r[2] as string));
+        const key = SLOT_BY_NAME.get(r[0] as string) as string;
+        expect(key).toBeDefined();
+        grade.set(key, pctNum(r[1] as string));
+        bonus.set(key, pctNum(r[2] as string));
+        perItem += pctNum(r[4] as string);
       }
-      // 문서에 없는 등급은 기대 0%: 서버 가중치에서 0이 아닌 등급이 문서에 빠지면 여기서 실패한다
-      for (const [r, w] of Object.entries(BANNER_WEIGHT[banner])) if (w > 0) expect(grade.has(r)).toBe(true);
+      // 외형별 확률의 합도 100%(표시 반올림 오차 안)
+      expect(Math.abs(perItem - 100)).toBeLessThanOrEqual(0.05);
+      // 서버 등급 합(히든 포함)이 0이 아닌 등급은 문서에 칸이 하나 이상 있어야 한다
+      for (const [r, w] of Object.entries(BANNER_WEIGHT[banner])) {
+        if (w > 0 && r !== 'legend') expect([...grade.keys()].some((k) => k.startsWith(`${r}:`))).toBe(true);
+      }
+      const key = (x: { rarity: string; hidden: boolean }) => `${x.rarity}:${x.hidden}`;
       setRng(seeded(100 + idx));
-      expectFits(`${s.title} 등급`, tally(N, () => rollRarity(banner)), grade, N);
+      expectFits(`${s.title} 칸`, tally(N, () => key(rollSlot(banner, cls))), grade, N);
       setRng(seeded(200 + idx));
-      expectFits(`${s.title} 보너스`, tally(N, () => rollRarity(banner, true)), bonus, N);
+      expectFits(`${s.title} 보너스`, tally(N, () => key(rollSlot(banner, cls, true))), bonus, N);
     });
   });
 

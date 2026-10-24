@@ -4,7 +4,7 @@ import { AppError } from '../../utils/AppError';
 import { assertNoHold } from '../antiabuse/holds';
 import { getRng } from '../../utils/rng';
 import { runEconomy, type StoredResult } from '../economy/economyService';
-import { COLLECTION_BY_ID, DISMANTLE_STARS, STAR_COSMETICS, STAR_COSMETIC_BY_ID, SYNTH, SYNTH_COUNT, type Rarity, type SynthFrom } from './starshopDefs';
+import { COLLECTION_BY_ID, STAR_COSMETICS, STAR_COSMETIC_BY_ID, SYNTH, SYNTH_COUNT, dismantleStarsOf, type Rarity, type SynthFrom, type SynthTier } from './starshopDefs';
 import * as repo from './starshopRepository';
 import * as wallets from './starWallet';
 import * as crystals from './crystalWallet';
@@ -12,19 +12,19 @@ import { cosmeticCrystals } from './cashValueService';
 import { poolOf } from './starshopService';
 import type { CollectionBody, DismantleBody, SynthBody } from './starshopValidation';
 
-/** 합성 결과로 나올 수 있는 외형: 희귀·에픽은 오라와 내 직업 같은 등급 스킨, 유니크는 내 직업 유니크 스킨 */
+/** 합성 결과로 나올 수 있는 외형: 희귀·에픽은 오라와 내 직업 같은 등급 스킨, 유니크·전설은 내 직업 스킨(히든 제외) */
 function synthPool(to: Rarity, cls: string) {
-  if (to === 'unique') return poolOf('skin', 'unique', cls);
+  if (to === 'unique' || to === 'legend') return poolOf('skin', to, cls);
   if (to === 'epic') return [...poolOf('aura', 'epic', cls), ...poolOf('skin', 'epic', cls)];
   return [...poolOf('aura', to, cls), ...poolOf('skin', to, cls)];
 }
 
-/** 그 등급의 여분(재료로 쓸 수 있는 것): 외형 id별 개수 */
+/** 그 등급의 여분(재료로 쓸 수 있는 것, 히든 제외): 외형 id별 개수 */
 function spareOf(copies: Map<string, number>, rarity: Rarity): Map<string, number> {
   const out = new Map<string, number>();
   for (const c of STAR_COSMETICS) {
     const n = copies.get(c.id) ?? 0;
-    if (c.rarity === rarity && n > 0) out.set(c.id, n);
+    if (c.rarity === rarity && !c.hidden && n > 0) out.set(c.id, n);
   }
   return out;
 }
@@ -46,7 +46,7 @@ export function synth(accountId: number, characterUuid: string, body: SynthBody)
       const db = ctx.client;
       const from: SynthFrom = body.rarity;
       const rule = SYNTH[from];
-      const tier = rule.to as 'rare' | 'epic' | 'unique';
+      const tier = rule.to as SynthTier;
       const wallet = await wallets.lockWallet(db, accountId);
       wallets.assertNoStarDebt(wallet);
       const owned = await repo.ownedOf(db, accountId);
@@ -132,7 +132,7 @@ export function dismantle(accountId: number, characterUuid: string, body: Disman
       if (!(await repo.takeCopies(db, accountId, def.id, body.count))) {
         throw new AppError(422, '분해할 여분이 모자랍니다.', 'DISMANTLE_NOT_ENOUGH');
       }
-      const stars = DISMANTLE_STARS[def.rarity] * body.count;
+      const stars = dismantleStarsOf(def) * body.count;
       // 입금 함수가 부채를 먼저 갚는다(11단계 8.5). balance는 입금 직후(상환 반영) 값이다
       const balance = (await wallets.creditFree(db, { accountId, reason: 'dismantle', amount: stars, ref: def.id, requestId })).balance;
       // 0044: 별의 결정도 준다(등록한 컬렉션의 외형이면 +20%). 유료 별조각으로 뽑은 몫은 주문별로 나눠 둔다

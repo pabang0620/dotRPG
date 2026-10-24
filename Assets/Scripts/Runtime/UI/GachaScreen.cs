@@ -24,7 +24,7 @@ namespace DotRPG
 
         static readonly (string id, string name, string sub)[] Banners =
         {
-            ("skin", L.T("스킨 뽑기"), L.T("에픽 스킨 1% · 게이지로 유니크 스킨")),
+            ("skin", L.T("스킨 뽑기"), L.T("에픽 스킨 5% · 게이지로 유니크·전설·히든")),
             ("aura", L.T("오라 뽑기"), L.T("에픽 오라 1% · 공격력 보너스")),
             ("weapon", L.T("무기 뽑기"), L.T("레전더리 무기 0.05%")),
             ("armor", L.T("방어구 뽑기"), L.T("상의 · 하의")),
@@ -39,10 +39,15 @@ namespace DotRPG
         Image big, flash;
         Text bigTitle, bigSub, wallet, bonusLabel, badge, gaugeText;
         Image badgeBg, gaugeFill, gaugeBg;
-        Button chooseBtn;
+        Button chooseBtn, hiddenBtn;
+        Image hiddenBg, hiddenFill;
+        Text hiddenText;
+        /// <summary>The gauge the choice window is picking for ("aura", "skin" or "hidden").</summary>
+        string choiceGauge = "skin";
         RectTransform choiceModal;
         readonly List<(Button btn, Image icon, Text label)> choiceRows = new List<(Button, Image, Text)>();
         const float GaugeW = 420f;
+        const int ChoiceRows = 8;
         Button one, ten, rateBtn, wardrobeBtn;
         RectTransform main;
         // Banner list + banner + button row (6 cards of 80 + 10 gaps on the left are the tallest part).
@@ -123,7 +128,16 @@ namespace DotRPG
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
             w.BuildTierPicker(bigBox.transform);
             w.BuildCeiling(bigBox.transform); // [CEILING]
-            w.chooseBtn = Button(bigBox.transform, "Choose", L.T("선택하기"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), w.OpenChoices, 18);
+            w.chooseBtn = Button(bigBox.transform, "Choose", L.T("선택하기"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -230f), new Vector2(150f, 40f), () => w.OpenChoices(w.banner == "skin" ? "skin" : "aura"), 18);
+            // [SKIN TIERS] The Hidden gauge (skin banner only) sits where the gear ceiling sits on gear banners.
+            w.hiddenBg = UIFactory.Image(bigBox.transform, "HiddenGauge", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 220));
+            w.hiddenBg.preserveAspect = false; w.hiddenBg.raycastTarget = false;
+            UIFactory.Place(w.hiddenBg.rectTransform, tl, tl, new Vector2(30f, -302f), new Vector2(GaugeW, 16f));
+            w.hiddenFill = UIFactory.Image(w.hiddenBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(255, 226, 122, 255));
+            w.hiddenFill.preserveAspect = false; w.hiddenFill.raycastTarget = false;
+            UIFactory.Place(w.hiddenFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 10f));
+            w.hiddenText = Label(bigBox.transform, "HiddenText", "", 17, tl, tl, new Vector2(30f, -324f), new Vector2(GaugeW + 160f, 26f), TextAnchor.MiddleLeft);
+            w.hiddenBtn = Button(bigBox.transform, "HiddenChoose", L.T("히든 선택"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(150f, 40f), () => w.OpenChoices("hidden"), 18);
             var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
             shard.preserveAspect = true; shard.raycastTarget = false;
             UIFactory.Place(shard.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 14f), new Vector2(38f, 38f));
@@ -189,14 +203,16 @@ namespace DotRPG
             UIFactory.Stretch(w.flash.rectTransform);
 
             // Choice window: the gauge is full, pick one top item you don't own yet.
-            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(640f, 420f), UiTheme.Overlay);
+            var cm = Panel(w.content, "ChoiceModal", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1000f, 420f), UiTheme.Overlay);
             cm.raycastTarget = true;
             w.choiceModal = cm.rectTransform;
-            Label(cm.transform, "Title", L.T("<b>원하는 것을 하나 고르세요</b>"), 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
-            for (int i = 0; i < 4; i++)
+            Label(cm.transform, "Title", L.T("<b>원하는 것을 하나 고르세요</b>"), 26, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -20f), new Vector2(900f, 40f), TextAnchor.MiddleCenter);
+            // Two columns of four: a gauge can offer up to 8 (unique + legend skins of a class).
+            for (int i = 0; i < ChoiceRows; i++)
             {
                 int idx = i;
-                var b = Button(cm.transform, "Choice" + i, "", "ui_btngray", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -76f - i * 70f), new Vector2(520f, 62f), () => w.Choose(idx), 20);
+                var at = new Vector2(i < 4 ? -240f : 240f, -76f - (i % 4) * 70f);
+                var b = Button(cm.transform, "Choice" + i, "", "ui_btngray", new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), at, new Vector2(470f, 62f), () => w.Choose(idx), 18);
                 var ic = UIFactory.Image(b.transform, "Icon", null, Color.white);
                 ic.preserveAspect = true; ic.raycastTarget = false;
                 UIFactory.Place(ic.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(56f, 56f));
@@ -261,33 +277,39 @@ namespace DotRPG
             return Banners[0];
         }
 
-        List<CosmeticProduct> choices = new List<CosmeticProduct>();
+        List<(CosmeticProduct p, StarGaugeTarget goal)> choices = new List<(CosmeticProduct, StarGaugeTarget)>();
 
-        void OpenChoices()
+        /// <summary>The gauge is full enough for at least one goal: pick a cosmetic of any goal it can pay for.</summary>
+        void OpenChoices(string gauge)
         {
             if (busy || Revealing) return;
             gearPick = null;
-            var cls = Game.Player != null ? Game.Player.Class : Game.Session.PlayerClass;
-            choices = new List<CosmeticProduct>();
-            foreach (var p in CosmeticCatalog.All)
-            {
-                if (p.ExchangeOnly) continue; // Starlight Exchange only, never in a draw gauge
-                if (banner == "skin" ? (p.IsSkin && p.Skin.cls == cls && p.Rarity == CosmeticRarity.Unique) : (!p.IsSkin && p.Rarity == CosmeticRarity.Epic)) choices.Add(p);
-            }
+            choiceGauge = gauge;
+            int have = StarShopClient.GaugeValue(gauge);
+            choices = new List<(CosmeticProduct, StarGaugeTarget)>();
+            foreach (var goal in StarShopClient.GaugeTargets(gauge))
+                foreach (var id in goal.items)
+                {
+                    var p = CosmeticCatalog.Find(id);
+                    if (p != null && !p.ExchangeOnly && choices.Count < ChoiceRows) choices.Add((p, goal));
+                }
             for (int i = 0; i < choiceRows.Count; i++)
             {
                 var row = choiceRows[i];
                 bool on = i < choices.Count;
                 row.btn.gameObject.SetActive(on);
                 if (!on) continue;
-                var p = choices[i];
+                var (p, goal) = choices[i];
                 bool owned = StarShopClient.Owned.Contains(p.Id);
+                bool afford = have >= goal.cost;
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
                 var card = CosmeticAura.Card(p);
                 row.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
                 row.icon.color = card != null || look != null ? Color.white : p.Color;
-                row.label.text = owned ? L.F("<color=#8c96a8>{0} · 보유 중</color>", L.T(p.Name)) : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{L.T(p.Name)}</color>  " + L.F("<size=15>공격력 +{0}%</size>", p.DamagePercent);
-                row.btn.interactable = !owned;
+                string grade = $"<color={GradeColor(p)}>{p.GradeName}</color>";
+                row.label.text = owned ? L.F("<color=#8c96a8>{0} · 보유 중</color>", L.T(p.Name))
+                    : $"<color={CosmeticCatalog.RarityHex(p.Rarity)}>{L.T(p.Name)}</color>\n" + L.F("<size=14>{0} · 공격력 +{1}% · {2}칸</size>", grade, p.DamagePercent, goal.cost);
+                row.btn.interactable = !owned && afford;
             }
             choiceModal.gameObject.SetActive(true);
             choiceModal.SetAsLastSibling();
@@ -298,16 +320,17 @@ namespace DotRPG
         {
             if (gearPick != null) { ChooseGear(i); return; } // [CEILING] picking gear with the gear ceiling
             if (i >= choices.Count) return;
-            var p = choices[i];
-            Game.UI.Confirm(L.T(p.Name) + "\n" + L.T("선택 게이지를 사용해 이것을 받습니다."), () =>
+            var (p, goal) = choices[i];
+            string gauge = choiceGauge;
+            Game.UI.Confirm(L.T(p.Name) + "\n" + L.F("게이지 {0}칸을 사용해 이것을 받습니다. 남은 칸은 이어집니다.", goal.cost), () =>
             {
                 busy = true;
-                StarShopClient.Claim(banner, p.Id, (ok, msg) =>
+                StarShopClient.Claim(gauge, p.Id, (ok, msg) =>
                 {
                     busy = false;
                     choiceModal.gameObject.SetActive(false);
                     if (!ok) { Game.Audio.PlaySfx("cancel"); GameEvents.RaiseToast(msg); Refresh(); return; }
-                    shown = new List<StarPullResult> { new StarPullResult { itemId = p.Id, rarity = banner == "skin" ? "unique" : "epic", byPity = true } };
+                    shown = new List<StarPullResult> { new StarPullResult { itemId = p.Id, rarity = goal.rarity, hidden = goal.hidden, byPity = true } };
                     revealed = 0; waiting = -1; lastCount = 1;
                     revealAt = Time.unscaledTime + 0.3f;
                     OpenResults();

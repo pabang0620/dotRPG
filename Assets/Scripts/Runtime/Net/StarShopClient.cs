@@ -8,14 +8,25 @@ namespace DotRPG
     public sealed class StarRate
     {
         public string rarity, name;
-        public double rate;
+        public double rate, bonusRate;
+        /// <summary>The Hidden row of its grade (skin draw).</summary>
+        public bool hidden;
         public readonly List<(string id, string name, double rate, bool gear)> items = new List<(string, string, double, bool)>();
+    }
+
+    /// <summary>One gauge goal: fill this many points, then pick one of these cosmetics (server gauges.*.targets).</summary>
+    public sealed class StarGaugeTarget
+    {
+        public string rarity, name;
+        public bool hidden;
+        public int cost;
+        public readonly List<string> items = new List<string>();
     }
 
     public sealed class StarPullResult
     {
         public string itemId, rarity;
-        public bool byPity, duplicate, gear;
+        public bool byPity, duplicate, gear, hidden;
         public int refund;
         /// <summary>[CASH] A sealed-box reward (a bag item with a count; boosted = the 2x booster open).</summary>
         public bool cash, boosted;
@@ -32,6 +43,31 @@ namespace DotRPG
         public static int Pity { get; private set; }
         /// <summary>The skin banner's own pity count.</summary>
         public static int SkinPity { get; private set; }
+        /// <summary>[SKIN TIERS] The Hidden gauge: every skin draw adds one, Hidden skins are picked with it.</summary>
+        public static int HiddenPity { get; private set; }
+        /// <summary>Gauge goals by gauge id ("aura", "skin", "hidden") for my class; empty goals are left out by the server.</summary>
+        public static readonly Dictionary<string, List<StarGaugeTarget>> Gauges = new Dictionary<string, List<StarGaugeTarget>>();
+        /// <summary>Retired cosmetics (server flag): owned ones stay, the draws never hand them out.</summary>
+        public static readonly HashSet<string> Retired = new HashSet<string>();
+        /// <summary>Dismantle value of one spare per cosmetic (stars, crystals) from the server.</summary>
+        public static readonly Dictionary<string, (int stars, int crystals)> DismantleOf = new Dictionary<string, (int, int)>();
+
+        public static int GaugeValue(string gauge) => gauge == "skin" ? SkinPity : gauge == "hidden" ? HiddenPity : Pity;
+        public static List<StarGaugeTarget> GaugeTargets(string gauge) => Gauges.TryGetValue(gauge, out var t) ? t : new List<StarGaugeTarget>();
+        /// <summary>The cheapest goal of a gauge (0 when it has none).</summary>
+        public static int GaugeMin(string gauge)
+        {
+            int min = 0;
+            foreach (var t in GaugeTargets(gauge)) if (min == 0 || t.cost < min) min = t.cost;
+            return min;
+        }
+        /// <summary>The dearest goal of a gauge (0 when it has none).</summary>
+        public static int GaugeMax(string gauge)
+        {
+            int max = 0;
+            foreach (var t in GaugeTargets(gauge)) max = System.Math.Max(max, t.cost);
+            return max;
+        }
         /// <summary>Skin banner rate table (its 유니크 tier = my class's skins).</summary>
         public static readonly List<StarRate> SkinRates = new List<StarRate>();
         public static int PityMax { get; private set; } = 50;
@@ -100,7 +136,7 @@ namespace DotRPG
                 foreach (var o in MiniJson.Arr(r.data, "results") ?? new List<object>())
                     results.Add(ReadPull(o as Dictionary<string, object>));
                 Balance = (long)MiniJson.Num(r.data, "balance", Balance);
-                if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity);
+                if (banner == "skin") { SkinPity = MiniJson.Int(r.data, "pity", SkinPity); HiddenPity = MiniJson.Int(r.data, "hidden_pity", HiddenPity); }
                 else if (banner == "aura") Pity = MiniJson.Int(r.data, "pity", Pity);
                 ReadGearCeiling(MiniJson.Obj(r.data, "gear_ceiling")); // [CEILING] gear draws only
                 foreach (var p in results) if (!p.gear) Owned.Add(p.itemId);
@@ -120,7 +156,9 @@ namespace DotRPG
             Api.PostIdempotent(Base + "/claim", body, r =>
             {
                 if (!r.ok) { done?.Invoke(false, string.IsNullOrEmpty(r.message) ? L.T("선택하지 못했습니다.") : r.message); return; }
-                if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity); else Pity = MiniJson.Int(r.data, "pity", Pity);
+                if (banner == "skin") SkinPity = MiniJson.Int(r.data, "pity", SkinPity);
+                else if (banner == "hidden") HiddenPity = MiniJson.Int(r.data, "pity", HiddenPity);
+                else Pity = MiniJson.Int(r.data, "pity", Pity);
                 Owned.Add(itemId);
                 Changed?.Invoke();
                 _ = Game.Cosmetics?.RefreshAsync();
@@ -166,6 +204,7 @@ namespace DotRPG
             itemId = MiniJson.Str(o, "item_id", ""),
             rarity = MiniJson.Str(o, "rarity", "common"),
             byPity = Flag(o, "by_pity"),
+            hidden = Flag(o, "hidden"),
             duplicate = Flag(o, "duplicate"),
             gear = Flag(o, "gear"),
             refund = MiniJson.Int(o, "refund"),
@@ -176,7 +215,11 @@ namespace DotRPG
             var rates = new List<StarRate>();
             foreach (var o in list ?? new List<object>())
             {
-                var r = new StarRate { rarity = MiniJson.Str(o, "rarity", ""), name = MiniJson.Str(o, "name", ""), rate = MiniJson.Num(o, "rate") };
+                var r = new StarRate
+                {
+                    rarity = MiniJson.Str(o, "rarity", ""), name = MiniJson.Str(o, "name", ""), rate = MiniJson.Num(o, "rate"),
+                    bonusRate = MiniJson.Num(o, "bonus_rate"), hidden = Flag(o as Dictionary<string, object>, "hidden"),
+                };
                 foreach (var i in MiniJson.Arr(o, "items") ?? new List<object>())
                     r.items.Add((MiniJson.Str(i, "id", ""), MiniJson.Str(i, "name", ""), MiniJson.Num(i, "rate"), gear));
                 rates.Add(r);
@@ -191,6 +234,21 @@ namespace DotRPG
             Balance = (long)MiniJson.Num(d, "balance");
             Pity = MiniJson.Int(d, "pity");
             SkinPity = MiniJson.Int(d, "skin_pity");
+            HiddenPity = MiniJson.Int(d, "hidden_pity");
+            Gauges.Clear();
+            var gauges = MiniJson.Obj(d, "gauges");
+            if (gauges != null)
+                foreach (var kv in gauges)
+                {
+                    var list = new List<StarGaugeTarget>();
+                    foreach (var t in MiniJson.Arr(MiniJson.Obj(gauges, kv.Key), "targets") ?? new List<object>())
+                    {
+                        var g = new StarGaugeTarget { rarity = MiniJson.Str(t, "rarity", ""), name = MiniJson.Str(t, "name", ""), hidden = Flag(t as Dictionary<string, object>, "hidden"), cost = MiniJson.Int(t, "cost") };
+                        foreach (var i in MiniJson.Arr(t, "items") ?? new List<object>()) g.items.Add(i as string ?? "");
+                        list.Add(g);
+                    }
+                    Gauges[kv.Key] = list;
+                }
             PityMax = MiniJson.Int(d, "pity_max", 50);
             AuraGaugeMax = MiniJson.Int(d, "aura_gauge_max", 50);
             SkinGaugeMax = MiniJson.Int(d, "skin_gauge_max", 100);
@@ -220,11 +278,15 @@ namespace DotRPG
             if (refund != null) foreach (var kv in refund) Refund[kv.Key] = MiniJson.Int(refund, kv.Key);
             Owned.Clear();
             ExchangePrice.Clear();
+            Retired.Clear();
+            DismantleOf.Clear();
             foreach (var o in MiniJson.Arr(d, "items") ?? new List<object>())
             {
                 string id = MiniJson.Str(o, "id", "");
                 if (Flag(o as Dictionary<string, object>, "owned")) Owned.Add(id);
+                if (Flag(o as Dictionary<string, object>, "retired")) Retired.Add(id);
                 ExchangePrice[id] = MiniJson.Int(o, "exchange_price");
+                DismantleOf[id] = (MiniJson.Int(o, "dismantle_stars"), MiniJson.Int(o, "dismantle_crystals"));
             }
             ReadSynth(d);
             ReadCrystal(d); // 0044: Star Crystals, exchange-only cosmetics, gear codex

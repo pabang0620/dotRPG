@@ -8,9 +8,8 @@ import { sealedTable, type SealedData } from '../../gamedata/sealedBox';
 import { UNIQUE_BONUS } from '../dungeons/dungeonRules';
 import { translate } from '../../utils/i18n';
 import {
-  BANNER_WEIGHT,
   EXCHANGE_GOOD_BY_ID,
-  GAUGE,
+  HIDDEN_NAME,
   GEAR_CEILING,
   GEAR_RARITY_NAME,
   GEAR_RARITY_PERMILLE,
@@ -19,6 +18,7 @@ import {
   RARITY_NAME,
   RATE_SCALE,
   RATES_VERSION,
+  STAR_COSMETICS,
   SYNTH,
   SYNTH_COUNT,
   TEN_COUNT,
@@ -26,10 +26,11 @@ import {
   type CosmeticBanner,
   type Rarity,
 } from '../starshop/starshopDefs';
-import { poolOf } from '../starshop/starshopService';
+import { gaugeView, rateTable } from '../starshop/starshopService';
 import type { PolicyLang } from './policyVersions';
 
 const pct = (v: number): string => `${v.toFixed(3)}%`;
+const STAR_NAME = new Map(STAR_COSMETICS.map((c) => [c.id, c.name] as const));
 
 interface ItemRow {
   id: string;
@@ -67,6 +68,7 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
   for (const it of readJson<{ items: ItemRow[] }>(dataDir, 'items.json')?.items ?? []) items.set(it.id, it);
   const itemName = (key: string): string => t(items.get(key)?.name ?? key);
   const rarity = (r: Rarity): string => (ko ? RARITY_NAME[r] : r[0]!.toUpperCase() + r.slice(1));
+  const slot = (r: Rarity, hidden: boolean): string => (hidden ? `${rarity(r)} ${ko ? HIDDEN_NAME : 'Hidden'}` : rarity(r));
   const gearRarity = (r: string): string => (ko ? (GEAR_RARITY_NAME[r] ?? r) : r);
   const out: string[] = [];
 
@@ -84,42 +86,54 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
       ? `가격: 1회 별조각 ${PULL_PRICE}개, ${TEN_COUNT}회 별조각 ${TEN_PRICE}개. ${TEN_COUNT}회 묶음의 마지막 1회(보너스)는 일반 등급이 나오지 않고 나머지 등급이 같은 비율로 커집니다(표의 보너스 열). 같은 등급 안에서는 아직 갖지 않은 외형이 같은 확률로 나오고, 그 등급을 모두 가졌으면 중복으로 나와 합성 재료가 됩니다. 아래 외형별 확률은 아무것도 갖지 않았을 때 기준입니다.`
       : `Price: 1 draw ${PULL_PRICE} Star Shards, ${TEN_COUNT} draws ${TEN_PRICE} Star Shards. The last draw of the ${TEN_COUNT}-pack (bonus) excludes the Common grade; the other grades grow in proportion (bonus columns). Within a grade, cosmetics you do not own yet share the grade's chance equally; once you own all of a grade, duplicates become synthesis materials. Per-item rates below assume you own nothing yet.`,
   );
-  const banners: { id: CosmeticBanner; ko: string; en: string; cls?: string }[] = [
-    { id: 'aura', ko: '오라 뽑기', en: 'Aura Draw' },
+  out.push(
+    ko
+      ? `등급마다 "히든"이 있습니다(같은 등급 안의 특별 디자인, 공격력 보너스가 한 단계 높음). 등급 확률은 그 등급 히든을 포함한 합이며, 히든 1종의 확률은 같은 등급 보통 1종의 1/5입니다(전설 히든은 0.006% 고정). 아직 히든이나 전설 외형이 없는 직업은 그 몫이 같은 등급 보통(등급 전체가 없으면 한 등급 아래 보통)으로 옮겨 가며, 아래 표는 옮긴 뒤의 실제 확률입니다.`
+      : `Every grade has "Hidden" cosmetics (special designs within the grade, one step higher attack bonus). A grade's rate includes its Hidden ones; one Hidden cosmetic has 1/5 the chance of one regular cosmetic of the same grade (Legend Hidden is fixed at 0.006%). For a class that has no Hidden or Legend cosmetic yet, that share moves to the regular ones of the same grade (or of the grade below when the whole grade is empty); the tables below show the actual rates after that move.`,
+  );
+  const banners: { id: CosmeticBanner; ko: string; en: string; cls: string }[] = [
+    { id: 'aura', ko: '오라 뽑기', en: 'Aura Draw', cls: 'warrior' },
     { id: 'skin', ko: '스킨 뽑기 (전사)', en: 'Skin Draw (Warrior)', cls: 'warrior' },
     { id: 'skin', ko: '스킨 뽑기 (마법사)', en: 'Skin Draw (Mage)', cls: 'mage' },
     { id: 'skin', ko: '스킨 뽑기 (도적)', en: 'Skin Draw (Rogue)', cls: 'rogue' },
   ];
   for (const b of banners) {
     out.push(`### ${ko ? b.ko : b.en}`);
-    // 보너스 1회: 일반을 빼고 나머지 등급은 같은 비율(starshopService rollRarity)
-    const notCommon = RATE_SCALE - BANNER_WEIGHT[b.id].common;
+    // 보너스 1회: 일반(보통)을 빼고 나머지 칸은 같은 비율(starshopService rollSlot)
     out.push(
       ko
         ? '| 등급 | 등급 확률 | 보너스 1회 등급 확률 | 외형 | 외형별 확률 | 보너스 1회 외형별 확률 |'
         : '| Grade | Grade rate | Bonus-draw grade rate | Cosmetic | Per-item rate | Bonus-draw per-item rate |',
     );
     out.push('|---|---|---|---|---|---|');
-    for (const r of ['unique', 'epic', 'rare', 'common'] as Rarity[]) {
-      const w = BANNER_WEIGHT[b.id][r];
-      if (w <= 0) continue;
-      const tier = (w * 100) / RATE_SCALE;
-      const bonus = r === 'common' || notCommon <= 0 ? 0 : (w * 100) / notCommon;
-      const pool = poolOf(b.id, r, b.cls ?? 'warrior');
-      const n = Math.max(1, pool.length);
-      for (const c of pool) out.push(`| ${rarity(r)} | ${pct(tier)} | ${pct(bonus)} | ${t(c.name)} | ${pct(tier / n)} | ${pct(bonus / n)} |`);
+    const table = rateTable(b.id, b.cls);
+    for (const row of table) {
+      for (const it of row.items) {
+        const name = STAR_NAME.get(it.id) ?? it.id;
+        out.push(`| ${slot(row.rarity, row.hidden)} | ${pct(row.rate)} | ${pct(row.bonus_rate)} | ${t(name)} | ${pct(it.rate)} | ${pct(it.bonus_rate)} |`);
+      }
     }
-    const g = GAUGE[b.id];
-    out.push(
-      ko
-        ? `선택 게이지: 1회마다 1칸, ${g.max}칸이 차면 ${rarity(g.rarity)} 등급 외형 하나를 직접 고릅니다.`
-        : `Choice gauge: +1 per draw; at ${g.max} you pick one ${rarity(g.rarity)} cosmetic yourself.`,
-    );
+    const gauges = b.id === 'aura' ? (['aura'] as const) : (['skin', 'hidden'] as const);
+    for (const g of gauges) {
+      const view = gaugeView(g, b.cls, 0);
+      if (view.targets.length === 0) continue;
+      const list = view.targets.map((x) => (ko ? `${slot(x.rarity, x.hidden)} ${x.cost}칸` : `${slot(x.rarity, x.hidden)} ${x.cost}`)).join(', ');
+      const label = g === 'hidden' ? (ko ? '히든 게이지' : 'Hidden gauge') : ko ? '선택 게이지' : 'Choice gauge';
+      out.push(
+        ko
+          ? `${label}: 1회마다 1칸 찹니다. 칸이 차면 그 목표의 외형 하나를 직접 고르고 그만큼 칸이 줄며, 남은 칸은 이어집니다(${list}). 뽑기에서 자연히 나와도 칸은 줄지 않습니다.`
+          : `${label}: +1 per draw. When it reaches a target you pick one cosmetic of that target yourself and that many points are spent; the rest carries over (${list}). Natural drops never reduce it.`,
+      );
+    }
   }
 
   // ---- 외형 합성 ----
   out.push(ko ? '## 외형 합성' : '## Cosmetic Synthesis');
-  out.push(ko ? `같은 등급 여분 ${SYNTH_COUNT}개를 넣습니다. 실패하면 넣은 것 중 1개가 돌아옵니다.` : `Uses ${SYNTH_COUNT} spares of the same grade. On failure, 1 of them is returned.`);
+  out.push(
+    ko
+      ? `같은 등급 여분 ${SYNTH_COUNT}개를 넣습니다. 실패하면 넣은 것 중 1개가 돌아옵니다. 히든 여분은 재료로 쓰지 않으며, 결과에도 히든은 나오지 않습니다. 유니크 → 전설은 내 직업 스킨만 대상입니다.`
+      : `Uses ${SYNTH_COUNT} spares of the same grade. On failure, 1 of them is returned. Hidden spares are not used as materials and results are never Hidden. Unique to Legend uses skins of your class only.`,
+  );
   out.push(ko ? '| 재료 등급 | 결과 등급 | 성공 확률 | 확정 |' : '| Material grade | Result grade | Success rate | Guaranteed |');
   out.push('|---|---|---|---|');
   for (const [from, s] of Object.entries(SYNTH) as [Rarity, (typeof SYNTH)['common']][]) {

@@ -1,0 +1,69 @@
+# 사용자 확정 전사 스킨 목록(2026-10-24 2차 확정, 히든 개수는 사용자 선택이 기준). class|tier|hidden|id|name
+# 원본 그림: /tmp/claude-1000/-home-lee-project/be3e4762-e7a0-4854-87cb-d4a0e680cc4f/scratchpad/skin_new/warrior_v2/<등급>_<id>/ (id는 v2_ 뒤 부분), 기존 게임 스킨 id는 skin_ 접두
+warrior|legend|normal|v2_legend_solar|태양의 검황
+warrior|legend|hidden|v2_legend_skyqueen|천공의 발키리 여왕
+warrior|unique|normal|v2_unique_lion|황금 사자 기사
+warrior|unique|normal|v2_unique_phoenix|불사조 성기사
+warrior|unique|normal|v2_unique_frostqueen|서리 여기사
+warrior|unique|hidden|v2_unique_moonprincess|달의 기사공주
+warrior|unique|normal|v2_epic_sakurablade|벚꽃 검무사
+warrior|epic|normal|v2_unique_voidblade|심연의 검성
+warrior|epic|normal|v2_unique_thunderdragon|천둥 용기사
+warrior|epic|normal|v2_epic_snowblade|설화 검객
+warrior|epic|normal|v2_epic_obsidian|흑요 기사
+warrior|epic|normal|v2_epic_desert|사막 검무희
+warrior|epic|hidden|v2_epic_azuredancer|청룡 무희 검객
+warrior|epic|hidden|v2_epic_moonlit|월하 검희
+warrior|epic|normal|v2_rare_sunset|노을빛 그라데이션
+warrior|rare|normal|v2_rare_blackstraight|흑단 생머리
+warrior|rare|normal|v2_rare_silverbob|은발 단발
+warrior|rare|normal|v2_rare_auburnlow|적갈 낮은 묶음
+warrior|rare|normal|v2_rare_chestnutwave|밤색 웨이브
+warrior|rare|normal|v2_rare_navybun|남색 양갈래 똥머리
+warrior|rare|normal|v2_rare_redside|진홍 옆묶음
+warrior|rare|normal|v2_rare_lilachalf|라일락 반묶음
+warrior|rare|hidden|v2_rare_whitetwin|백발 낮은 트윈
+warrior|rare|normal|v2_rare_copperpony|구리빛 포니테일
+warrior|rare|normal|v2_rare_bluebraids|청발 양갈래 땋기
+warrior|rare|normal|v2_rare_blackbob|흑발 단발
+warrior|rare|normal|v2_rare_greybun|잿빛 올림머리
+warrior|rare|normal|v2_rare_pinklong|장밋빛 긴머리
+warrior|rare|normal|v2_rare_purpleside|보랏빛 옆땋기
+warrior|rare|normal|v2_rare_brownshort|갈색 단발 땋기
+warrior|rare|normal|v2_rare_tealpony|청록 하이포니
+warrior|rare|normal|v2_rare_strawberry|딸기 금발 양묶음
+warrior|rare|normal|v2_rare_ravenlong|칠흑 긴 포니
+warrior|rare|hidden|v2_rare_starlight|별빛 은발
+warrior|rare|hidden|v2_rare_aurorahair|오로라 머리
+warrior|common|normal|v2_common_crimson|진홍 전투복
+warrior|common|hidden|v2_common_skyblue|하늘 전투복
+warrior|common|normal|v2_common_lavender|라벤더 전투복
+warrior|common|normal|v2_common_mustard|겨자 전투복
+warrior|common|normal|v2_common_teal|청록 전투복
+warrior|common|normal|v2_common_charcoal|먹빛 전투복
+warrior|common|normal|v2_common_mint|민트 전투복
+warrior|common|normal|v2_common_pumpkin|호박 전투복
+warrior|common|normal|v2_common_ivory|상아 전투복
+warrior|common|normal|v2_common_coral|산호 전투복
+warrior|common|normal|v2_common_plum|자두 전투복
+warrior|common|normal|v2_common_royal|왕청 전투복
+warrior|common|hidden|v2_common_scarletblack|흑적 전투복
+warrior|common|normal|v2_common_emerald|에메랄드 전투복
+warrior|common|normal|v2_common_slate|잿빛 전투복
+warrior|common|hidden|v2_common_turquoise|옥빛 전투복
+warrior|common|normal|v2_common_lemon|레몬 전투복
+warrior|common|normal|v2_common_sakura|벚꽃 전투복
+warrior|common|normal|v2_common_indigo|쪽빛 전투복
+warrior|common|normal|v2_common_moss|이끼 전투복
+warrior|common|normal|v2_common_steel|강철 전투복
+warrior|common|normal|v2_common_cherry|체리 전투복
+warrior|common|normal|v2_common_aqua|물빛 전투복
+warrior|common|normal|v2_common_chocomint|초코민트 전투복
+warrior|common|normal|v2_common_lilacwhite|라일락 전투복
+warrior|common|hidden|v2_common_navyred|남홍 전투복
+warrior|common|normal|v2_common_grape|포도 전투복
+warrior|common|normal|v2_common_stripe|줄무늬 전투복
+warrior|common|normal|v2_common_pajama|별무늬 잠옷
+warrior|common|normal|v2_common_starnight|별밤 자수 전투복
+warrior|common|hidden|v2_common_blossom|벚꽃 자수 전투복
+warrior|common|normal|v2_common_festival|축제 예복 전투복

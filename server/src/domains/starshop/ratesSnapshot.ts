@@ -3,12 +3,17 @@
 import type { Queryable } from '../../db/pool';
 import { hashRequest } from '../../db/idempotency';
 import {
-  BANNER_WEIGHT,
+  BANNER_ROWS,
   COLLECTIONS,
   DUPLICATE_REFUND,
   EPIC_SKIN_PRICE,
   EXCHANGE_PRICE,
-  GAUGE,
+  GAUGES,
+  HIDDEN_DISMANTLE_MULT,
+  LOW_SKIN_PRICE,
+  SKIN_DISMANTLE,
+  SKIN_DAMAGE,
+  SKIN_HIDDEN_DAMAGE,
   GEAR_BANNERS,
   GEAR_RARITY_PERMILLE,
   GEAR_RATE_SCALE,
@@ -21,7 +26,7 @@ import {
   TEN_COUNT,
   TEN_PRICE,
 } from './starshopDefs';
-import { gearTable } from './starshopService';
+import { gearTable, slotTable } from './starshopService';
 import { CHAPTER2_TIER_COUNT } from '../../utils/gearTier';
 import { CHARACTER_CLASSES } from '../../utils/characterClass';
 
@@ -38,17 +43,23 @@ export function buildRatesContent(): Record<string, unknown> {
       }
     }
   }
+  // 직업별 실제 스킨 칸 표(빈 칸의 몫이 옮겨 간 뒤)
+  const skinSlots: Record<string, unknown> = {};
+  for (const cls of classes) skinSlots[cls] = slotTable('skin', cls).map((r) => ({ rarity: r.rarity, hidden: r.hidden, weight: r.weight, items: r.items.map((c) => c.id) }));
   return {
     version: RATES_VERSION,
     rate_scale: RATE_SCALE,
-    banner_weight: BANNER_WEIGHT,
-    gauge: GAUGE,
+    banner_rows: BANNER_ROWS,
+    skin_slots: skinSlots,
+    gauges: GAUGES,
+    skin_dismantle: { ...SKIN_DISMANTLE, hidden_mult: HIDDEN_DISMANTLE_MULT },
+    skin_damage: { normal: SKIN_DAMAGE, hidden: SKIN_HIDDEN_DAMAGE },
     price: { one: PULL_PRICE, ten: TEN_PRICE, ten_count: TEN_COUNT },
     duplicate_refund: DUPLICATE_REFUND,
     synth: { count: SYNTH_COUNT, rules: SYNTH },
-    exchange: { price: EXCHANGE_PRICE, epic_skin: EPIC_SKIN_PRICE },
+    exchange: { price: EXCHANGE_PRICE, epic_skin: EPIC_SKIN_PRICE, low_skin: LOW_SKIN_PRICE },
     gear_rarity: { scale: GEAR_RATE_SCALE, permille: GEAR_RARITY_PERMILLE },
-    cosmetics: GACHA_COSMETICS.map((c) => ({ id: c.id, rarity: c.rarity, skin: c.skin ?? null })),
+    cosmetics: GACHA_COSMETICS.map((c) => ({ id: c.id, rarity: c.rarity, skin: c.skin ?? null, hidden: c.hidden === true })),
     collections: COLLECTIONS,
     gear,
   };

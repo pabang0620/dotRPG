@@ -233,19 +233,22 @@ describe('장비: 단검·판금·각반은 도적, 로브는 거부', () => {
   });
 });
 
-describe('도적 스킨 33종(6.1절)', () => {
+describe('도적 스킨(2026-10-24 최종 67종, 6.1절 개편)', () => {
   const rogueSkins = STAR_COSMETICS.filter((c) => c.skin === 'rogue');
+  const live = rogueSkins.filter((c) => !c.retired && !c.exchangeOnly);
 
-  it('구성: 일반 10, 희귀 10, 에픽 7 + 교환 전용 1, 유니크 5, id는 skin_r_ 접두', () => {
-    expect(rogueSkins).toHaveLength(33);
-    const count = (r: string, ex = false) => rogueSkins.filter((c) => c.rarity === r && !!c.exchangeOnly === ex).length;
-    expect([count('common'), count('rare'), count('epic'), count('epic', true), count('unique')]).toEqual([10, 10, 7, 1, 5]);
+  it('구성: 뽑기 풀 67종(히든 12) + 교환 전용 1, 예전 17종은 retired, id는 skin_r_ 접두', () => {
+    expect(live).toHaveLength(67);
+    expect(live.filter((c) => c.hidden)).toHaveLength(12);
+    expect(rogueSkins.filter((c) => c.retired)).toHaveLength(17);
+    expect(rogueSkins.filter((c) => c.exchangeOnly)).toHaveLength(1);
     expect(rogueSkins.every((c) => c.id.startsWith('skin_r_'))).toBe(true);
-    expect(rogueSkins.find((c) => c.id === 'skin_r_navy')?.name).toBe('남색 밀정복');
-    expect(rogueSkins.find((c) => c.id === 'skin_r_scorpion')).toMatchObject({ name: '황금 전갈', rarity: 'unique' });
+    expect(rogueSkins.find((c) => c.id === 'skin_r_navy')?.name).toBe('남색 정찰복');
+    expect(rogueSkins.find((c) => c.id === 'skin_r_scorpion')).toMatchObject({ name: '황금 전갈', rarity: 'unique', retired: true });
+    expect(rogueSkins.find((c) => c.id === 'skin_r_aurora')).toMatchObject({ rarity: 'legend', hidden: true });
     expect(new Set(STAR_COSMETICS.map((c) => c.id)).size).toBe(STAR_COSMETICS.length);
     expect(GACHA_COSMETICS.some((c) => c.id === 'skin_r_starshade')).toBe(false);
-    for (const r of ['common', 'rare', 'epic', 'unique'] as const) expect(poolOf('skin', r, 'rogue').every((c) => c.skin === 'rogue')).toBe(true);
+    for (const r of ['common', 'rare', 'epic', 'unique', 'legend'] as const) expect(poolOf('skin', r, 'rogue').every((c) => c.skin === 'rogue')).toBe(true);
   });
 
   it('뽑기: 도적 스킨 뽑기 10+1은 모두 도적 스킨이고 별조각이 줄어든다', async () => {
@@ -261,14 +264,16 @@ describe('도적 스킨 33종(6.1절)', () => {
     expect(poor.body.errors.code).toBe('NOT_ENOUGH_STARS');
   });
 
-  it('선택 게이지: 도적은 도적 유니크 스킨만 고른다', async () => {
+  it('선택 게이지: 도적은 도적 유니크 스킨(히든 제외)만 고른다', async () => {
     const { hero, accountId } = await rogueOfPayer();
     await getPool().query('INSERT INTO star_wallets (account_id, skin_pity) VALUES ($1, $2) ON CONFLICT (account_id) DO UPDATE SET skin_pity = $2', [accountId, SKIN_GAUGE_MAX]);
     const wrong = await post(app, hero, '/starshop/claim', { banner: 'skin', item_id: 'skin_w_phoenix' });
     expect(wrong.body.errors.code).toBe('CLAIM_NOT_ALLOWED');
-    const ok = await post(app, hero, '/starshop/claim', { banner: 'skin', item_id: 'skin_r_nightqueen' });
+    const hidden = await post(app, hero, '/starshop/claim', { banner: 'skin', item_id: 'skin_r_nightqueen' });
+    expect(hidden.body.errors.code).toBe('CLAIM_NOT_ALLOWED');
+    const ok = await post(app, hero, '/starshop/claim', { banner: 'skin', item_id: 'skin_r_lotus' });
     expect(ok.status).toBe(200);
-    expect(ok.body.data.item_id).toBe('skin_r_nightqueen');
+    expect(ok.body.data.item_id).toBe('skin_r_lotus');
   });
 
   it('교환: 별빛 교환소 전용 에픽 별빛 그림자(결정 900)', async () => {
@@ -291,11 +296,11 @@ describe('도적 스킨 33종(6.1절)', () => {
     const s = await get(app, hero, '/starshop');
     expect(s.status).toBe(200);
     const items = (s.body.data.skin_rates as { items: { id: string }[] }[]).flatMap((t) => t.items.map((i) => i.id));
-    expect(items.length).toBe(32);
+    expect(items.length).toBe(67);
     expect(items.every((id) => id.startsWith('skin_r_'))).toBe(true);
     const ko = buildRatesMarkdown(getConfig().gameDataDir, 'ko');
     expect(ko).toContain('스킨 뽑기 (도적)');
-    expect(ko).toContain('칠흑의 그림자 여왕');
+    expect(ko).toContain('고딕 트윈테일');
     expect(buildRatesMarkdown(getConfig().gameDataDir, 'en')).toContain('Skin Draw (Rogue)');
   });
 });

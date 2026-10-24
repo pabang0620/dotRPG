@@ -1,0 +1,69 @@
+# 사용자 확정 마법사 스킨 목록(2026-10-24 최종). class|tier|hidden|id|name
+# 원본 그림: /tmp/claude-1000/-home-lee-project/be3e4762-e7a0-4854-87cb-d4a0e680cc4f/scratchpad/skin_new/mage/ (후보는 _cand/, _cand2/), 기존 게임 스킨 id는 skin_ 접두. 머리 크기 맞춤본은 각 폴더 fixed/
+mage|legend|hidden|u7_m_gumiho|구미호 여우 마녀
+mage|legend|normal|l5_m_pharaoh|태양의 파라오 여왕
+mage|unique|normal|u11_m_vampire|뱀파이어 장미 백작
+mage|unique|normal|skin_starnight|성야의 마녀
+mage|unique|hidden|e6_m_rainbowcloud|무지개 구름 마녀
+mage|unique|normal|c30_m_bee|꿀벌 드레스
+mage|unique|normal|c28_m_healer|치유사 가운
+mage|epic|hidden|c26_m_pirate|해적 마녀복
+mage|epic|normal|c23_m_snowman|눈사람 코트
+mage|epic|normal|c18_m_alchemist|연금술사 가운
+mage|epic|normal|c24_m_hanbok|마녀 한복
+mage|epic|normal|c19_m_painter|화가 마녀복
+mage|epic|normal|c29_m_sport|운동 마녀복
+mage|epic|normal|skin_m_lavender|라벤더 후드 로브
+mage|epic|hidden|u21_m_maid|홍차 메이드 마녀
+mage|rare|normal|skin_m_sky|하늘빛 마녀
+mage|rare|normal|skin_m_cherry|벚꽃 마녀
+mage|rare|normal|skin_m_mint|민트 마녀
+mage|rare|normal|skin_m_amber|호박빛 마녀
+mage|rare|normal|skin_m_ocean|바다 마녀
+mage|rare|normal|skin_m_lilac|라일락 마녀
+mage|rare|normal|skin_m_candy|사탕 마녀
+mage|rare|normal|skin_m_student|마법학교 교복
+mage|rare|normal|skin_m_autumn|가을 낙엽 로브
+mage|rare|hidden|05_m_goldtwin|금발 양갈래 마녀
+mage|rare|normal|r11_m_rose|장미 쌍올림
+mage|rare|normal|r12_m_mint|민트 옆땋음
+mage|rare|normal|r13_m_copper|구리빛 픽시컷
+mage|rare|normal|r14_m_dusk|황혼 긴 웨이브
+mage|rare|normal|r15_m_ink|먹빛 낮은 포니
+mage|rare|hidden|r16_m_teal|청록 낮은 양갈래
+mage|rare|normal|r17_m_pearl|진주 곱슬 단발
+mage|rare|normal|r18_m_chestnut|밤빛 땋은 양갈래
+mage|rare|normal|r20_m_cobalt|코발트 높은 포니
+mage|rare|hidden|rh1_aurorahair|오로라 그라데이션 마녀
+mage|common|hidden|skin_m_snowcloak|눈송이 망토
+mage|common|hidden|16_m_starcandy|별사탕 축제 드레스
+mage|common|normal|c41_crimson|진홍 로브
+mage|common|normal|c42_forest|숲빛 로브
+mage|common|normal|c43_skyblue|하늘 로브
+mage|common|normal|c44_lavender|연보라 로브
+mage|common|normal|c45_mustard|겨자 로브
+mage|common|normal|c46_teal|청록 로브
+mage|common|normal|c47_rosepink|장미 로브
+mage|common|normal|c48_charcoal|잿빛 로브
+mage|common|normal|c49_cocoa|코코아 로브
+mage|common|normal|c50_wine|와인 로브
+mage|common|normal|c51_mintgreen|민트 로브
+mage|common|normal|c52_pumpkin|단호박 로브
+mage|common|normal|c53_ivory|상아 로브
+mage|common|normal|c54_coral|산호 로브
+mage|common|normal|c55_plum|자두 로브
+mage|common|normal|c56_olive|올리브 로브
+mage|common|normal|c57_seastripe|바다 줄무늬 로브
+mage|common|normal|c58_polka|물방울 로브
+mage|common|normal|c59_starnavy|별무늬 로브
+mage|common|normal|c60_moonpurple|달무늬 로브
+mage|common|normal|c61_checker|체크 로브
+mage|common|normal|c62_leafpattern|잎무늬 로브
+mage|common|hidden|c63_snowflake|눈꽃무늬 로브
+mage|common|normal|c64_flowerpattern|꽃무늬 로브
+mage|common|normal|c65_greystripe|회청 줄무늬 로브
+mage|common|normal|c66_twotone|투톤 로브
+mage|common|normal|c67_cherryhat|체리 로브
+mage|common|normal|c68_umber|황토 로브
+mage|common|hidden|ch1_pajama|구름 별 잠옷 로브
+mage|common|hidden|ch2_xmastree|크리스마스 트리 로브

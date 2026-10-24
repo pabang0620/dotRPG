@@ -53,7 +53,7 @@ namespace DotRPG
         }
 
         /// <summary>The announced results: 유니크 (aura / skin) or Unique / Legendary equipment.</summary>
-        static bool IsTop(StarPullResult r) => r.rarity == "unique" || r.rarity == "legendary";
+        static bool IsTop(StarPullResult r) => r.rarity == "unique" || r.rarity == "legend" || r.rarity == "legendary" || (!r.gear && !r.cash && r.hidden && r.rarity == "epic");
         /// <summary>An 에픽 aura or skin: its own purple reveal (에픽 equipment is common enough to stay blue).</summary>
         static bool IsEpic(StarPullResult r) => !r.gear && r.rarity == "epic";
         static bool IsGood(StarPullResult r) => r.rarity == "rare" || r.rarity == "epic";
@@ -97,11 +97,13 @@ namespace DotRPG
             if (IsTop(r))
             {
                 flashAt = punchAt = Time.unscaledTime;
-                flashColor = new Color(1f, .85f, .45f);
-                Burst(cell, new Color(1f, .82f, .35f), 26);
+                bool legend = r.rarity == "legend";
+                flashColor = legend ? new Color(1f, .45f, .4f) : new Color(1f, .85f, .45f);
+                Burst(cell, legend ? new Color(1f, .5f, .42f) : new Color(1f, .82f, .35f), legend ? 40 : 26);
                 Game.Audio.PlaySfx("quest");
                 Game.Camera?.Shake(0.14f, 0.3f);
-                string grade = r.rarity == "legendary" ? L.T("레전더리") : L.T("유니크");
+                string grade = r.rarity == "legendary" ? L.T("레전더리") : r.rarity == "legend" ? L.T("전설") : r.rarity == "epic" ? L.T("에픽") : L.T("유니크");
+                if (r.hidden) grade = L.F("{0} 히든", grade);
                 GameEvents.RaiseToast($"<color=#ffb347>{grade}!</color> {NameOf(r)}" + (r.duplicate ? "" : L.T(" 획득")));
             }
             else if (IsEpic(r))
@@ -112,6 +114,12 @@ namespace DotRPG
                 Game.Audio.PlaySfx("quest");
                 Game.Camera?.Shake(0.08f, 0.25f);
                 GameEvents.RaiseToast(L.F("<color=#c58cff>에픽!</color> {0}", NameOf(r)) + (r.duplicate ? "" : L.T(" 획득")));
+            }
+            else if (r.hidden && !r.gear && !r.cash)
+            {
+                Burst(cell, new Color(1f, .89f, .48f), 16);
+                Game.Audio.PlaySfx("quest");
+                GameEvents.RaiseToast(L.F("<color=#ffe27a>히든!</color> {0}", NameOf(r)) + (r.duplicate ? "" : L.T(" 획득")));
             }
             else if (IsGood(r)) { Burst(cell, new Color(.5f, .7f, 1f), 12); Game.Audio.PlaySfx("confirm"); }
             else Game.Audio.PlaySfx("select");
@@ -200,7 +208,7 @@ namespace DotRPG
         }
 
         static string GradeHex(string r) =>
-            r == "legendary" ? "#ff8c3a" : r == "unique" ? "#ffb347" : r == "epic" ? "#c58cff" : r == "rare" ? "#9fc4ff" : r == "uncommon" ? "#8fe28f" : "#cfd6e2";
+            r == "legendary" ? "#ff8c3a" : r == "legend" ? "#ff6b5e" : r == "unique" ? "#ffb347" : r == "epic" ? "#c58cff" : r == "rare" ? "#9fc4ff" : r == "uncommon" ? "#8fe28f" : "#cfd6e2";
 
         void DrawCells()
         {
@@ -250,8 +258,8 @@ namespace DotRPG
                     c.icon.sprite = card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p));
                     c.icon.color = card != null || look != null ? Color.white : p != null ? p.Color : Color.white;
                     c.name.text = $"<color={hex}>{NameOf(r)}</color>";
-                    c.note.text = r.duplicate ? L.T("<color=#b8c4d8>여분 +1</color>")
-                        : r.byPity ? L.T("<color=#ffd34a>선택 · NEW</color>") : "<color=#8fe28f>NEW</color>";
+                    c.note.text = (r.hidden ? L.T("<color=#ffe27a><b>히든</b></color> ") : "") + (r.duplicate ? L.T("<color=#b8c4d8>여분 +1</color>")
+                        : r.byPity ? L.T("<color=#ffd34a>선택 · NEW</color>") : "<color=#8fe28f>NEW</color>");
                 }
             }
         }

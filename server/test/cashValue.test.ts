@@ -3,14 +3,14 @@ import { randomUUID } from 'node:crypto';
 import { getPool, withTransaction } from '../src/db/pool';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 import { creditCrystals } from '../src/domains/starshop/crystalWallet';
-import { poolOf } from '../src/domains/starshop/starshopService';
+import { poolOf, slotTable } from '../src/domains/starshop/starshopService';
 import {
-  BANNER_WEIGHT,
-  DISMANTLE_CRYSTALS,
-  DISMANTLE_STARS,
   PULL_PRICE,
+  RARITIES,
+  RATE_SCALE,
   STAR_COSMETICS,
-  type Rarity,
+  dismantleCrystalsOf,
+  dismantleStarsOf,
 } from '../src/domains/starshop/starshopDefs';
 import { get, post, seedItem } from './economyHelpers';
 import { resetDb, shutdown } from './helpers';
@@ -132,21 +132,32 @@ describe('0044 캐시 아이템 가치', () => {
     expect(denied.body.errors.code).toBe('CRYSTAL_DEBT');
   });
 
-  it('5. 외형 뽑기 1회를 모두 분해하면 별조각 기준 40% 이상 남는다(결정 1 = 별조각 2)', () => {
+  it('5. 외형 뽑기 1회를 모두 분해하면 별조각 기준 40% 이상 남는다(결정 1 = 별조각 2, 직업별 실제 칸 표)', () => {
     for (const banner of ['aura', 'skin'] as const) {
-      const w = BANNER_WEIGHT[banner];
-      const total = Object.values(w).reduce((a, n) => a + n, 0);
-      const value = (Object.keys(w) as Rarity[]).reduce((a, r) => a + (w[r] / total) * (DISMANTLE_STARS[r] + 2 * DISMANTLE_CRYSTALS[r]), 0);
-      expect(value / PULL_PRICE).toBeGreaterThanOrEqual(0.4);
+      for (const cls of ['warrior', 'mage', 'rogue']) {
+        let value = 0;
+        for (const row of slotTable(banner, cls)) {
+          for (const c of row.items) value += (row.weight / RATE_SCALE / row.items.length) * (dismantleStarsOf(c) + 2 * dismantleCrystalsOf(c));
+        }
+        expect({ banner, cls, ok: value / PULL_PRICE >= 0.4 }).toEqual({ banner, cls, ok: true });
+      }
     }
   });
 
-  it('6. 교환소 전용 외형은 뽑기·합성 풀에 없다', () => {
+  it('6. 교환소 전용·retired 외형은 뽑기·합성 풀에 없다', () => {
     const only = STAR_COSMETICS.filter((c) => c.exchangeOnly).map((c) => c.id);
+    const retired = STAR_COSMETICS.filter((c) => c.retired).map((c) => c.id);
     expect(only.length).toBe(5); // 2026-10-23 도적 별빛 그림자 추가
-    for (const r of ['common', 'rare', 'epic', 'unique'] as Rarity[]) {
+    for (const r of RARITIES) {
       for (const cls of ['warrior', 'mage', 'rogue']) {
-        for (const b of ['aura', 'skin'] as const) for (const c of poolOf(b, r, cls)) expect(only).not.toContain(c.id);
+        for (const b of ['aura', 'skin'] as const) {
+          for (const hidden of [false, true]) {
+            for (const c of poolOf(b, r, cls, hidden)) {
+              expect(only).not.toContain(c.id);
+              expect(retired).not.toContain(c.id);
+            }
+          }
+        }
       }
     }
     void randomUUID;

@@ -18,7 +18,7 @@ namespace DotRPG
         public readonly List<string> members = new List<string>();
         public readonly List<string> requires = new List<string>();
         public int attack, health;
-        public bool registered;
+        public bool registered, hidden;
     }
 
     public sealed class StarSynthResult
@@ -45,20 +45,20 @@ namespace DotRPG
 
         public static int CopiesOf(string id) => Copies.TryGetValue(id, out int n) ? n : 0;
 
-        /// <summary>Spares of one grade, all cosmetics together (synthesis takes any 4 of them).</summary>
+        /// <summary>Spares of one grade that synthesis can use (any 4 of them; Hidden spares are never materials).</summary>
         public static int SparesOf(string rarity)
         {
             int n = 0;
             foreach (var kv in Copies)
             {
                 var p = CosmeticCatalog.Find(kv.Key);
-                if (p != null && RarityKey(p.Rarity) == rarity) n += kv.Value;
+                if (p != null && !p.Hidden && RarityKey(p.Rarity) == rarity) n += kv.Value;
             }
             return n;
         }
 
         public static string RarityKey(CosmeticRarity r) =>
-            r == CosmeticRarity.Unique ? "unique" : r == CosmeticRarity.Epic ? "epic" : r == CosmeticRarity.Rare ? "rare" : "common";
+            r == CosmeticRarity.Legend ? "legend" : r == CosmeticRarity.Unique ? "unique" : r == CosmeticRarity.Epic ? "epic" : r == CosmeticRarity.Rare ? "rare" : "common";
 
         static void ReadSynth(Dictionary<string, object> d)
         {
@@ -87,6 +87,7 @@ namespace DotRPG
                     id = MiniJson.Str(o, "id", ""), name = MiniJson.Str(o, "name", ""),
                     attack = MiniJson.Int(o, "attack"), health = MiniJson.Int(o, "health"),
                     registered = Flag(o as Dictionary<string, object>, "registered"),
+                    hidden = Flag(o as Dictionary<string, object>, "hidden"),
                 };
                 foreach (var m in MiniJson.Arr(o, "members") ?? new List<object>()) c.members.Add(m as string ?? "");
                 foreach (var m in MiniJson.Arr(o, "requires") ?? new List<object>()) c.requires.Add(m as string ?? "");

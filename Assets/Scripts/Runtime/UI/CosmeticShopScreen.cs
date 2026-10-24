@@ -124,10 +124,22 @@ namespace DotRPG
         static Tab TabOf(CosmeticProduct p) => !p.IsSkin ? Tab.Aura : TabOf(p.Skin.cls);
         static Tab TabOf(CharacterClass cls) => cls == CharacterClass.Mage ? Tab.MageSkin : cls == CharacterClass.Rogue ? Tab.RogueSkin : Tab.WarriorSkin;
 
+        /// <summary>
+        /// The rows of the tab. Skins go top grade first (a Hidden one before the regular ones of its grade); retired skins
+        /// show only to their owners.
+        /// </summary>
         List<Row> Visible()
         {
             var v = new List<Row>();
-            foreach (var r in rows) if (TabOf(r.product) == tab) v.Add(r);
+            foreach (var r in rows)
+                if (TabOf(r.product) == tab && (!r.product.Retired || store.Owns(r.product.Id))) v.Add(r);
+            if (tab != Tab.Aura)
+            {
+                var order = new Dictionary<Row, int>();
+                for (int i = 0; i < v.Count; i++) order[v[i]] = i;
+                v.Sort((a, b) => a.product.Rarity != b.product.Rarity ? b.product.Rarity.CompareTo(a.product.Rarity)
+                    : a.product.Hidden != b.product.Hidden ? (a.product.Hidden ? -1 : 1) : order[a].CompareTo(order[b]));
+            }
             return v;
         }
 
@@ -137,11 +149,10 @@ namespace DotRPG
             selected = 0;
             restoreFocused = false;
             float y = 0f;
-            foreach (var r in rows)
+            foreach (var r in rows) r.rt.gameObject.SetActive(false);
+            foreach (var r in Visible())
             {
-                bool on = TabOf(r.product) == tab;
-                r.rt.gameObject.SetActive(on);
-                if (!on) continue;
+                r.rt.gameObject.SetActive(true);
                 UIFactory.Place(r.rt, TopLeft, TopLeft, new Vector2(0f, -y), new Vector2(listContent.sizeDelta.x, RowH - 6f));
                 y += RowH;
             }
@@ -182,7 +193,7 @@ namespace DotRPG
             {
                 var item = v[i].product;
                 string state = Wearing(item) ? L.T("<color=#8fe28f>장착 중</color>") : store.Owns(item.Id) ? L.T("보유") : L.T("<color=#8c96a8>미보유</color>");
-                string grade = $"<color={CosmeticCatalog.RarityHex(item.Rarity)}>" + (item.IsSkin ? L.F("{0} 스킨", L.T(CosmeticCatalog.RarityName(item.Rarity))) : L.T(CosmeticCatalog.RarityName(item.Rarity))) + "</color>";
+                string grade = $"<color={(item.Hidden ? CosmeticCatalog.HiddenHex : CosmeticCatalog.RarityHex(item.Rarity))}>" + (item.IsSkin ? L.F("{0} 스킨", item.GradeName) : L.T(CosmeticCatalog.RarityName(item.Rarity))) + "</color>";
                 string dmg = item.DamagePercent > 0 ? " · " + L.F("<color=#ffb347>공격력 +{0}%</color>", item.DamagePercent) : "";
                 v[i].label.text = $"<b>{L.T(item.Name)}</b>\n<size=16>{grade}{dmg} · {state}</size>";
                 v[i].label.color = i == selected && !restoreFocused ? UiTheme.Accent : UiTheme.TextPrimary;
@@ -196,7 +207,7 @@ namespace DotRPG
             var aura = skin != null ? store.Equipped : product;
             previewAura.sprite = CosmeticAura.ForProduct(aura);
             previewAura.color = aura.Color;
-            previewGlow.color = product.Rarity == CosmeticRarity.Unique ? new Color(1f, .78f, .3f, .35f) : product.Rarity == CosmeticRarity.Epic ? new Color(.75f, .5f, 1f, .3f) : product.Rarity == CosmeticRarity.Rare ? new Color(.45f, .65f, 1f, .25f) : new Color(1f, 1f, 1f, .08f);
+            previewGlow.color = product.Rarity == CosmeticRarity.Legend ? new Color(1f, .42f, .36f, .4f) : product.Rarity == CosmeticRarity.Unique ? new Color(1f, .78f, .3f, .35f) : product.Rarity == CosmeticRarity.Epic ? new Color(.75f, .5f, 1f, .3f) : product.Rarity == CosmeticRarity.Rare ? new Color(.45f, .65f, 1f, .25f) : new Color(1f, 1f, 1f, .08f);
             if (skin == null)
             {
                 var animator = Game.Player != null ? Game.Player.GetComponent<CharacterAnimator>() : null;
@@ -207,10 +218,10 @@ namespace DotRPG
             // The price is on the buy button; here only what it is (kept short so it never runs under the button).
             string have = product.IsFree ? L.T("무료") : owned ? L.T("<color=#8fe28f>보유 중</color>") : store.IsAvailable ? "" : L.T("<color=#8c96a8>온라인 전용</color>");
             description.text = skin != null
-                ? L.F("<color={0}>{1} 스킨</color> · {2} 전용 · 영구 소장", CosmeticCatalog.RarityHex(product.Rarity), L.T(CosmeticCatalog.RarityName(product.Rarity)), L.T(CharacterClassInfo.Get(skin.cls).displayName)) + "\n" + L.T(skin.blurb) + "\n" + (skin.trail == SkinTrailKind.None ? L.T("<color=#b8c4d8>8방향 모든 동작 전용 그림</color>") : L.F("<color=#b8c4d8>8방향 모든 동작 전용 그림 · {0}</color>", skin.afterimage ? L.T("걸으면 잔상과 입자") : L.T("주위에 빛 입자"))) + "\n" + have
+                ? L.F("<color={0}>{1} 스킨</color> · {2} 전용 · 영구 소장", product.Hidden ? CosmeticCatalog.HiddenHex : CosmeticCatalog.RarityHex(product.Rarity), product.GradeName, L.T(CharacterClassInfo.Get(skin.cls).displayName)) + "\n" + L.T(skin.blurb) + "\n" + (skin.trail == SkinTrailKind.None && !skin.afterimage ? L.T("<color=#b8c4d8>8방향 모든 동작 전용 그림</color>") : L.F("<color=#b8c4d8>8방향 모든 동작 전용 그림 · {0}</color>", skin.afterimage ? L.T("걸으면 잔상과 입자") : L.T("주위에 빛 입자"))) + "\n" + have
                 : L.F("{0} 등급 발밑 오라 · 영구 소장\n모든 직업 공용", product.IsFree ? L.T("기본") : L.T(CosmeticCatalog.RarityName(product.Rarity))) + "\n" + have;
             actionLabel.text = equipped ? (skin != null ? L.T("벗기") : L.T("장착 중")) : owned ? L.T("장착하기") : offer != null ? L.F("{0}로 구매", offer.LocalizedPrice)
-                : product.GaugeOnly && store.IsAvailable ? L.T("선택 게이지로만 획득") : product.ExchangeOnly && store.IsAvailable ? L.T("별빛 교환소에서 획득") : L.T("온라인 전용");
+                : product.Retired && store.IsAvailable ? L.T("더 이상 얻을 수 없음") : product.GaugeOnly && store.IsAvailable ? (product.Hidden ? L.T("히든 게이지·뽑기로 획득") : L.T("선택 게이지·뽑기로 획득")) : product.ExchangeOnly && store.IsAvailable ? L.T("별빛 교환소에서 획득") : L.T("온라인 전용");
             action.interactable = !store.IsBusy && (!equipped || skin != null) && (owned || (store.IsAvailable && !store.NeedsPurchaseRecovery && offer != null));
             restore.interactable = store.IsAvailable && !store.IsBusy;
             restoreLabel.text = (restoreFocused ? "▶ " : "") + L.T("보유 외형 다시 불러오기");
