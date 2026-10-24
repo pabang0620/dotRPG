@@ -55,6 +55,8 @@ namespace DotRPG
         public DungeonDifficulty CurrentDifficulty => run != null ? run.Difficulty : DungeonDifficulty.Normal;
         public int CurrentRoom => run != null ? run.RoomIndex : 0;
         public bool RoomIsReady => roomReady && !busy;
+        /// <summary>[MEASURE] Trace of the measure mode: room flags (DevCapture.Measure.cs).</summary>
+        public string DevRoomTrace => $"room {run?.RoomIndex}/{run?.RoomCount} ready={roomReady} busy={busy} cleared={roomCleared} door={(door == null ? "-" : door.IsOpen ? "open" : "shut")}";
         /// <summary>A member PC in a party run: the host decides rooms, clears and the end.</summary>
         public bool Follower => run != null && PartyNet.IsMember;
         static bool NetHost => PartyNet.IsHost;

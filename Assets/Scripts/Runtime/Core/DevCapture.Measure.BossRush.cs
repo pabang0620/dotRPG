@@ -21,8 +21,7 @@ namespace DotRPG
 
         IEnumerator MeasureBossRush(List<object> rows, float scale)
         {
-            var careerFilter = MeasureArg("-measureCareers", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var careers = MeasureCareers.Where(c => careerFilter.Length == 0 || careerFilter.Contains(c.ToString().ToLowerInvariant())).ToArray();
+            var careers = MeasureCareerList(MeasureCareers); // [MEASURE CH3] all six careers by name
             var sets = MeasureArg("-measureSets", "raid,clear").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             string[] mercs = { "merc_bron", "merc_kai", "merc_elin" };
             foreach (string set in sets)
@@ -37,7 +36,7 @@ namespace DotRPG
                         for (int i = 0; i < companions && i < mercs.Length; i++) party.AddCompanion(mercs[i]);
                         yield return Wait(.5f);
                         Game.Player.HealFull();
-                        var row = HRow(("set", set), ("career", MeasureCareerName(cls, career)), ("party", companions == 0 ? "solo" : "1+3ai"));
+                        var row = HRow(("set", set), ("career", MeasureCareerName(cls, career)), ("party", companions == 0 ? "solo" : "1+3ai"), ("level", BossRushCatalog.DefaultLevel));
                         yield return MeasureOneAttempt(scale, row);
                         rows.Add(row);
                         party.ClearCompanions();
@@ -47,12 +46,12 @@ namespace DotRPG
         /// <summary>The Lv40 "clear" set of theory_gold.py KIT (warrior ids; the mage wears the same grades and levels).</summary>
         void MeasureClearKit(CharacterClass cls)
         {
-            bool warrior = cls == CharacterClass.Warrior;
+            var (weapon, body, legs) = MeasureGearStems(cls); // [ROGUE] dagger + plate + greaves
             var bag = Game.Session.Inventory;
             foreach (var gear in new[]
             {
-                (warrior ? "eq_sword_" : "eq_staff_") + "40_e+11", (warrior ? "eq_plate_" : "eq_robe_") + "40_e+10",
-                (warrior ? "eq_greaves_" : "eq_skirt_") + "40_e+10", "eq_neck_40_r+8", "eq_ring_40_r+8",
+                weapon + "40_e+11", body + "40_e+10",
+                legs + "40_e+10", "eq_neck_40_r+8", "eq_ring_40_r+8",
             })
             {
                 if (bag.Count(gear) == 0) bag.Add(gear, 1);

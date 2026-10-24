@@ -67,6 +67,7 @@ namespace DotRPG
                 if (Time.unscaledTime < nextCheck) return;
                 nextCheck = Time.unscaledTime + 0.5f;
 
+                if (MeasureAnywhere) return; // [MEASURE] -dotrpgMeasure drives the hero itself (the chapter 1 start took over measured hunts)
                 if (Active || Game.MiniDungeon?.Active == true || Game.MiniDungeon?.Busy == true || BossRushDirector.InArena) return;
                 var p = Game.Player;
                 if (p == null || p.IsDead || Game.Session == null || Game.World == null || !Game.IsPlaying) return;

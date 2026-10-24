@@ -58,6 +58,7 @@ namespace DotRPG
             var raids = new List<object>();
             var bossrush = new List<object>();
             float started = Time.realtimeSinceStartup;
+            MeasureChapter3Open(); // [MEASURE CH3] -measureChapter3 1 (DevCapture.Measure.Ch3.cs)
             Log($"measure start: only={only} minutes={minutes} scale={scale} out={outPath}");
             if (only == "all" || only == "hunting") yield return MeasureHunting(hunting, minutes, scale);
             if (only == "all" || only == "dungeons") yield return MeasureDungeons(dungeons, scale);
@@ -66,7 +67,9 @@ namespace DotRPG
             Time.timeScale = 1f;
             Time.captureFramerate = 0;
             QuestAutoPilot.MeasureAnywhere = false;
-            var meta = HRow(("build", Application.version), ("timeScale", fast ? "fixed 1/30" : (object)scale), ("huntMinutes", minutes), ("only", only),
+            int levelCap = Progression.LevelCap;
+            MeasureChapter3Restore();
+            var meta = HRow(("build", Application.version), ("timeScale", fast ? "fixed 1/30" : (object)scale), ("huntMinutes", minutes), ("only", only), ("levelCap", levelCap),
                 ("measuredAt", DateTime.Now.ToString("s")), ("wallSeconds", Mathf.RoundToInt(Time.realtimeSinceStartup - started)),
                 ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 2.4-3.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled; -measureDodge 1 (default): 0.25 s late steps out of ground warnings, stands in its 낙인 circle, hides from 섬멸, hits gimmick totems first. Potions under 40% HP / 20% MP"));
             var root = HRow(("meta", meta), ("hunting", hunting), ("dungeons", dungeons), ("raids", raids), ("bossrush", bossrush));
@@ -78,7 +81,7 @@ namespace DotRPG
         // ---------------------------------------------------------------- hero setup
 
         static string MeasureCareerName(CharacterClass cls, Career career) =>
-            career != Career.None ? career.ToString().ToLowerInvariant() : (cls == CharacterClass.Mage ? "mage" : "warrior");
+            career != Career.None ? career.ToString().ToLowerInvariant() : cls == CharacterClass.Mage ? "mage" : cls == CharacterClass.Rogue ? "rogue" : "warrior";
 
         IEnumerator MeasureHero(CharacterClass cls, Career career, int level, string grade)
         {
@@ -93,7 +96,7 @@ namespace DotRPG
         void MeasureLevel(CharacterClass cls, Career career, int level, string grade)
         {
             var p = Game.Session.Progression;
-            level = Mathf.Clamp(level, 1, 40);
+            level = Mathf.Clamp(level, 1, Progression.LevelCap); // [MEASURE CH3] 50 with chapter 3 open
             if (level > p.Level) p.SetFromServer(level, 0);
             if (career != Career.None && level >= 15)
             {
@@ -112,15 +115,14 @@ namespace DotRPG
                 foreach (var s in skills)
                     if (k < keys.Length && s.kind == CareerSkillKind.Active && p.Rank(s.id) > 0 && p.EquipSkill(keys[k], s.id)) k++;
             }
-            int tier = 1;
-            foreach (int t in new[] { 1, 10, 15, 20, 25, 30, 35, 40 }) if (t <= level) tier = t;
-            bool warrior = cls == CharacterClass.Warrior;
+            int tier = MeasureGearTier(level); // [MEASURE CH3] Lv45 / Lv50 tiers too
+            var (weapon, body, legs) = MeasureGearStems(cls); // [ROGUE] dagger + plate + greaves
             var bag = Game.Session.Inventory;
             foreach (var gear in new[]
             {
-                (warrior ? "eq_sword_" : "eq_staff_") + tier + "_" + grade + "+5",
-                (warrior ? "eq_plate_" : "eq_robe_") + tier + "_" + grade,
-                (warrior ? "eq_greaves_" : "eq_skirt_") + tier + "_" + grade,
+                weapon + tier + "_" + grade + "+5",
+                body + tier + "_" + grade,
+                legs + tier + "_" + grade,
                 "eq_neck_" + tier + "_" + grade, "eq_ring_" + tier + "_" + grade,
             })
             {
@@ -133,55 +135,6 @@ namespace DotRPG
             if (bag.Count(mp) < 200) bag.Add(mp, 300);
             if (bag.Count(ConsumableDatabase.Gold) < 50000) bag.Add(ConsumableDatabase.Gold, 100000);
             Game.Player.HealFull();
-        }
-
-        /// <summary>Counters of one measured stretch (kills, XP, gold, drops, damage taken, potions, deaths).</summary>
-        sealed class MeasureTally
-        {
-            public int kills, gold, drops, potions, deaths, xp0;
-            public float damage;
-            PlayerController tracked;
-            readonly Inventory bag = Game.Session.Inventory;
-
-            public MeasureTally()
-            {
-                xp0 = TotalXp();
-                GameEvents.EnemyKilled += OnKill;
-                bag.Changed += OnBag;
-                Track();
-            }
-
-            void OnKill(string id) => kills++;
-
-            void OnBag(string id, int total, int delta)
-            {
-                bool potion = id == ConsumableDatabase.HpPotion || id == ConsumableDatabase.HpPotionHi || id == ConsumableDatabase.MpPotion || id == ConsumableDatabase.MpPotionHi;
-                if (potion) { if (delta < 0) potions -= delta; return; }
-                if (delta <= 0) return;
-                if (id == ConsumableDatabase.Gold) gold += delta;
-                else drops += delta;
-            }
-
-            void OnDamaged(DamageInfo info) => damage += info.amount;
-
-            /// <summary>Follows the hero's body (rebuilt on map and room changes).</summary>
-            public void Track()
-            {
-                var p = Game.Player;
-                if (p == tracked) return;
-                if (tracked != null && tracked.Health != null) tracked.Health.Damaged -= OnDamaged;
-                tracked = p;
-                if (p != null && p.Health != null) p.Health.Damaged += OnDamaged;
-            }
-
-            public int Xp => TotalXp() - xp0;
-
-            public void Close()
-            {
-                GameEvents.EnemyKilled -= OnKill;
-                bag.Changed -= OnBag;
-                if (tracked != null && tracked.Health != null) tracked.Health.Damaged -= OnDamaged;
-            }
         }
 
         static void MeasureEnsureHunting()
@@ -205,14 +158,15 @@ namespace DotRPG
             // One hero per class (before the career) or career, levelled up zone by zone (a new game per row is slow).
             // -measureZones a,b,c: only these hunting grounds (re-measuring a few with more minutes).
             var zoneFilter = MeasureArg("-measureZones", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var plans = new List<(CharacterClass cls, Career career)> { (CharacterClass.Warrior, Career.None), (CharacterClass.Mage, Career.None) };
-            plans.AddRange(MeasureCareers.Select(c => (CareerCatalog.Base(c), c)));
+            var plans = MeasureHuntPlans(); // [MEASURE CH3] -measureCareers also picks warrior / mage / rogue
+            // Chapter 3 grounds only with the chapter open (closed, the map does not load).
+            var zones = HuntingGrounds.All.Where(z => Chapter3.Enabled || !MapRegistry.Chapter3Maps.Contains(z.id)).OrderBy(z => z.monsterLevel).ToList();
             foreach (var (cls, career) in plans)
             {
                 bool made = false;
-                foreach (var zone in HuntingGrounds.All.OrderBy(z => z.monsterLevel))
+                foreach (var zone in zones)
                 {
-                    int lv = Mathf.Max(1, zone.monsterLevel);
+                    int lv = Mathf.Clamp(zone.monsterLevel, 1, Progression.LevelCap);
                     if ((career == Career.None) != (lv < 15)) continue;
                     if (zoneFilter.Length > 0 && System.Array.IndexOf(zoneFilter, zone.id) < 0) continue;
                     if (!made) { yield return MeasureHero(cls, career, lv, "r"); made = true; }
@@ -227,16 +181,33 @@ namespace DotRPG
                         Game.Player.HealFull();
                         var tally = new MeasureTally();
                         Time.timeScale = scale;
-                        float t0 = Time.time;
+                        float t0 = Time.time, nextHuntTrace = 30f;
+                        int strays = 0;
                         while (Time.time - t0 < minutes * 60f)
                         {
                             tally.Track();
+                            if (Time.time - t0 >= nextHuntTrace)
+                            {
+                                // [MEASURE CH3] Every 30 game seconds: what the driver does (a row with no kills shows why).
+                                nextHuntTrace += 30f;
+                                int near = EnemyController.Active.Count(e => e != null && !e.IsDead && e.isActiveAndEnabled);
+                                Log($"  t={Time.time - t0:0}s kills={tally.kills} enemies={near} map={Game.World?.MapId} hunting={QuestAutoPilot.Hunting} active={QuestAutoPilot.Active} auto='{QuestAutoPilot.Status}'");
+                            }
                             MeasureScale(scale);
                             var p = Game.Player;
                             if (p != null && p.IsDead)
                             {
                                 tally.deaths++;
                                 p.Revive(1f, 2f);
+                            }
+                            // [MEASURE CH3] The hunt walked off the ground (the 메마른 협곡 grounds open onto 사얍): back in, as a player would.
+                            if (Game.World != null && Game.World.MapId != zone.id && !Game.Flow.IsTransitioning && p != null && !p.IsDead)
+                            {
+                                strays++;
+                                QuestAutoPilot.Stop("");
+                                Game.Flow.TravelTo(zone.id, true);
+                                yield return null;
+                                continue;
                             }
                             MeasureEnsureHunting();
                             yield return null;
@@ -251,7 +222,7 @@ namespace DotRPG
                             ("driver", driver), ("minutes", R2(mins)),
                             ("kills_per_min", R2(tally.kills / mins)), ("xp_per_min", R1(tally.Xp / mins)), ("gold_per_min", R1(tally.gold / mins)),
                             ("drops_per_min", R2(tally.drops / mins)), ("damage_taken_per_min", R1(tally.damage / mins)),
-                            ("potions_per_min", R2(tally.potions / mins)), ("deaths", tally.deaths), ("hero_hp", Game.Player != null ? Game.Player.Health.Max : 0)));
+                            ("potions_per_min", R2(tally.potions / mins)), ("deaths", tally.deaths), ("hero_hp", Game.Player != null ? Game.Player.Health.Max : 0), ("strays", strays)));
                         Log($"hunt {zone.id} Lv{lv} {name} {driver}: kills/min {tally.kills / mins:0.0} xp/min {tally.Xp / mins:0} dmg/min {tally.damage / mins:0} potions {tally.potions} deaths {tally.deaths}");
                     }
                     QuestAutoPilot.MeasureSkilled = false;
@@ -291,7 +262,7 @@ namespace DotRPG
             {
                 row["result"] = "entry_failed";
                 row["note"] = select.DevStatus;
-                Log($"run {def.id} {diff}: entry failed '{select.DevStatus}'");
+                Log($"run {def.id} {diff}: entry failed '{select.DevStatus}' transit={Game.Flow.IsTransitioning} {dir.DevRoomTrace} inRun={dir.InRun}");
                 select.Close();
                 yield break;
             }
@@ -330,6 +301,7 @@ namespace DotRPG
                     nextTrace += 60f;
                     Log($"  state={Game.State?.Current} world={Game.IsWorldRunning} top={(Game.UI?.Top != null ? Game.UI.Top.name : "-")} scale={Time.timeScale} run={run.State}");
                     int alive = EnemyController.Active.Count(e => e != null && !e.IsDead && e.isActiveAndEnabled);
+                    Log($"  {dir.DevRoomTrace}");
                     Log($"  t={run.Elapsed:0}s room boss={run.InBossRoom} enemies={alive} dead={Game.Player?.IsDead} transit={Game.Flow.IsTransitioning} pos={Game.Player?.Position} auto='{QuestAutoPilot.Status}'");
                 }
                 foreach (var e in EnemyController.Active)
@@ -421,16 +393,18 @@ namespace DotRPG
             DateTime clock = new DateTime(2026, 10, 17, 12, 0, 0); // a Saturday: every weekday dungeon is open
             ResetClock.NowOverride = () => clock;
             int dungeonIndex = 0;
+            var rotation = MeasureCareerList(MeasureCareers); // [MEASURE CH3] -measureCareers
             foreach (var def in DungeonDatabase.Weekday)
             {
-                for (int d = 0; d < DungeonDatabase.DifficultyCount; d++)
+                for (int d = 0; d < DungeonDatabase.ShownDifficultyCount(def); d++) // [CH3] 군주 only with chapter 3 open
                 {
+                    if (!MeasureDiffAllowed(d)) continue; // -measureDiffs 4 = 군주 only
                     var diff = (DungeonDifficulty)d;
                     int lv = DungeonDatabase.Difficulty(diff).recommendedLevel;
                     // Career rotates with the dungeon, not the difficulty: each difficulty sees every career across the five
                     // dungeons (before, 왕 was always the arcanist and 영웅 always the bishop).
                     int pick = dungeonIndex + d;
-                    var career = lv >= 15 ? MeasureCareers[pick % 4] : Career.None;
+                    var career = lv >= 15 ? rotation[pick % rotation.Length] : Career.None;
                     var cls = career != Career.None ? CareerCatalog.Base(career) : (pick % 2 == 0 ? CharacterClass.Warrior : CharacterClass.Mage);
                     // Same hero alone and with three AI, so the two rows compare (2026-10-13).
                     foreach (int companions in new[] { 0, 3 })
@@ -455,13 +429,13 @@ namespace DotRPG
             ResetClock.NowOverride = () => clock;
             string onlyRaid = MeasureArg("-measureRaid", "");
             // -measureCareers fighter,bishop: only these careers (each career runs alone and with three AI, so the rows compare).
-            var careerFilter = MeasureArg("-measureCareers", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var careers = MeasureCareers.Where(c => careerFilter.Length == 0 || careerFilter.Contains(c.ToString().ToLowerInvariant())).ToArray();
+            var careers = MeasureCareerList(MeasureCareers); // [MEASURE CH3] all six careers by name
             // [CH3] -measureRaid raid_xibak|raid_kamatz opens chapter 3 for the run (offline flag), the others measure the open raids.
             bool wasOpen = Game.Config != null && Game.Config.chapter3Open;
             if (Game.Config != null && DungeonDatabase.AllRaids.Any(r => r.id == onlyRaid && r.chapter >= 3)) Game.Config.chapter3Open = true;
             foreach (var def in DungeonDatabase.Raids.Where(r => onlyRaid == "" || r.id == onlyRaid)) // the open raids (해골왕, 그라흐, and 지바크·카마츠 with chapter 3); 바르가스·바위 심장 are not open yet
                 foreach (var diff in new[] { DungeonDifficulty.Normal, DungeonDatabase.RaidHeroic })
+                    if (MeasureDiffAllowed(diff == DungeonDifficulty.Normal ? 0 : 1)) // -measureDiffs 0 = normal only
                     foreach (var career in careers)
                     foreach (int companions in new[] { 0, 3 })
                     {

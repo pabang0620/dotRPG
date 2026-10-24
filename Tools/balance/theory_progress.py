@@ -124,10 +124,12 @@ def _career_rows(rows, career):
     if career is None:
         return rows
     own = [r for r in rows if r.get("career") == career]
-    if own or career not in PACK_SECONDS:
+    if career not in PACK_SECONDS or any(r.get("mlv", 0) <= CH2_CAP for r in own):
         return own
-    return [dict(r, kills_per_min=r["kills_per_min"] * PACK_SECONDS[r["career"]] / PACK_SECONDS[career])
-            for r in rows if r.get("career") in PACK_SECONDS]
+    # 3장 실측만 있는 직업(도적 전직, 2026-10-24): Lv40 이하는 4직업 환산, Lv41+는 자기 실측
+    conv = [dict(r, kills_per_min=r["kills_per_min"] * PACK_SECONDS[r["career"]] / PACK_SECONDS[career])
+            for r in rows if r.get("career") in PACK_SECONDS and r.get("career") != career and (not own or r.get("mlv", 0) <= CH2_CAP)]
+    return conv + own
 
 
 MEASURED_UNDER = None  # Lv41+ 지하(hollow_*) 분당 처치(실측 중앙값). measured_kpm()이 채운다
@@ -137,7 +139,7 @@ def measured_kpm(path=None):
     """{레벨: 분당 처치}: 실측 사냥 행(driver auto, 몬스터 Lv40 이하)을 5레벨 구간 중앙값으로 묶고, Lv1~15는 15로 둔다.
     Lv41+(챕터 3)는 Lv36~40 구간 값을 지상에 쓰고, 지하는 몬스터 Lv40 초과 행의 중앙값을 MEASURED_UNDER에 둔다."""
     global MEASURED_UNDER
-    path = path or MEASURED_FILE
+    path = path or (sys.argv[sys.argv.index("--measured-file") + 1] if "--measured-file" in sys.argv else MEASURED_FILE)
     if not os.path.exists(path):
         return None
     with open(path, encoding="utf-8") as f:
@@ -147,7 +149,11 @@ def measured_kpm(path=None):
         if r.get("kills_per_min", 0) <= 0 or r.get("driver") != "auto":
             continue
         if r.get("mlv", 0) > 40:
-            under.append(r["kills_per_min"])
+            # 지하(hollow_*)는 MEASURED_UNDER, 3장 지상(dry_*, 2026-10-24 실측)은 Lv41~50 구간(8)
+            if str(r.get("zone", "")).startswith("hollow_"):
+                under.append(r["kills_per_min"])
+            else:
+                bands.setdefault(8, []).append(r["kills_per_min"])
             continue
         bands.setdefault(min(8, (r["level"] - 1) // 5), []).append(r["kills_per_min"])
     med = {k: sorted(v)[len(v) // 2] for k, v in bands.items()}
