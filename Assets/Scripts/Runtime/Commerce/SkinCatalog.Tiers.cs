@@ -132,7 +132,7 @@ namespace DotRPG
             Def("skin_m_cherryhat", L.T("체리 로브"), CharacterClass.Mage, L.T("기본 모습 그대로 옷만 바꾼 로브."), SkinTrailKind.None, new Color(1.00f, 0.42f, 0.45f), new Color(1.00f, 0.86f, 0.86f), null),
             Def("skin_m_umber", L.T("황토 로브"), CharacterClass.Mage, L.T("기본 모습 그대로 옷만 바꾼 로브."), SkinTrailKind.None, new Color(1.00f, 0.80f, 0.36f), new Color(1.00f, 0.95f, 0.80f), null),
             Def("skin_r_aurora", L.T("오로라 괴도"), CharacterClass.Rogue, L.T("오로라빛 망토와 가면의 전설적인 괴도. 극광빛 잔상이 길게 남는다."), SkinTrailKind.Stars, new Color(0.62f, 0.94f, 1.00f), new Color(0.92f, 0.78f, 1.00f), "r_aurora"),
-            Def("skin_r_butterfly", L.T("비단 나비"), CharacterClass.Rogue, L.T("나비 날개 같은 비단 무희복. 나비빛 잔상이 길게 남는다."), SkinTrailKind.MoonMotes, new Color(0.86f, 0.90f, 1.00f), new Color(1.00f, 1.00f, 1.00f), "r_butterfly"),
+            Def("skin_r_butterfly", L.T("비단 나비"), CharacterClass.Rogue, L.T("나비 날개 같은 비단 무희복. 나비빛 잔상이 길게 남는다."), SkinTrailKind.MoonMotes, new Color(0.86f, 0.90f, 1.00f), new Color(1.00f, 1.00f, 1.00f), "r_butterfly_v2"),
             Def("skin_r_nightqueen", L.T("고딕 트윈테일"), CharacterClass.Rogue, L.T("검은 고딕 드레스와 트윈테일. 어둠의 잔상이 남는다."), SkinTrailKind.MoonMotes, new Color(0.86f, 0.90f, 1.00f), new Color(1.00f, 1.00f, 1.00f), "r_nightqueen"),
             Def("skin_r_frosthunter", L.T("서리 사냥꾼"), CharacterClass.Rogue, L.T("흰 털 망토와 얼음 단검집의 사냥꾼. 눈송이와 잔상이 남는다."), SkinTrailKind.Stars, new Color(0.86f, 0.90f, 1.00f), new Color(1.00f, 1.00f, 1.00f), "r_frosthunter"),
             Def("skin_r_lotus", L.T("그림자 연꽃 자객"), CharacterClass.Rogue, L.T("연꽃 문양의 검은 자객복. 연꽃잎빛과 잔상이 남는다."), SkinTrailKind.MoonMotes, new Color(1.00f, 0.66f, 0.82f), new Color(1.00f, 0.94f, 0.96f), "r_lotus"),
