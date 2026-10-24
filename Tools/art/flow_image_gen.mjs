@@ -3,7 +3,7 @@
 // jobs.json = [{ "name": "gear_sword_1_10", "prompt": "...", "ref": "/abs/path/ref.png" }]
 //   optional per job: "refs": [several reference paths, attached in order], "aspect": "1:1" | "4:3" | "16:9" ...,
 //   "out": exact output path (default <out dir>/gen_<name>.jpg)
-// Env: FLOW_PROJECT (project URL), FLOW_MODEL (model label, e.g. "Nano Banana Pro"; default: leave the model as it is),
+// Env: FLOW_PROJECT (project URL, or "auto" = this account's latest project), FLOW_MODEL (model label, e.g. "Nano Banana Pro"; default: leave the model as it is),
 //   FLOW_HEADLESS=1 (no window), CHROME_PATH, GAP_SEC (default 20), SHOTS (failure screenshots dir)
 // Each job: clear the prompt box, attach the references (uploaded once, then picked by name), type the prompt, generate,
 // wait for the new tile and save it. Jobs whose file exists are skipped. A "image could not be generated" tile is retried
@@ -15,7 +15,7 @@ import path from 'node:path';
 
 const PROFILE = process.env.FLOW_PROFILE;
 if (!PROFILE) throw new Error('FLOW_PROFILE(로그인된 프로필 복사본 경로)을 지정하세요');
-const PROJECT = process.env.FLOW_PROJECT ?? 'https://flow.google.com/project/148fc0d6-31d9-4538-bf3d-1a266fd94249';
+let PROJECT = process.env.FLOW_PROJECT ?? 'https://flow.google.com/project/148fc0d6-31d9-4538-bf3d-1a266fd94249';
 const GAP = Number(process.env.GAP_SEC ?? 20) * 1000;
 const SHOTS = process.env.SHOTS ?? '/tmp';
 const MODEL = process.env.FLOW_MODEL ?? '';
@@ -119,11 +119,44 @@ async function save(src, out) {
   writeFileSync(out, Buffer.from(b64, 'base64'));
 }
 
-await page.goto(PROJECT, { waitUntil: 'domcontentloaded' });
-await page.waitForTimeout(8000);
-if (!page.url().includes('/project/')) {
+// A project URL owned by another account redirects to /about even when signed in, so that alone is not a logout.
+// Judge sign-in on the Flow home page (account email in the page); when signed in, fall back to this account's
+// most recent project. Exit code 3 only for a real logout.
+async function homeState() {
+  await page.goto('https://flow.google.com/', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(9000);
+  return page.evaluate(() => ({
+    email: (document.body.innerHTML.match(/[\w.+-]+@gmail\.com/) || [''])[0],
+    projects: [...new Set([...document.querySelectorAll('a[href*="/project/"]')].map((a) => a.href))],
+  }));
+}
+async function newProject() {
+  await page.getByText(/새 프로젝트|New project/).first().click();
+  await page.waitForTimeout(8000);
+  return page.url().includes('/project/') ? page.url() : '';
+}
+async function openProject() {
+  if (PROJECT && PROJECT !== 'auto') {
+    await page.goto(PROJECT, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(8000);
+    if (page.url().includes('/project/')) return true;
+  }
+  const st = await homeState();
+  if (!st.email) return false;
+  const own = st.projects[0] ?? (await newProject().catch(() => ''));
+  if (!own) return false;
+  log('계정', st.email, '프로젝트', own, PROJECT && PROJECT !== 'auto' ? `(요청 URL ${PROJECT} 가 열리지 않음)` : '');
+  PROJECT = own;
+  await page.goto(PROJECT, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(8000);
+  return page.url().includes('/project/');
+}
+
+if (!(await openProject())) {
   await shot('login');
-  throw new Error('Flow 프로젝트가 열리지 않았습니다(로그인 확인): ' + page.url());
+  log('로그아웃됨(첫 화면에 계정 없음). 중단', page.url());
+  await ctx.close();
+  process.exit(3);
 }
 
 let n = 0;
@@ -168,12 +201,11 @@ for (const job of jobs) {
       log('실패', job.name, String(e.message).split('\n')[0].slice(0, 120));
       await page.keyboard.press('Escape').catch(() => {});
       if (/locator\.click|시간 초과/.test(String(e.message))) {
-        await page.goto(PROJECT, { waitUntil: 'domcontentloaded' }).catch(() => {});
-        await page.waitForTimeout(8000);
         settingsKey = null;
+        const ok = await openProject().catch(() => false);
         // A profile copy can be signed out when the original profile rotates its session: stop with exit code 3
         // so the caller can refresh the copy and run again (finished files are skipped).
-        if (!page.url().includes('/project/')) { log('로그아웃됨. 중단', page.url()); await ctx.close(); process.exit(3); }
+        if (!ok) { log('로그아웃됨. 중단', page.url()); await ctx.close(); process.exit(3); }
       }
     }
   }
