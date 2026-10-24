@@ -144,11 +144,13 @@ namespace DotRPG
                 Changed?.Invoke();
                 var got = ReadResults(r.data);
                 bool big = false;
+                bool matBox = ConsumableDatabase.Get(itemKey)?.kind == ConsumableKind.MatBox; // [DAILY CHEST] 50+ essence is a rare roll
                 var parts = new List<string>();
                 foreach (var g in got)
                 {
                     var item = ConsumableDatabase.Get(g.itemKey);
                     if (item != null && item.kind == ConsumableKind.EnhanceTicket) big = true;
+                    if (matBox && g.tier == "rare") big = true;
                     parts.Add(L.F("{0} x{1}{2}", L.T(DungeonDatabase.ItemName(g.itemKey)), g.count, (g.boosted ? L.T(" (부스터)") : "")));
                 }
                 Game.Audio.PlaySfx(big ? "rank_reveal" : "pickup");

@@ -8,6 +8,9 @@ Lv1~40 동안 무자본으로 버는 골드와 비교한다. 수입이 필요 �
   장비 드롭(equipmentDropChance)은 그 단계 드롭 풀의 가중 평균 판매가로 판다(쓸 것은 한 벌뿐이라 대부분 판다).
 - 요일 던전 하루 3판(Lv5부터): 확정 골드 x rewardMul + 운 카드 2장의 골드 기대값. 난이도는 레벨 >= 권장 - 2 중 가장 높은 것.
 - 일일 의뢰 하루 3개(Lv15부터), 주간 3개: daily_quests.json bands 골드.
+- 완료 상자(2026-10-24, daily_quests.json chests): 매일 연속(7일 주기 단계)·매주 연다고 본다. 골드로 바꿀 수 있는 것만 판매가로 센다:
+  강화석·마력 정수(재료는 이미 남아서 판다), 강화 재료 상자(마력 정수 수량 기대값), 보너스 굴림 기대값.
+  보호권 조각·장비 보호권·레이드 열쇠 조각·고대의 핵·스킨 게이지는 판매가 0이고 필요 지출(KIT, +11까지)에도 없어 비율에 넣지 않는다.
 - 레이드: 해골왕 주 3회(Lv20부터, 보상 하루 1회), 그라흐 Lv40 뒤 1회. raidReward 골드 평균.
 - 퀘스트 보상 골드(quest_index.json reward.gold, 스토리·서브 합계 약 42만). 시작 골드 100.
 
@@ -204,6 +207,47 @@ def weekly_gold(level):
     return w.get("gold", 0)
 
 
+CH = DAILY.get("chests")
+
+
+def _items_gold(items):
+    """아이템 묶음의 판매 환산 골드(재료 판매가, 강화 재료 상자는 마력 정수 기대 수량)"""
+    g = 0.0
+    for r in items:
+        k, n = r["item_key"], r["count"]
+        if CH and k == CH["matBox"]["item"]:
+            b = CH["matBox"]["bands"]
+            w = sum(x["weight"] for x in b)
+            ev = sum((x["min"] + x["max"]) / 2 * x["weight"] / w for x in b)
+            g += n * ev * SELL.get(CH["matBox"]["reward"], 0) * MAT_SELL_SCALE
+        elif k in MAT:
+            g += n * SELL[k] * MAT_SELL_SCALE * MAT_SELL_SCALE_BY_MAT.get(k, 1.0)
+    return g
+
+
+def _chest_gold(step, at_max):
+    if not CH:
+        return 0.0
+    w = sum(b["weight"] for b in CH["bonus"])
+    bonus = sum(_items_gold(b["rewards"]) * b["weight"] / w for b in CH["bonus"])
+    return _items_gold(step["rewards"]) + (_items_gold(step["maxLevel"]) if at_max else 0) + step["bonusRolls"] * bonus
+
+
+def chest_day_gold(streak, at_max=False):
+    """연속 streak일째 일일 완료 상자의 판매 환산 골드"""
+    if not CH:
+        return 0.0
+    return _chest_gold(CH["day"][(streak - 1) % len(CH["day"])], at_max)
+
+
+def chest_week_gold(at_max=False):
+    return _chest_gold(CH["week"], at_max) if CH else 0.0
+
+
+def chest_day_avg(at_max=False):
+    return sum(chest_day_gold(i + 1, at_max) for i in range(len(CH["day"]))) / len(CH["day"]) if CH else 0.0
+
+
 def raid_gold(rid):
     rr = next(d for d in DNG["dungeons"] if d["id"] == rid)["raidReward"]
     return (rr["goldMin"] + rr["goldMax"]) / 2
@@ -236,6 +280,8 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
     inc = {"시작": STARTER["gold"], "처치 골드": total_kills * base_pile(), "장비 판매": sum(n * gold_per_kill_gear(t) for t, n in kills_by_tier.items())}
     drops = {m: total_kills * MAT[m]["dropChance"] * (MAT[m]["minDrop"] + MAT[m]["maxDrop"]) / 2 for m in MAT}
     dng, dly, wk, raid = 0.0, 0.0, 0.0, 0.0
+    cday = cweek = 0.0
+    streak = 0
     day_count = int(hours / HOURS_PER_DAY)
     for day in range(day_count):
         lv = level_at(day * HOURS_PER_DAY)
@@ -243,8 +289,11 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
             dng += 3 * dungeon_gold(lv)
         if lv >= 15 and lv < tp.MAX_LEVEL:
             dly += 3 * daily_gold(lv)
+            streak += 1
+            cday += chest_day_gold(streak)
             if day % 7 == 0:
                 wk += 3 * weekly_gold(lv)
+                cweek += chest_week_gold()
         if lv >= 20 and day % 7 in (2, 5, 6):  # 수·토·일 해골왕
             raid += raid_gold("raid_skeleton_king")
     raid += raid_gold("raid_grah")
@@ -255,7 +304,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
     qgold = {q["id"]: q["reward"]["gold"] for q in tp.QUESTS}
     quest_gold_t = [(h, qgold.get(qid, 0) * QUEST_GOLD_SCALE) for h, _, _, qid, _, _ in events]
     quest = sum(g for _, g in quest_gold_t)
-    inc.update({"요일 던전": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "필드 보스": fboss, "퀘스트 골드": quest,
+    inc.update({"요일 던전": dng, "일일 의뢰": dly, "주간 의뢰": wk, "일일 완료 상자": cday, "주간 완료 상자": cweek, "레이드": raid, "필드 보스": fboss, "퀘스트 골드": quest,
                 "미니 던전 처치 골드": st["mini_kills"] * MINI_GOLD_PER_KILL})
 
     # ---- 지출 ----
@@ -300,7 +349,7 @@ def budget(gold_scale=1.0, potion_price=None, verbose=True):
             # 그 시각까지의 처치 수(사냥 + 퀘스트 처치, 시뮬레이션 시각 기준)
             k_ck = sum(n for t, _, n in st["kills_t"] if t <= h)
             k_frac = min(1.0, k_ck / total_kills)
-            ci = STARTER["gold"] + (inc["처치 골드"] + inc["장비 판매"] + inc["재료 판매(남는 것)"]) * k_frac + (dng + dly + wk + fboss + inc["미니 던전 처치 골드"]) * frac + (raid * frac if ck >= 20 else 0) + sum(g for t, g in quest_gold_t if t <= h)
+            ci = STARTER["gold"] + (inc["처치 골드"] + inc["장비 판매"] + inc["재료 판매(남는 것)"]) * k_frac + (dng + dly + wk + cday + cweek + fboss + inc["미니 던전 처치 골드"]) * frac + (raid * frac if ck >= 20 else 0) + sum(g for t, g in quest_gold_t if t <= h)
             cs = sum(g for lv, _, _, g, _, _ in rows if lv <= ck) + (potions + scrolls) * k_frac
             print(f"| Lv{ck} | {h:.1f}h | {ci:,.0f} | {cs:,.0f} | {ci / cs:.2f} |")
         print("\n| 단계 | 장비 | 목표 | 기대 골드 | 기대 시도 | 뼈/강화석/정수 |\n|---|---|---|---|---|---|")
@@ -331,9 +380,10 @@ def seal_exchange_gold():
 
 
 def max_level_day(level):
-    """만렙(서버 상한)에서 하루 일상 골드: 요일 던전 3판 + 일일 의뢰 만렙 골드 + 주간 의뢰/7 + 레이드/7 + 월드·길드보스/7."""
+    """만렙(서버 상한)에서 하루 일상 골드: 요일 던전 3판 + 일일 의뢰 만렙 골드 + 완료 상자(일 평균 + 주/7) + 주간 의뢰/7 + 레이드/7 + 월드·길드보스/7."""
     r1, n1, r2, n2 = LIFE_RAIDS[level]
     return (3 * dungeon_gold(level) + DAILY["perDay"] * DAILY["maxLevelGold"] + DAILY["weekly"]["perWeek"] * DAILY["weekly"]["maxLevelGold"] / 7
+            + chest_day_avg(True) + chest_week_gold(True) / 7
             + (n1 * raid_gold(r1) + n2 * raid_gold(r2)) / 7 + WORLD_GUILD_PER_WEEK / 7)
 
 
@@ -363,20 +413,22 @@ def chapter3(after_days=None, window=WINDOW_DAYS, verbose=True):
     total_kills = sum(kills.values())
     inc = {"처치 골드": total_kills * base_pile(), "장비 판매": sum(n * gold_per_kill_gear(t) for t, n in kills.items())}
     drops = {m: total_kills * MAT[m]["dropChance"] * (MAT[m]["minDrop"] + MAT[m]["maxDrop"]) / 2 for m in MAT}
-    dng = dly = wk = 0.0
+    dng = dly = wk = cday = cweek = 0.0
     for d in range(math.ceil(days_b)):
         frac = min(1.0, days_b - d)
         lv = level_at(t0 + d * HOURS_PER_DAY)
         dng += 3 * dungeon_gold(lv) * frac
         dly += 3 * daily_gold(lv) * frac
+        cday += chest_day_gold(d + 1) * frac
         if d % 7 == 0:
             wk += 3 * weekly_gold(lv)
+            cweek += chest_week_gold()
     raid = sum(raid_gold(rid) for t, rid in st["raid_t"] if t0 < t <= t1)
     fb = [m for m in MONSTERS["monsters"] if m["id"].startswith("fboss_")]
     fboss = hours * FIELD_BOSS_PER_HOUR * sum((m["goldMin"] + m["goldMax"]) / 2 for m in fb) / len(fb)
     qgold = {q["id"]: q["reward"]["gold"] for q in tp.QUESTS}
     quest = sum(qgold.get(qid, 0) * QUEST_GOLD_SCALE for h, _, _, qid, _, _ in events if t0 < h <= t1)
-    inc.update({"요일 던전(군주)": dng, "일일 의뢰": dly, "주간 의뢰": wk, "레이드": raid, "월드·길드보스": WORLD_GUILD_PER_WEEK * days_b / 7,
+    inc.update({"요일 던전(군주)": dng, "일일 의뢰": dly, "주간 의뢰": wk, "일일 완료 상자": cday, "주간 완료 상자": cweek, "레이드": raid, "월드·길드보스": WORLD_GUILD_PER_WEEK * days_b / 7,
                 "필드 보스": fboss, "퀘스트 골드": quest, "미니 던전 40 처치 골드": st.get("mini_kills_ch3", 0) * MINI_GOLD_PER_KILL})
     # ---- 3장 지출 ----
     enh_gold, need, rows = 0.0, {"bone": 0.0, "ore": 0.0, "essence": 0.0}, []

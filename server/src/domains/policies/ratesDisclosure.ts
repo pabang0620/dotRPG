@@ -1,6 +1,6 @@
 // 확률형 아이템 정보 공개(게임산업법 제33조 제2항). 서버가 실제로 쓰는 확률표에서 바로 만든다:
 // 외형 뽑기·장비 뽑기·외형 합성(starshopDefs.ts), 봉인된 상자·부스터·천장(sealed_box.json), 강화권 상자(items.json box_enh*),
-// 장비 강화(enhance.json), 레이드 상점(raid_shop.json). 웹 페이지(GET /policies/:lang/probability)와 scripts/export-rates.ts가 같은 함수를 쓴다.
+// 장비 강화(enhance.json), 레이드 상점(raid_shop.json), 일일·주간 완료 상자(daily_quests.json chests). 웹 페이지(GET /policies/:lang/probability)와 scripts/export-rates.ts가 같은 함수를 쓴다.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,6 +30,16 @@ import { gaugeView, rateTable } from '../starshop/starshopService';
 import type { PolicyLang } from './policyVersions';
 
 const pct = (v: number): string => `${v.toFixed(3)}%`;
+
+type DailyItems = { item_key: string; count: number }[];
+interface DailyChests {
+  ratesVersion: string;
+  fragment: { item: string; per: number; into: string };
+  day: { streak: number; name: string; rewards: DailyItems; bonusRolls: number; maxLevel: DailyItems }[];
+  week: { name: string; rewards: DailyItems; bonusRolls: number; maxLevel: DailyItems; skinGauge?: number };
+  bonus: { id: string; weight: number; rewards: DailyItems }[];
+  matBox: { item: string; reward: string; bands: { min: number; max: number; weight: number }[] };
+}
 const STAR_NAME = new Map(STAR_COSMETICS.map((c) => [c.id, c.name] as const));
 
 interface ItemRow {
@@ -241,6 +251,42 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
       ? `요일 던전을 클리어할 때마다 ${UNIQUE_BONUS.chancePct}% 확률로 운 카드 한 장이 그 난이도 단계의 유니크 장비가 됩니다. 유니크 없이 ${UNIQUE_BONUS.pityRuns - 1}판이 지나면 ${UNIQUE_BONUS.pityRuns}판째에는 반드시 나오고, 나오면 다시 처음부터 셉니다. 유니크가 나올 때는 그 단계에서 아직 유니크를 가지지 않은 부위(무기·상의·하의·목걸이·반지 중 내 직업이 쓸 수 있는 것)를 같은 확률로 먼저 고르고, 모두 가졌으면 전체에서 같은 확률로 고릅니다. 같은 부위 안에서는 장비마다 같은 확률입니다. 일반 던전·레이드·소탕에는 적용하지 않습니다.`
       : `Each weekday dungeon clear has a ${UNIQUE_BONUS.chancePct}% chance to turn one luck card into a Unique piece of that difficulty's gear tier. After ${UNIQUE_BONUS.pityRuns - 1} clears without one, the ${UNIQUE_BONUS.pityRuns}th clear always gives one, and the count starts over. The slot is picked evenly among the slots (weapon, top, bottom, necklace, ring usable by your class) where you have no Unique of that tier yet, or evenly among all of them if you have every slot; within a slot each piece is equally likely. Normal dungeons, raids and sweeps do not have this bonus.`,
   );
+  // ---- 일일·주간 완료 상자(0055) ----
+  const daily = readJson<{ chests?: DailyChests }>(dataDir, 'daily_quests.json')?.chests;
+  if (daily) {
+    const list = (rs: { item_key: string; count: number }[]): string => rs.map((r) => `${itemName(r.item_key)} x${r.count}`).join(', ');
+    out.push(ko ? `## 일일·주간 완료 상자 (확률표 버전 ${daily.ratesVersion}, 유료 재화 아님)` : `## Daily and Weekly Completion Chests (rate table version ${daily.ratesVersion}, not paid currency)`);
+    out.push(
+      ko
+        ? `일일 의뢰를 그날 모두 끝내면 일일 상자, 주간 의뢰를 모두 끝내면 주간 상자를 한 번 엽니다. 일일 상자는 연속으로 연 날 수에 따라 단계가 오르고 ${daily.day.length}일째마다 가장 높은 단계가 되며, 하루라도 못 열면 1단계부터 다시 셉니다(어제 의뢰는 오늘까지 끝낼 수 있습니다). 고정 내용은 확정 지급이고, 보너스 굴림은 아래 표를 굴립니다. 만렙이면 만렙 추가분을 더 줍니다. ${itemName(daily.fragment.item)} ${daily.fragment.per}개가 모이면 자동으로 ${itemName(daily.fragment.into)} 1개가 됩니다.`
+        : `Finishing all of a day's daily jobs opens one daily chest; finishing all weekly jobs opens one weekly chest. The daily chest steps up with consecutive days opened and reaches the top step every ${daily.day.length} days; missing a day starts again from step 1 (yesterday's jobs can still be finished today). Fixed contents are guaranteed; bonus rolls use the table below. At max level the max-level extras are added. Every ${daily.fragment.per} ${itemName(daily.fragment.item)} turn into 1 ${itemName(daily.fragment.into)} automatically.`,
+    );
+    out.push(ko ? '| 상자 | 고정 내용 | 만렙 추가 | 보너스 굴림 |' : '| Chest | Fixed contents | Max-level extras | Bonus rolls |');
+    out.push('|---|---|---|---|');
+    for (const st of daily.day) out.push(`| ${ko ? `${st.streak}일째 ${st.name}` : `Day ${st.streak} ${t(st.name)}`} | ${list(st.rewards)} | ${list(st.maxLevel) || '-'} | ${st.bonusRolls} |`);
+    const wk = daily.week;
+    const gauge = (wk.skinGauge ?? 0) > 0 ? (ko ? `, 스킨 선택 게이지 +${wk.skinGauge}칸(계정당 주 1회)` : `, Skin choice gauge +${wk.skinGauge} (once per account per week)`) : '';
+    out.push(`| ${t(wk.name)} | ${list(wk.rewards)}${gauge} | ${list(wk.maxLevel) || '-'} | ${wk.bonusRolls} |`);
+    const total = daily.bonus.reduce((a, b) => a + b.weight, 0) || 1;
+    out.push(ko ? '### 보너스 굴림 (1회)' : '### Bonus Roll (each)');
+    out.push(ko ? '| 보상 | 확률 |' : '| Reward | Rate |');
+    out.push('|---|---|');
+    for (const b of daily.bonus) out.push(`| ${list(b.rewards)} | ${pct((b.weight * 100) / total)} |`);
+    const mb = daily.matBox;
+    const mTotal = mb.bands.reduce((a, b) => a + b.weight, 0) || 1;
+    out.push(`### ${itemName(mb.item)}`);
+    out.push(
+      ko
+        ? `열면 ${itemName(mb.reward)}이 나옵니다. 수량 구간을 아래 확률로 고르고, 구간 안에서는 모든 수량이 같은 확률입니다(예: 1~5개 구간이면 1·2·3·4·5개가 각각 구간 확률의 1/5).`
+        : `Opens into ${itemName(mb.reward)}. A quantity range is picked by the rates below; every amount inside the range is equally likely (e.g. in the 1-5 range, each of 1-5 is 1/5 of the range rate).`,
+    );
+    out.push(ko ? '| 수량 | 구간 확률 | 수량 1개당 확률 |' : '| Amount | Range rate | Rate per amount |');
+    out.push('|---|---|---|');
+    for (const b of mb.bands) {
+      const r = (b.weight * 100) / mTotal;
+      out.push(`| ${b.min === b.max ? b.min : `${b.min}~${b.max}`} | ${pct(r)} | ${pct(r / (b.max - b.min + 1))} |`);
+    }
+  }
   return out.join('\n\n').replace(/\n\n(\|)/g, '\n$1');
 }
 
@@ -263,5 +309,7 @@ export function buildRatesPublication(dataDir: string): RatesPublicationDoc {
   const versions: Record<string, string> = { cosmetic: RATES_VERSION };
   if (sealed) versions.sealed = sealed.ratesVersion;
   if (raid) versions.raid = raid.ratesVersion;
+  const daily = readJson<{ chests?: { ratesVersion: string } }>(dataDir, 'daily_quests.json')?.chests;
+  if (daily) versions.daily = daily.ratesVersion;
   return { fingerprint: createHash('sha256').update(content, 'utf8').digest('hex'), versions, content };
 }

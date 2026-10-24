@@ -5,11 +5,15 @@ import { getPool } from '../../db/pool';
 import { loadStarCatalog } from '../../gamedata/starProducts';
 import { logger } from '../../utils/logger';
 import { ensureRatesSnapshot } from '../starshop/ratesSnapshot';
+import { dailyRatesContent } from '../dailies/dailyChest';
 
 export async function initPayments(): Promise<void> {
   const cfg = getConfig();
   const catalog = loadStarCatalog();
   const snap = await ensureRatesSnapshot(getPool());
+  // 일일 완료 상자 보너스·강화 재료 상자 확률표(유료 재화 아님)도 같은 표에 버전별로 남긴다
+  const daily = await ensureRatesSnapshot(getPool(), dailyRatesContent());
+  logger.info({ rates_version: daily.version, snapshot_created: daily.created }, 'daily_chest.rates');
   logger.info({ rates_version: snap.version, snapshot_created: snap.created, products: catalog.products.length, catalog_version: catalog.version, payments_enabled: cfg.pay.enabled }, 'payments.init');
   if (cfg.pay.enabled) {
     const owners = await getPool().query<{ n: string }>("SELECT count(*) AS n FROM admin_users WHERE role = 'owner' AND disabled_at IS NULL");

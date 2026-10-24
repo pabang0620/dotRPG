@@ -123,7 +123,8 @@ namespace DotRPG
         /// </summary>
         public static ItemBind BindFloor(string key)
         {
-            if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold || key == ConsumableDatabase.ProtectTicket || key == DungeonDatabase.SealKey || key == DungeonDatabase.RaidCore || RaidRewards.IsRaidMaterial(key))
+            if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold || key == ConsumableDatabase.ProtectTicket || key == DungeonDatabase.SealKey || key == DungeonDatabase.RaidCore || RaidRewards.IsRaidMaterial(key)
+                || key == ConsumableDatabase.ProtectFragment || key == ConsumableDatabase.MatBox) // [DAILY CHEST] character-bound like the protection ticket
                 return ItemBind.CharacterBound;
             var gear = EquipmentDatabase.Get(key);
             return gear != null && gear.starter ? ItemBind.CharacterBound : ItemBind.Tradable;
@@ -132,7 +133,7 @@ namespace DotRPG
         public static ItemBind BindOf(string key)
         {
             if (string.IsNullOrEmpty(key) || key == ConsumableDatabase.Gold) return ItemBind.CharacterBound;
-            if (key == ConsumableDatabase.ProtectTicket) return ItemBind.CharacterBound;
+            if (key == ConsumableDatabase.ProtectTicket || key == ConsumableDatabase.ProtectFragment || key == ConsumableDatabase.MatBox) return ItemBind.CharacterBound;
             var gear = EquipmentDatabase.Get(key);
             if (gear != null)
             {

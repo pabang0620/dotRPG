@@ -32,6 +32,8 @@ namespace DotRPG
         SealedBox,
         /// <summary>[DUNGEON 2026-10-14] 요일 던전 초기화권: today's weekday dungeon entries back to the full count (the server records it).</summary>
         DungeonReset,
+        /// <summary>[DAILY CHEST] 강화 재료 상자 from the daily / weekly completion chest: the server opens it (1-100 mana essence).</summary>
+        MatBox,
     }
 
     /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
@@ -58,6 +60,8 @@ namespace DotRPG
         // [CASH] Docs/PLAN_CASH_BOX_PASS.md
         /// <summary>[DUNGEON 2026-10-14] 요일 던전 초기화권 (account-bound, from mail or events).</summary>
         public const string DungeonResetTicket = "ticket_dungeon_reset";
+        /// <summary>[DAILY CHEST] Docs/PLAN_DAILY_REWARDS_2026-10-24.md: fragments merge into a protection ticket on the server (10 = 1).</summary>
+        public const string ProtectFragment = "frag_protect", MatBox = "box_mat";
         public const string HpPotionHi = "potion_hp_hi", MpPotionHi = "potion_mp_hi", PowerScroll = "scroll_power", SealedBox = "box_sealed";
         public static string EnhanceTicket(int level) => "ticket_enh" + level;
         public static string LuckBox(int level, int chance) => $"box_enh{level}_{chance}";
@@ -74,6 +78,10 @@ namespace DotRPG
                 description = L.T("펼치면 빛에 감싸여 작은 마을 광장으로 돌아간다. 사냥터에서 쓰면 편리하다.") },
             new ConsumableItem { id = ProtectTicket, name = L.T("장비 보호권"), iconKey = "icon_ticket", kind = ConsumableKind.Protection, grade = ItemRarity.Unique,
                 description = L.T("강화 실패로 장비가 파괴될 때 자동으로 소모되어 장비를 지킨다. 지켜진 장비는 +0으로 초기화된다.") },
+            new ConsumableItem { id = ProtectFragment, name = L.T("보호권 조각"), iconKey = "icon_ticket", kind = ConsumableKind.Key, grade = ItemRarity.Rare,
+                description = L.T("일일·주간 완료 상자에서 나오는 장비 보호권의 조각. 10개가 모이면 자동으로 장비 보호권 1장이 된다.") },
+            new ConsumableItem { id = MatBox, name = L.T("강화 재료 상자"), iconKey = "icon_box_enh", kind = ConsumableKind.MatBox, grade = ItemRarity.Epic,
+                description = L.T("일일·주간 완료 상자에서 나오는 상자. 열면 마력 정수가 1~100개 나온다. 대부분 적게 나오고, 드물게 아주 많이 나온다.") },
             new ConsumableItem { id = DungeonDatabase.SealKey, name = L.T("봉인 열쇠 조각"), iconKey = "icon_key", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,
                 description = L.T("중간 레이드 보스가 지키던 봉인의 파편. 모으면 챕터 최종 레이드의 문이 열린다. (최종 레이드 클리어 시 소모)") },
             new ConsumableItem { id = DungeonDatabase.RaidCore, name = L.T("고대의 핵"), iconKey = "icon_core", kind = ConsumableKind.Key, grade = ItemRarity.Legendary,

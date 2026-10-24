@@ -39,6 +39,38 @@ const weeklySchema = z.strictObject({
   maxLevelGold: z.number().int().min(0),
   bands: z.array(bandSchema).min(1),
 });
+// 완료 상자(Docs/PLAN_DAILY_REWARDS_2026-10-24.md): 하루 칸을 다 받으면 일일 상자, 주간 칸을 다 받으면 주간 상자
+const itemCount = z.strictObject({ item_key: z.string().min(1), count: z.number().int().min(1).max(10000) });
+const chestStep = z.strictObject({
+  /** 일일: 연속 일수(1..주기). 주간: 0 */
+  streak: z.number().int().min(0).max(30),
+  name: text,
+  grade: z.string().regex(/^[a-z]{1,16}$/),
+  rewards: z.array(itemCount).min(1),
+  /** 보너스 표(bonus)를 굴리는 횟수 */
+  bonusRolls: z.number().int().min(0).max(5),
+  /** 만렙(levelCap)에서만 더 주는 것 */
+  maxLevel: z.array(itemCount),
+  /** 스킨 선택 게이지 칸(계정당 그 주 한 번만) */
+  skinGauge: z.number().int().min(0).max(10).optional(),
+});
+const weighted = z.strictObject({ id, weight: z.number().int().min(1), rewards: z.array(itemCount).min(1) });
+const chestsSchema = z.strictObject({
+  ratesVersion: z.string().regex(/^[a-z0-9.-]{1,32}$/),
+  fragment: z.strictObject({ item: z.string().min(1), per: z.number().int().min(2).max(100), into: z.string().min(1) }),
+  day: z.array(chestStep).min(1).max(14),
+  week: chestStep,
+  bonus: z.array(weighted).min(1),
+  matBox: z.strictObject({
+    item: z.string().min(1),
+    reward: z.string().min(1),
+    bands: z.array(z.strictObject({ min: z.number().int().min(1), max: z.number().int().min(1), weight: z.number().int().min(1) })).min(1),
+  }),
+});
+export type ChestStep = z.infer<typeof chestStep>;
+export type Chests = z.infer<typeof chestsSchema>;
+export type ItemCount = z.infer<typeof itemCount>;
+
 const fileSchema = z.strictObject({
   unlockQuest: z.string().min(1),
   perDay: z.number().int().min(1).max(10),
@@ -47,6 +79,7 @@ const fileSchema = z.strictObject({
   maxLevelGold: z.number().int().min(0),
   bands: z.array(bandSchema).min(1),
   weekly: weeklySchema,
+  chests: chestsSchema,
 });
 
 export type DailyTemplate = z.infer<typeof templateSchema>;
@@ -68,6 +101,7 @@ export interface DailyData {
   unlockQuest: string;
   day: Board;
   week: Board;
+  chests: Chests;
 }
 
 /** 맵의 필드 스폰에서 그 몬스터의 레벨(여러 줄이면 가장 낮은 값). 없으면 null */
@@ -96,6 +130,27 @@ function checkBoard(b: Board, errors: string[]): void {
   }
 }
 
+/** 상자 표: 아이템은 items.json 에 있어야 하고, 일일 단계는 1부터 이어지며, 재료 상자 구간은 겹치지 않고 오른다 */
+function checkChests(c: Chests, errors: string[]): void {
+  const items = getGameData().economy.items;
+  const keys = [c.fragment.item, c.fragment.into, c.matBox.item, c.matBox.reward];
+  for (const s of [...c.day, c.week]) for (const r of [...s.rewards, ...s.maxLevel]) keys.push(r.item_key);
+  for (const b of c.bonus) for (const r of b.rewards) keys.push(r.item_key);
+  for (const k of new Set(keys)) if (!items.has(k)) errors.push(`chests: items.json 에 없는 아이템 ${k}`);
+  c.day.forEach((s, i) => {
+    if (s.streak !== i + 1) errors.push(`chests.day[${i}]: streak 는 ${i + 1} 이어야 합니다`);
+  });
+  if (c.week.streak !== 0) errors.push('chests.week.streak 는 0 이어야 합니다');
+  // 스킨 게이지는 "계정당 그 주 한 번"으로만 막으므로 주간 상자에만 둔다
+  if (c.day.some((s) => (s.skinGauge ?? 0) > 0)) errors.push('chests.day: skinGauge 는 주간 상자에만 둘 수 있습니다');
+  let prev = 0;
+  for (const b of c.matBox.bands) {
+    if (b.min > b.max || b.min !== prev + 1) errors.push(`chests.matBox: 구간 ${b.min}~${b.max} 이 앞 구간에 이어지지 않습니다`);
+    prev = b.max;
+  }
+  if (new Set(c.bonus.map((b) => b.id)).size !== c.bonus.length) errors.push('chests.bonus: id 중복');
+}
+
 /** 검증 오류 목록(빈 배열 = 정상). 맵·몬스터·레이드·퀘스트 참조는 로드된 게임 데이터와 대조한다 */
 export function validateDailyQuests(raw: unknown): { data: DailyData | null; errors: string[] } {
   const p = fileSchema.safeParse(raw);
@@ -105,8 +160,10 @@ export function validateDailyQuests(raw: unknown): { data: DailyData | null; err
     unlockQuest: f.unlockQuest,
     day: { period: 'day', per: f.perDay, carry: f.carryDays, xpShare: f.xpShare, maxLevelGold: f.maxLevelGold, bands: f.bands },
     week: { period: 'week', per: f.weekly.perWeek, carry: 0, xpShare: f.weekly.xpShare, maxLevelGold: f.weekly.maxLevelGold, bands: f.weekly.bands },
+    chests: f.chests,
   };
   const errors: string[] = [];
+  checkChests(f.chests, errors);
   if (!getGameData().economy.quests.has(f.unlockQuest)) errors.push(`unlockQuest 가 quest_index.json 에 없습니다: ${f.unlockQuest}`);
   checkBoard(data.day, errors);
   checkBoard(data.week, errors);

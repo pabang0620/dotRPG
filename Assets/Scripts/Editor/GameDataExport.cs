@@ -130,7 +130,8 @@ namespace DotRPG.EditorTools
             foreach (var e in EquipmentDatabase.All) rows.Add((e.id, "equipment", false));
             foreach (var m in EquipmentDatabase.AllMaterials) rows.Add((m.id, "material", true));
             foreach (var id in new[] { ConsumableDatabase.Gold, ConsumableDatabase.HpPotion, ConsumableDatabase.MpPotion, ConsumableDatabase.TownScroll, ConsumableDatabase.ProtectTicket, DungeonDatabase.SealKey, DungeonDatabase.RaidCore, RaidRewards.RaidMatKing, RaidRewards.RaidMatGrah, RaidRewards.RaidMatXibak, RaidRewards.RaidMatKamatz,
-                FieldQuestDrops.VoidEssence, FieldQuestDrops.DryHide, FieldQuestDrops.AshHerb, FieldQuestDrops.DryFlower })
+                FieldQuestDrops.VoidEssence, FieldQuestDrops.DryHide, FieldQuestDrops.AshHerb, FieldQuestDrops.DryFlower,
+                ConsumableDatabase.ProtectFragment, ConsumableDatabase.MatBox }) // [DAILY CHEST] completion chest items (server daily_quests.json chests)
                 if (ConsumableDatabase.Get(id) != null) rows.Add((id, id == ConsumableDatabase.Gold ? "currency" : "consumable", true));
             foreach (var id in new[] { DungeonSweep.TicketItem, DungeonSweep.EventTicketItem }) rows.Add((id, "consumable", true)); // [SWEEP] display only, wallet on the server
             // [CASH] Sealed box rewards (Docs/PLAN_CASH_BOX_PASS.md): account-bound, never on the auction.

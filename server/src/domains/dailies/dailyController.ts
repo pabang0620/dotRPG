@@ -4,7 +4,7 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './dailyService';
-import type { SlotBody } from './dailyValidation';
+import type { ChestBody, SlotBody } from './dailyValidation';
 
 export async function list(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -28,6 +28,15 @@ export async function claim(_req: Request, res: Response, next: NextFunction): P
   try {
     const { body, params } = getValidated<SlotBody, { uuid: string }>(res);
     sendStored(res, await service.claim(getAccount(res.locals).id, params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function chest(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<ChestBody, { uuid: string }>(res);
+    sendStored(res, await service.openChest(getAccount(res.locals).id, params.uuid, body));
   } catch (err) {
     next(err);
   }

@@ -4,7 +4,7 @@ import { validate } from '../../middleware/validationMiddleware';
 import { charKey } from '../economy/economyRouting';
 import { charParams } from '../economy/economyValidation';
 import * as controller from './dailyController';
-import { slotBody } from './dailyValidation';
+import { chestBody, slotBody } from './dailyValidation';
 
 /** 14단계: 일일 의뢰(Docs/server/phase14_daily_quests.md 4절). 버전·인증은 /characters 공통 미들웨어가 처리한다 */
 export function createDailyRouter(): Router {
@@ -14,5 +14,7 @@ export function createDailyRouter(): Router {
   r.get('/characters/:uuid/dailies', read, validate({ params: charParams }), controller.list);
   r.post('/characters/:uuid/dailies/accept', write, validate({ params: charParams, body: slotBody }), controller.accept);
   r.post('/characters/:uuid/dailies/claim', write, validate({ params: charParams, body: slotBody }), controller.claim);
+  // 완료 상자(Docs/PLAN_DAILY_REWARDS_2026-10-24.md)
+  r.post('/characters/:uuid/dailies/chest', write, validate({ params: charParams, body: chestBody }), controller.chest);
   return r;
 }

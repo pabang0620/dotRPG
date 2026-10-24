@@ -104,6 +104,7 @@ namespace DotRPG
                 }
                 case ConsumableKind.LuckBox:
                 case ConsumableKind.SealedBox:
+                case ConsumableKind.MatBox: // [DAILY CHEST]
                     CashClient.OpenItem(id); // [CASH] the server opens boxes
                     return false;
                 case ConsumableKind.DungeonReset:

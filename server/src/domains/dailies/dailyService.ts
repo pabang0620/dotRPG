@@ -19,11 +19,12 @@ import { resetBoundaries } from '../../utils/resetBoundaries';
 import { findOwnedAlive } from '../characters/characterRepository';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './dailyRepository';
-import type { SlotBody } from './dailyValidation';
+import type { ChestBody, SlotBody } from './dailyValidation';
 import { levelCap } from '../../gamedata/chapterGate';
+import { gameDayOf, openDays, weekStartOf } from './dailyDays';
+import { chestsView, openChestIn, type ChestsView } from './dailyChest';
 
-const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
+export { gameDayOf, weekStartOf } from './dailyDays';
 
 export type SlotState = 'offered' | 'active' | 'ready' | 'claimed';
 export interface SlotView {
@@ -51,29 +52,8 @@ export interface DailiesView {
   giver: string;
   slots: SlotView[];
   weekly: { week_start: string; next_reset_at: string; slots: SlotView[] };
-}
-
-const kstDate = (iso: string): string => new Date(Date.parse(iso) + KST_OFFSET_MS).toISOString().slice(0, 10);
-
-/** 06:00 KST 경계의 게임 날짜(YYYY-MM-DD) */
-export function gameDayOf(now: Date): string {
-  return kstDate(resetBoundaries(now).dailyStartAt);
-}
-
-/** 목요일 06:00 KST 주 시작의 KST 날짜 */
-export function weekStartOf(now: Date): string {
-  return kstDate(resetBoundaries(now).weeklyStartAt);
-}
-
-const shiftDay = (day: string, n: number): string => new Date(Date.parse(`${day}T00:00:00Z`) + n * DAY_MS).toISOString().slice(0, 10);
-
-/** 진행 가능한 기간 시작 날짜들(오래된 것 먼저, 지금 기간이 마지막) */
-function openDays(board: Board, now: Date): string[] {
-  if (board.period === 'week') return [weekStartOf(now)];
-  const today = gameDayOf(now);
-  const days: string[] = [];
-  for (let i = board.carry; i >= 0; i--) days.push(shiftDay(today, -i));
-  return days;
+  /** 완료 상자·연속 일수(잠겨 있으면 null) */
+  chests: ChestsView | null;
 }
 
 /** kill은 맵의 필드 몬스터 레벨 <= 캐릭터 레벨 + 2 일 때만, 나머지는 항상 후보 */
@@ -170,6 +150,7 @@ export async function view(db: Queryable, characterId: number, characterUuid: st
       next_reset_at: b.nextWeeklyAt,
       slots: unlocked ? await boardSlots(db, data.week, characterId, level, now) : [],
     },
+    chests: unlocked ? await chestsView(db, characterId, level, now) : null,
   };
 }
 
@@ -243,6 +224,26 @@ export function claim(accountId: number, characterUuid: string, body: SlotBody):
           gold: ctx.gold,
           delta: ctx.delta(),
         },
+      };
+    },
+  });
+}
+
+/** POST /characters/:uuid/dailies/chest: 그 기간 칸을 모두 청구했으면 완료 상자를 연다(기간마다 한 번) */
+export function openChest(accountId: number, characterUuid: string, body: ChestBody): Promise<StoredResult> {
+  return runEconomy({
+    accountId,
+    characterUuid,
+    endpoint: 'POST /characters/:uuid/dailies/chest',
+    requestId: body.request_id,
+    payload: { period: body.period, day: body.day },
+    handler: async (ctx) => {
+      const data = getDailyQuests();
+      if (!(await repo.hasClaimedQuest(ctx.client, ctx.char.id, data.unlockQuest))) throw LOCKED();
+      const opened = await openChestIn(ctx, body.period, body.day);
+      return {
+        status: 200,
+        data: { ...(await view(ctx.client, ctx.char.id, ctx.char.uuid, ctx.level, ctx.now)), opened, delta: ctx.delta() },
       };
     },
   });

@@ -16,6 +16,7 @@ import * as tickets from '../sweep/ticketWallet';
 import { grantItems, type ItemCount } from './sealedBoxGrant';
 import * as repo from './sealedBoxRepository';
 import type { OpenBody, PullBody } from './sealedBoxValidation';
+import { isMatBox, openMatBoxIn } from '../dailies/dailyChest';
 
 /** 난수 해상도: 0.000001% (가장 낮은 확률 0.008%의 8000분의 1) */
 const ROLL_SCALE = 100_000_000;
@@ -155,7 +156,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
   });
 }
 
-/** POST /characters/:uuid/items/open: 확률 상자(+N 강화권 또는 마력 정수)와 봉인된 상자 아이템 */
+/** POST /characters/:uuid/items/open: 확률 상자(+N 강화권 또는 마력 정수), 봉인된 상자 아이템, 강화 재료 상자 */
 export function openItem(accountId: number, characterUuid: string, body: OpenBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;
   return runEconomy({
@@ -168,6 +169,8 @@ export function openItem(accountId: number, characterUuid: string, body: OpenBod
       const d = getSealedBox();
       const items = getGameData().economy.items;
       const info = items.get(body.item_key);
+      // 일일 완료 상자에서 나오는 강화 재료 상자(daily_quests.json chests.matBox)
+      if (info && isMatBox(body.item_key)) return openMatBoxIn(ctx, body.item_key);
       if (!info || (info.use !== 'LuckBox' && info.use !== 'SealedBox')) throw new AppError(422, '열 수 없는 아이템입니다.', 'NOT_OPENABLE');
       await assertNoHold(ctx.client, accountId, ctx.char.id);
       const have = await ctx.stackCount('bag', body.item_key);

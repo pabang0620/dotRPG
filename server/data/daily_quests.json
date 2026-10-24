@@ -701,5 +701,328 @@
         ]
       }
     ]
+  },
+  "chests": {
+    "ratesVersion": "dailychest-1",
+    "fragment": {
+      "item": "frag_protect",
+      "per": 10,
+      "into": "ticket_protect"
+    },
+    "day": [
+      {
+        "streak": 1,
+        "name": "나무 상자",
+        "grade": "wood",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 8
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 1
+          },
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 1,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "streak": 2,
+        "name": "나무 상자",
+        "grade": "wood",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 8
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 1
+          },
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 1,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "streak": 3,
+        "name": "철 상자",
+        "grade": "iron",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 12
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 1
+          },
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 1,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "streak": 4,
+        "name": "철 상자",
+        "grade": "iron",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 12
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 1
+          },
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 1,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "streak": 5,
+        "name": "은 상자",
+        "grade": "silver",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 16
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 2
+          },
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 1,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "streak": 6,
+        "name": "은 상자",
+        "grade": "silver",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 16
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 2
+          },
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 1,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "streak": 7,
+        "name": "금 상자",
+        "grade": "gold",
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 25
+          },
+          {
+            "item_key": "frag_protect",
+            "count": 2
+          },
+          {
+            "item_key": "box_mat",
+            "count": 2
+          },
+          {
+            "item_key": "ticket_protect",
+            "count": 1
+          }
+        ],
+        "bonusRolls": 2,
+        "maxLevel": [
+          {
+            "item_key": "key_seal",
+            "count": 20
+          },
+          {
+            "item_key": "mat_core",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "week": {
+      "streak": 0,
+      "name": "주간 상자",
+      "grade": "week",
+      "rewards": [
+        {
+          "item_key": "mat_ore",
+          "count": 30
+        },
+        {
+          "item_key": "frag_protect",
+          "count": 3
+        },
+        {
+          "item_key": "box_mat",
+          "count": 1
+        },
+        {
+          "item_key": "mat_core",
+          "count": 1
+        }
+      ],
+      "bonusRolls": 2,
+      "maxLevel": [
+        {
+          "item_key": "key_seal",
+          "count": 30
+        },
+        {
+          "item_key": "mat_core",
+          "count": 1
+        }
+      ],
+      "skinGauge": 1
+    },
+    "bonus": [
+      {
+        "id": "ore_x10",
+        "weight": 600,
+        "rewards": [
+          {
+            "item_key": "mat_ore",
+            "count": 10
+          }
+        ]
+      },
+      {
+        "id": "essence_x3",
+        "weight": 250,
+        "rewards": [
+          {
+            "item_key": "mat_essence",
+            "count": 3
+          }
+        ]
+      },
+      {
+        "id": "frag_x1",
+        "weight": 100,
+        "rewards": [
+          {
+            "item_key": "frag_protect",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "id": "mat_box_x1",
+        "weight": 40,
+        "rewards": [
+          {
+            "item_key": "box_mat",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "id": "protect_x1",
+        "weight": 10,
+        "rewards": [
+          {
+            "item_key": "ticket_protect",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "matBox": {
+      "item": "box_mat",
+      "reward": "mat_essence",
+      "bands": [
+        {
+          "min": 1,
+          "max": 5,
+          "weight": 550
+        },
+        {
+          "min": 6,
+          "max": 10,
+          "weight": 250
+        },
+        {
+          "min": 11,
+          "max": 20,
+          "weight": 120
+        },
+        {
+          "min": 21,
+          "max": 49,
+          "weight": 55
+        },
+        {
+          "min": 50,
+          "max": 99,
+          "weight": 22
+        },
+        {
+          "min": 100,
+          "max": 100,
+          "weight": 3
+        }
+      ]
+    }
   }
 }

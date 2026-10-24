@@ -9,3 +9,11 @@ export const slotBody = z.strictObject({
   period: z.enum(['day', 'week']).default('day'),
 });
 export type SlotBody = z.infer<typeof slotBody>;
+
+/** 완료 상자: 기간·날짜만 받는다(내용은 서버가 정한다) */
+export const chestBody = z.strictObject({
+  request_id: requestId,
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  period: z.enum(['day', 'week']).default('day'),
+});
+export type ChestBody = z.infer<typeof chestBody>;
