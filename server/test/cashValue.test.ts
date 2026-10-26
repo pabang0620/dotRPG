@@ -6,6 +6,7 @@ import { creditCrystals } from '../src/domains/starshop/crystalWallet';
 import { poolOf, slotTable } from '../src/domains/starshop/starshopService';
 import {
   PULL_PRICE,
+  gaugeCap,
   RARITIES,
   RATE_SCALE,
   STAR_COSMETICS,
@@ -43,6 +44,36 @@ const grantCrystals = (accountId: number, amount: number) =>
   withTransaction((c) => creditCrystals(c, { accountId, amount, reason: 'test_grant', ref: 'test', requestId: null }));
 
 describe('0044 캐시 아이템 가치', () => {
+  it('같은 계정의 두 캐릭터가 동시에 교환해도 주간 재고는 한 번만 소모된다', async () => {
+    const p = await newPayer(app);
+    const first = await heroOf(app, p);
+    const second = await heroOf(app, p);
+    await grantCrystals(p.accountId, 1000);
+    const replies = await Promise.all([first, second].map((h) => go(h, '/starshop/exchange-shop/buy', { good_id: 'skin_gauge10' })));
+    expect(replies.map((r) => r.status).sort()).toEqual([200, 422]);
+    expect(replies.find((r) => r.status === 422)?.body.errors.code).toBe('GOOD_SOLD_OUT');
+    expect((await crystalsOf(p.accountId)).balance).toBe(880);
+    expect((await getPool().query('SELECT skin_pity FROM star_wallets WHERE account_id = $1', [p.accountId])).rows[0].skin_pity).toBe(10);
+  });
+
+  it.each(['skin', 'hidden'] as const)('%s 게이지 교환은 뽑기로 쌓인 상한 초과분을 깎지 않는다', async (gauge) => {
+    const p = await newPayer(app);
+    const hero = await heroOf(app, p);
+    await seedStars(p.accountId, 1);
+    await grantCrystals(p.accountId, 1000);
+    const col = gauge === 'skin' ? 'skin_pity' : 'hidden_pity';
+    const before = gaugeCap(gauge) + 11;
+    await getPool().query(`UPDATE star_wallets SET ${col} = $2 WHERE account_id = $1`, [p.accountId, before]);
+    const good = gauge === 'skin' ? 'skin_gauge10' : 'hidden_gauge10';
+    const request_id = randomUUID();
+    const r = await go(hero, '/starshop/exchange-shop/buy', { good_id: good, request_id });
+    expect(r.status).toBe(200);
+    expect((await getPool().query(`SELECT ${col} AS gauge FROM star_wallets WHERE account_id = $1`, [p.accountId])).rows[0].gauge).toBe(before);
+    const replay = await go(hero, '/starshop/exchange-shop/buy', { good_id: good, request_id });
+    expect(replay.status).toBe(200);
+    expect((await getPool().query('SELECT count(*) AS n FROM exchange_purchases WHERE account_id = $1 AND request_id = $2', [p.accountId, request_id])).rows[0].n).toBe('1');
+  });
+
   it('1. 외형 여분 분해: 별조각에 더해 결정, 등록한 컬렉션 세트의 외형은 결정 +20%', async () => {
     const p = await newPayer(app);
     const hero = await heroOf(app, p);

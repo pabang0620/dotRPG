@@ -195,7 +195,8 @@ export async function openChestIn(ctx: EconCtx, period: Period, day: string): Pr
     if (!(await repo.gaugeGrantedThisWeek(ctx.client, ctx.char.accountId, day))) {
       const w = await wallets.lockWallet(ctx.client, ctx.char.accountId);
       const next = Math.min(gaugeCap('skin'), w.skinPity + (step.skinGauge ?? 0));
-      gauge = next - w.skinPity;
+      // 뽑기로 상한보다 많이 쌓았어도 상자 지급량은 음수가 될 수 없다.
+      gauge = Math.max(0, next - w.skinPity);
       if (gauge > 0) await wallets.setPity(ctx.client, ctx.char.accountId, next, 'skin');
     }
   }

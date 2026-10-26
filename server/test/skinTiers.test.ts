@@ -105,10 +105,13 @@ describe('스킨 칸 확률표', () => {
   it('공시: 히든 줄과 1종당 확률, 게이지 목표가 문서에 있다', () => {
     const ko = buildRatesMarkdown(getConfig().gameDataDir, 'ko');
     expect(ko).toContain('| 전설 히든 | 0.006% |');
+    expect(ko).toContain('일반 보통 칸만 제외하며 일반 히든은 나올 수 있습니다');
+    expect(ko).toContain('같은 등급·히든 여부의 칸 안에서는');
     expect(ko).toContain('천공의 발키리 여왕');
     expect(ko).toContain(`전설 ${CEILING.skinLegend}칸`);
     expect(ko).toContain(`전설 히든 ${CEILING.hiddenLegend}칸`);
     expect(buildRatesMarkdown(getConfig().gameDataDir, 'en')).toContain('Legend Hidden');
+    expect(buildRatesMarkdown(getConfig().gameDataDir, 'en')).toContain('excludes only the non-Hidden Common slot; Common Hidden can still appear');
   });
 });
 

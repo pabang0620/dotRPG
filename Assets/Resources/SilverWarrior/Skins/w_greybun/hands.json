@@ -1,0 +1,28 @@
+{
+  "frames": [
+    {
+      "direction": "up",
+      "clip": "walk0",
+      "hand": {
+        "x": 40,
+        "y": 44
+      }
+    },
+    {
+      "direction": "up",
+      "clip": "walk1",
+      "hand": {
+        "x": 40,
+        "y": 44
+      }
+    },
+    {
+      "direction": "side",
+      "clip": "attack3",
+      "hand": {
+        "x": 47,
+        "y": 38
+      }
+    }
+  ]
+}

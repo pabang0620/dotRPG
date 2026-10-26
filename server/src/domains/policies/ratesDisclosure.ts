@@ -93,8 +93,8 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
   out.push(ko ? `## 외형 뽑기 (확률표 버전 ${RATES_VERSION})` : `## Cosmetic Draws (rate table version ${RATES_VERSION})`);
   out.push(
     ko
-      ? `가격: 1회 별조각 ${PULL_PRICE}개, ${TEN_COUNT}회 별조각 ${TEN_PRICE}개. ${TEN_COUNT}회 묶음의 마지막 1회(보너스)는 일반 등급이 나오지 않고 나머지 등급이 같은 비율로 커집니다(표의 보너스 열). 같은 등급 안에서는 아직 갖지 않은 외형이 같은 확률로 나오고, 그 등급을 모두 가졌으면 중복으로 나와 합성 재료가 됩니다. 아래 외형별 확률은 아무것도 갖지 않았을 때 기준입니다.`
-      : `Price: 1 draw ${PULL_PRICE} Star Shards, ${TEN_COUNT} draws ${TEN_PRICE} Star Shards. The last draw of the ${TEN_COUNT}-pack (bonus) excludes the Common grade; the other grades grow in proportion (bonus columns). Within a grade, cosmetics you do not own yet share the grade's chance equally; once you own all of a grade, duplicates become synthesis materials. Per-item rates below assume you own nothing yet.`,
+      ? `가격: 1회 별조각 ${PULL_PRICE}개, ${TEN_COUNT}회 별조각 ${TEN_PRICE}개. ${TEN_COUNT}회 묶음의 마지막 1회(보너스)는 일반 보통 칸만 제외하며 일반 히든은 나올 수 있습니다. 남은 칸은 같은 비율로 커집니다(표의 보너스 열). 같은 등급·히든 여부의 칸 안에서는 아직 갖지 않은 외형이 같은 확률로 나오고, 그 칸을 모두 가졌으면 중복으로 나와 합성 재료가 됩니다. 아래 외형별 확률은 아무것도 갖지 않았을 때 기준입니다.`
+      : `Price: 1 draw ${PULL_PRICE} Star Shards, ${TEN_COUNT} draws ${TEN_PRICE} Star Shards. The last draw of the ${TEN_COUNT}-pack (bonus) excludes only the non-Hidden Common slot; Common Hidden can still appear. The remaining slots grow in proportion (bonus columns). Within a slot of the same grade and Hidden status, cosmetics you do not own yet share that slot's chance equally; once you own all of a slot, duplicates become synthesis materials. Per-item rates below assume you own nothing yet.`,
   );
   out.push(
     ko

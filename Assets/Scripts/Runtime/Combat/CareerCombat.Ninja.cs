@@ -65,6 +65,8 @@ namespace DotRPG
         int echoMuted;
 
         public float ClonesLeft => clones.Count > 0 ? Mathf.Max(0f, clonesEnd - Time.time) : 0f;
+        /// <summary>A second press of the assassin's kunai skill would teleport instead of throwing.</summary>
+        public bool HasKunaiAnchor => portKunai != null;
         bool ClonesUp => ClonesLeft > 0f;
 
         void NinjaReset()
@@ -97,7 +99,7 @@ namespace DotRPG
 
         // ---------- 투척술: the basic attack ----------
 
-        /// <summary>True while 투척술 replaces the basic attack (promoted ninja with the node learned).</summary>
+        /// <summary>A promoted ninja always throws; learning the throwing node only upgrades the throw.</summary>
         public bool ThrowsKunai => Mine == Career.Ninja && owner.Data.Progression.IsPromoted;
 
         /// <summary>The basic throw's reach: 6 m, 7 m with 투척술.</summary>
@@ -238,7 +240,16 @@ namespace DotRPG
             foreach (var clone in clones.ToArray()) if (clone != null) StartCoroutine(EchoHit(clone, enemy, damage, EchoDelay + EchoStep * i++));
         }
 
-        IEnumerator EchoHit(NinjaClone clone, EnemyController e, int damage, float delay)
+        /// <summary>Replays base-skill clone hits on member PCs, where puppet enemies never run damage hooks.</summary>
+        public void ReplayBaseCloneEcho(EnemyController enemy)
+        {
+            if (!PartyNet.IsMember || enemy == null || !enemy.Puppet || echoMuted > 0 || !ClonesUp || Mine != Career.Ninja) return;
+            int i = 0;
+            foreach (var clone in clones.ToArray())
+                if (clone != null) StartCoroutine(EchoHit(clone, enemy, 0, EchoDelay + EchoStep * i++, visualOnly: true));
+        }
+
+        IEnumerator EchoHit(NinjaClone clone, EnemyController e, int damage, float delay, bool visualOnly = false)
         {
             yield return new WaitForSeconds(delay);
             if (clone == null || e == null || e.IsDead || owner == null || owner.IsDead || !ClonesUp) yield break;
@@ -246,6 +257,7 @@ namespace DotRPG
             dir = dir.sqrMagnitude > .0001f ? dir.normalized : owner.AimDirection;
             CareerFx.Line(clone.Center, e.Center, CloneTint, .04f, .08f);
             CareerFx.Clip("f_x", e.Center, dir, .8f, 30f, VfxLayer.Top, true, CloneTint);
+            if (visualOnly) yield break;
             echoing = true;
             try { e.TakeDamage(new DamageInfo(damage, clone.Center, .01f, Team.Player, owner.gameObject) { noHitInvulnerability = true }); }
             finally { echoing = false; }

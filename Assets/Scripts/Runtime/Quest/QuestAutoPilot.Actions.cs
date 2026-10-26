@@ -109,7 +109,7 @@ namespace DotRPG
             if (bestD > HuntNear && Game.MiniDungeon?.Active != true && !focused)
             {
                 if (farWaitUntil <= 0f) farWaitUntil = Time.time + HuntFarWait;
-                if (Time.time < farWaitUntil) { status = L.F("{0} · 다음 몬스터를 찾는 중", g.label); lastProgressAt = Time.time; lastPos = p.Position; return; }
+                if (Time.time < farWaitUntil) { MeasureDecision("far_target_wait"); status = L.F("{0} · 다음 몬스터를 찾는 중", g.label); lastProgressAt = Time.time; lastPos = p.Position; return; }
             }
             else farWaitUntil = 0f;
             if (best != chaseTarget) { chaseTarget = best; chaseSince = Time.time; }
@@ -157,7 +157,8 @@ namespace DotRPG
             int spam = SpamSlot(p);
             float reach = BasicReach(p);
             if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * 0.85f, 6f));
-            if (dist > reach) { WalkTo(p, pos, reach * 0.8f); return; }
+            if (dist > reach) { MeasureDecision("approach"); WalkTo(p, pos, reach * 0.8f); return; }
+            MeasureDecision("fight_in_reach");
             lastProgressAt = Time.time;
             if (MeasureSkilled) { SkilledTurn(p, spam); return; }
             AutoTurn(p, spam);
@@ -185,6 +186,7 @@ namespace DotRPG
                     // [FIGHTER] 검기 태세 is a toggle: switch it on once and never press it again while it is on.
                     if (gem.id == "f_stance" && CareerCombat.For(p).StanceOn) continue;
                     input.next.skillSlot = slot;
+                    MeasureSkillRequest(p, slot);
                     skillSlot = (skillSlot + i + 1) % SkillKeys.Length;
                     nextAttack = Mathf.Max(nextAttack, Time.time + .5f);
                     return;
@@ -193,6 +195,7 @@ namespace DotRPG
             if (spam >= 0 && Time.time >= nextSpam && p.Skills.IsReady(spam) && Affordable(p, spam))
             {
                 input.next.skillSlot = spam;
+                MeasureSkillRequest(p, spam);
                 nextSpam = Time.time + UnityEngine.Random.Range(.35f, .6f);
                 return;
             }
@@ -223,7 +226,7 @@ namespace DotRPG
         }
 
         /// <summary>[MEASURE] A practised player's turn: other skills as they come ready, else the main skill, else a basic attack.</summary>
-        void SkilledTurn(PlayerController p, int spam)
+        void SkilledTurn(PlayerController p, int spam, bool stationary = false)
         {
             if (p.Skills == null || p.Skills.IsCasting) return;
             // [MEASURE] A player who knows the raid saves the cooldown skills for 망자의 심판 and bursts the cast.
@@ -243,14 +246,26 @@ namespace DotRPG
                     int slot = SkillKeys[(skillSlot + i) % SkillKeys.Length];
                     if (slot == spam || !p.Skills.IsReady(slot) || !Affordable(p, slot)) continue;
                     var gem = p.Data.Progression.Active(slot);
+                    if (stationary && gem != null && MeasureMovesHero(p, gem.id)) continue;
                     if (gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn) continue;
                     input.next.skillSlot = slot;
+                    MeasureSkillRequest(p, slot);
                     skillSlot = (skillSlot + i + 1) % SkillKeys.Length;
                     return;
                 }
             }
-            if (spam >= 0 && p.Skills.IsReady(spam) && Affordable(p, spam)) { input.next.skillSlot = spam; return; }
+            if (spam >= 0 && p.Skills.IsReady(spam) && Affordable(p, spam)) { input.next.skillSlot = spam; MeasureSkillRequest(p, spam); return; }
             if (Time.time >= nextAttack) { nextAttack = Time.time + .3f; input.next.attack = true; }
+        }
+
+        // Only used by the measurement driver's safe-circle combat, never by normal auto hunting.
+        static bool MeasureMovesHero(PlayerController p, string id)
+        {
+            // Initial throws and clone buffs are stationary; only their follow-up inputs relocate the hero.
+            if (id == "a_kunai") return CareerCombat.For(p).HasKunaiAnchor;
+            if (id == "n_clone") return CareerCombat.For(p).ClonesLeft > 0f;
+            return id == "f_rush" || id == "m_veil" || id == "n_veil"
+                || id == "leap" || id == "raid" || id == "charge";
         }
 
         void Heal(PlayerController p)

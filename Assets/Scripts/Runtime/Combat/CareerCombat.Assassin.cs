@@ -224,7 +224,13 @@ namespace DotRPG
             float travelled = 0f;
             while (travelled < clear)
             {
-                if (!Live(c) || k == null || version != portVersion) yield break;
+                if (!Live(c) || k == null || version != portVersion)
+                {
+                    // A cancelled flight never reaches Stick, so it otherwise has no expiry.
+                    if (k != null) k.Vanish();
+                    if (version == portVersion && portKunai == k) portKunai = null;
+                    yield break;
+                }
                 float step = Mathf.Min(PortSpeed * Time.deltaTime, clear - travelled);
                 Vector2 a = feet + lift + c.dir * travelled, b = a + c.dir * step;
                 foreach (var e in Corridor(a, b, c.n.radius)) if (hit.Add(e)) Strike(c, e, portDamage, a, 2f, 1, "c_slash");

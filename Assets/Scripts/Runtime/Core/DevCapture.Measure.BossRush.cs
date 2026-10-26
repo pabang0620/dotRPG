@@ -73,12 +73,22 @@ namespace DotRPG
             while (dir.Busy && Time.realtimeSinceStartup < guard) yield return null;
             QuestAutoPilot.MeasureSkilled = true;
             QuestAutoPilot.MeasureDodge = MeasureArg("-measureDodge", "1") != "0";
+            QuestAutoPilot.ResetMeasureTrace();
             var tally = new MeasureTally();
+            float firstDamageSeconds = -1f, nextTraceSeconds = 30f;
             Time.timeScale = scale;
             guard = Time.realtimeSinceStartup + 900f;
             while (dir.Active && !dir.Busy && Time.realtimeSinceStartup < guard)
             {
                 tally.Track();
+                if (firstDamageSeconds < 0f && dir.MyDamage > 0) firstDamageSeconds = dir.DevFightSeconds;
+                if (dir.DevFightSeconds >= nextTraceSeconds)
+                {
+                    nextTraceSeconds += 30f;
+                    var trace = HRow(("fight_s", R1(dir.DevFightSeconds)), ("damage", dir.MyDamage), ("hits", dir.Hits));
+                    MeasureTraceRow(trace);
+                    Log("bossrush trace " + MiniJson.Write(trace));
+                }
                 MeasureScale(scale);
                 if (Game.Player != null && !Game.Player.IsDead) MeasureEnsureHunting();
                 yield return null;
@@ -111,6 +121,10 @@ namespace DotRPG
             row["server_cap_180"] = cap180;
             row["cap_use"] = cap > 0 ? R2((float)dir.MyDamage / cap) : 0f;
             row["worn"] = string.Join(" ", worn);
+            row["first_damage_s"] = R2(firstDamageSeconds);
+            row["dodges"] = QuestAutoPilot.MeasureDodges;
+            row["cover_moves"] = QuestAutoPilot.MeasureCoverMoves;
+            MeasureTraceRow(row);
             Log($"bossrush {row["set"]} {row["career"]} {row["party"]}: {row["result"]} {dir.DevFightSeconds:0}s damage {dir.MyDamage:N0} hits {dir.Hits} dps {dir.MyDamage / secs:0} cap {cap:N0} (180s {cap180:N0}) use {(cap > 0 ? 100f * dir.MyDamage / cap : 0f):0}% potions {tally.potions}");
         }
 

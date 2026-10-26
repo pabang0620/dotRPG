@@ -58,6 +58,35 @@
 
 ## 남은 일
 
+### 출시 점검 작업 결과 (커밋 전)
+
+- 이번 작업은 게임 실행·화면 확인 없이 코드·저장 로그·원본 그림으로 검토했다. 어쌔신 배율은 0.95로 복원했고 원인을 확정하기 전 추가 배율 조정은 하지 않는다. 보스 방 41.2%의 새 검증과 3장 사냥·레이드 재측정은 미완료다. 근거와 측정 로그 확장은 `ch3/PROGRESSION_AND_GEAR.md` 1.8절.
+- 전사 그림: `w_whitetwin/attack.png` 30칸 머리를 몸 시트와 맞췄다. `w_stripe`, `w_pajama`, `w_starnight`, `w_blossom`, `w_festival`의 body/attack 무늬를 확대했다(10장 알파 불변). 스킨별 hands.json을 지원하고 직접 확인한 9칸을 수정했다: greybun 3, bluecoat·valkyrie·violet·noir·blackbob·bluebraids 각 1. 기존 사용자가 지적한 9칸 목록과 동일하다고 단정하지 않는다. 미사용 자산 포함 전수 알파 검사 318칸은 손 검수 완료 수가 아니다. 자동 최근접 픽셀 보정은 손 대신 몸통을 선택해 폐기했다.
+- 도적 확정 수정: 비행 중 취소된 어쌔신 쿠나이 정리, 파티 멤버의 Puppet 몬스터에서 누락되던 닌자 기본 스킬 분신 타격 연출 복구(피해 없는 원격 연출). 닌자 즉시 기본 투척·기본 스킬 투척판, 분신 60%, 어쌔신 쿠나이 10m·착지 후 3초·쿨 5.5초, 연쇄 도약 0.5초, 그림자 습격 2.99, 허수아비와 두 각성기를 코드로 확인했다. 원격 순간이동의 실제 지연·패킷 순서 동작은 실행 검증 전이다. 기본 스킬 분신은 문서대로 적중 echo이며 이동·설치·각성까지 복제하도록 임의 확대하지 않았다. 추적 투척의 벽 관통 허용 여부는 설계 질문으로 남긴다.
+- 서버 확정 수정: 스킨 1,011/히든 3,011 게이지에서 +10 교환 시 기존 값이 1,000/3,000으로 깎이던 문제, 스킨 게이지 1,000 초과 시 주간 상자의 음수 지급량으로 수령 실패하던 문제, 일반 히든도 제외된다고 잘못 설명하던 보너스 확률 공시. 확률 자체는 유지하고 공시의 중복 방지 단위를 등급+히든 칸으로 명확히 했다. 회귀 테스트를 먼저 추가하고 수정했다.
+- 서버 검토 범위: 재전송 요청 해시·응답 재생, 계정 지갑/캐릭터 잠금, 부캐 동시 교환·상자, 서버 정의 가격·수량·확률·천장, 합성 재료·결과의 히든 제외. 0054 이전 스킨 ID 99개 누락 0개, 기존 보유·여분·게이지 유지 확인. 마이그레이션 0050~0055는 수정하지 않았다. 가득 찬 게이지 교환은 기존처럼 비용·주간 재고를 쓰고 추가 0칸이므로 UI 예상량 안내는 별도 정책 판단이 필요하다. 결제·구매 제한은 추가하지 않았다.
+- 4장 0단계는 시작하지 않았다. 1~40 수치·XP는 불변이며 미니 미사용 이론 결과 46.0시간이다.
+
+변경 파일(이번 작업, 기존 작업 파일은 덮어쓰지 않고 필요한 부분만 추가):
+
+- `Assets/Scripts/Runtime/BossRush/BossRushCatalog.cs`
+- `Assets/Scripts/Runtime/Core/DevCapture.Measure.cs`, `DevCapture.Measure.BossRush.cs`
+- `Assets/Scripts/Runtime/Quest/QuestAutoPilot.Actions.cs`, `QuestAutoPilot.Dodge.cs`
+- `Assets/Scripts/Runtime/Combat/CareerCombat.Assassin.cs`, `CareerCombat.Ninja.cs`
+- `Assets/Scripts/Runtime/Player/SkillCaster.cs`, `Assets/Scripts/Runtime/Art/SilverWarriorArt.cs`
+- `Assets/Resources/SilverWarrior/Skins/w_whitetwin/attack.png`
+- `Assets/Resources/SilverWarrior/Skins/w_{stripe,pajama,starnight,blossom,festival}/{body,attack}.png`
+- `Assets/Resources/SilverWarrior/Skins/{w_greybun,w_bluecoat,w_valkyrie,w_violet,noir,w_blackbob,w_bluebraids}/hands.json`
+- `Tools/art/refine_warrior_skins.py`
+- `server/src/domains/starshop/cashValueService.ts`, `server/src/domains/dailies/dailyChest.ts`, `server/src/domains/policies/ratesDisclosure.ts`
+- `server/test/{cashValue,dailyChest,skinTiers}.test.ts`
+- `Assets/Resources/Data/Lang/{de,en,es,fr,id,ja,pt-BR,ru,vi,zh-Hans,zh-Hant}/policy.json`, `server/data/lang.<언어>.json`
+- `Docs/PROGRESS.md`, `Docs/PLAN_CHAPTER3_2026-10-21.md`, `Docs/ch3/PROGRESSION_AND_GEAR.md`
+
+검증: Unity `GameDataExport.Export` 성공(종료 0, 21개 파일, 데이터 버전 `6fd32cd2e649bfac` 유지). `i18n.py check`는 11언어 미번역·형식 오류 0, `sync-server` 완료. 서버는 `npm test -- cashValue dailyChest skinTiers ratesStatistical ratesPublication starWalletOnly rogueClass chapter3Lock sealExchange raidsChapter3 bossRush` 한 묶음으로 11개 파일 127개 테스트 통과했다. 내보내기 기록 `server/data/data_version.json`의 exportedAt도 갱신됐다.
+
+Unity가 갱신한 `.meta`는 그대로 둔다. 커밋·푸시·배포는 하지 않았다.
+
 - 레이드 측정: 2026-10-20 측정 봇에 장판·낙인·섬멸 회피를 넣었다(`-measureDodge`). 일반 난이도는 잴 수 있게 됐고(클리어 절반 정도), 심화는 봇이 아직 사람만큼 못 피해 판단에 못 쓴다. 심화는 사람 실플레이로 확인한다(`TEST_LOG.md` 2026-10-20)
 - Steam 연동(시험 앱 ID 480: SteamAuth·SteamP2PTransport, 서버 Web API 키), 실제 출시 서버 배포(`server/ops/README.md`)
 - 출시 전 운영: 법률 검토(약관·개인정보처리방침), 번역 원어민 감수, `POLICY_CONSENT_ENFORCE`·`WITHDRAW_DESTROY_ENABLED` 켜기, 클라이언트 결제 구매 화면

@@ -1,0 +1,12 @@
+{
+  "frames": [
+    {
+      "direction": "down",
+      "clip": "idle1",
+      "hand": {
+        "x": 26,
+        "y": 46
+      }
+    }
+  ]
+}

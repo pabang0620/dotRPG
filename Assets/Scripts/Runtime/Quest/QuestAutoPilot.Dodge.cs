@@ -22,6 +22,40 @@ namespace DotRPG
 
         float dangerSince = -1f, coverSince = -1f;
         bool escaping;
+        Vector2 escapeTarget;
+
+        // Measurement-only decisions are accumulated separately from damage and successful casts.
+        internal static readonly Dictionary<string, float> MeasureDecisionSeconds = new Dictionary<string, float>();
+        internal static readonly Dictionary<string, int> MeasureSkillRequests = new Dictionary<string, int>();
+        internal static void ResetMeasureTrace()
+        {
+            MeasureDecisionSeconds.Clear();
+            MeasureSkillRequests.Clear();
+            MeasureDodges = MeasureCoverMoves = 0;
+            if (Instance == null) return;
+            Instance.dangerSince = Instance.coverSince = -1f;
+            Instance.escaping = false;
+            Instance.farWaitUntil = 0f;
+            Instance.nextSkill = Instance.nextAttack = Instance.nextSpam = 0f;
+            Instance.skillSlot = 0;
+            Instance.unreachable.Clear();
+            Instance.chaseTarget = null;
+        }
+
+        static void MeasureDecision(string key)
+        {
+            if (!MeasureAnywhere) return;
+            MeasureDecisionSeconds.TryGetValue(key, out float seconds);
+            MeasureDecisionSeconds[key] = seconds + Time.deltaTime;
+        }
+
+        static void MeasureSkillRequest(PlayerController p, int slot)
+        {
+            if (!MeasureAnywhere) return;
+            string key = p.Data.Progression.Active(slot)?.id ?? "empty";
+            MeasureSkillRequests.TryGetValue(key, out int count);
+            MeasureSkillRequests[key] = count + 1;
+        }
 
         /// <summary>
         /// One frame of mechanic play. True = this frame is spent on it (walking to a circle / out of a warning, or hitting from the
@@ -41,6 +75,15 @@ namespace DotRPG
             if (!InGroundWarning(p.Position))
             {
                 dangerSince = -1f;
+                // Finish the escape to a point with clearance instead of immediately turning back at the boundary.
+                if (escaping && Vector2.Distance(p.Position, escapeTarget) > .15f && !InGroundWarning(escapeTarget))
+                {
+                    MeasureDecision("escape_clearance");
+                    input.next.move = GridPath.Steer(p.Position, escapeTarget);
+                    input.next.aim = input.next.move;
+                    lastProgressAt = Time.time;
+                    return true;
+                }
                 escaping = false;
                 // A person does not walk back into a warning that is still filling: wait at its edge and hit what is in reach.
                 if (best == null || !InGroundWarning(p.Position + GridPath.Steer(p.Position, best.Position) * .5f)) return false;
@@ -50,10 +93,16 @@ namespace DotRPG
             }
             if (dangerSince < 0f) dangerSince = Time.time;
             if (Time.time - dangerSince < DodgeReaction) return false;
-            if (!escaping) { escaping = true; MeasureDodges++; }
-            Vector2 to = SafeStep(p.Position, best != null ? best.Position : p.Position);
+            if (!escaping || InGroundWarning(escapeTarget) || Vector2.Distance(p.Position, escapeTarget) < .15f)
+            {
+                if (!escaping) MeasureDodges++;
+                escaping = true;
+                escapeTarget = SafeStep(p.Position, best != null ? best.Position : p.Position);
+            }
+            Vector2 to = escapeTarget;
             Vector2 dir = to - p.Position;
-            if (dir.sqrMagnitude < .0001f) return false;
+            if (dir.sqrMagnitude < .0001f) { escaping = false; MeasureDecision("escape_no_path"); return true; }
+            MeasureDecision("escape_warning");
             dir = GridPath.Steer(p.Position, to);
             input.next.move = dir;
             input.next.aim = dir;
@@ -66,9 +115,10 @@ namespace DotRPG
         {
             if (since < 0f) { since = Time.time; MeasureCoverMoves++; }
             lastProgressAt = Time.time;
-            if (Time.time - since < DodgeReaction) return true;
+            if (Time.time - since < DodgeReaction) { MeasureDecision("cover_reaction"); return true; }
             if (Vector2.Distance(p.Position, spot) > slack)
             {
+                MeasureDecision("cover_move");
                 Vector2 dir = GridPath.Steer(p.Position, spot);
                 input.next.move = dir;
                 input.next.aim = dir;
@@ -85,10 +135,12 @@ namespace DotRPG
             int spam = SpamSlot(p);
             float reach = BasicReach(p);
             if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * .85f, 6f));
-            if (Vector2.Distance(p.Position, target.Position) > reach) return;
+            if (Vector2.Distance(p.Position, target.Position) > reach) { MeasureDecision("safe_wait_out_of_reach"); return; }
+            MeasureDecision("safe_attack");
             input.next.aim = (target.Center - p.Center).normalized;
             input.next.faceAim = true;
-            SkilledTurn(p, spam);
+            // Mobility skills can leave the required circle even though the movement command is zero.
+            SkilledTurn(p, spam, stationary: true);
         }
 
         /// <summary>Inside a live, simulated danger warning (not a safe circle, not the room-wide 섬멸 / 의식 notice)?</summary>
@@ -111,6 +163,17 @@ namespace DotRPG
                     float a = i * Mathf.PI * 2f / DodgeAngles;
                     Vector2 c = from + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
                     if (!GridPath.Walkable(c) || InGroundWarning(c)) continue;
+                    bool clear = true;
+                    // Leave a body-width margin and reject destinations behind a wall.
+                    for (int k = 0; k < 8 && clear; k++)
+                    {
+                        float edge = k * Mathf.PI / 4f;
+                        clear = !InGroundWarning(c + new Vector2(Mathf.Cos(edge), Mathf.Sin(edge)) * .35f);
+                    }
+                    int steps = Mathf.CeilToInt(r / .25f);
+                    for (int k = 1; k <= steps && clear; k++)
+                        clear = GridPath.Walkable(Vector2.Lerp(from, c, k / (float)steps));
+                    if (!clear) continue;
                     float score = Vector2.Distance(c, target);
                     if (score < bestScore) { bestScore = score; best = c; }
                 }

@@ -1,0 +1,12 @@
+{
+  "frames": [
+    {
+      "direction": "side",
+      "clip": "attack3",
+      "hand": {
+        "x": 47,
+        "y": 38
+      }
+    }
+  ]
+}

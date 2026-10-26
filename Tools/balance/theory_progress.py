@@ -143,7 +143,7 @@ def measured_kpm(path=None):
     if not os.path.exists(path):
         return None
     with open(path, encoding="utf-8") as f:
-        rows = _career_rows(json.load(f).get("hunting", []), CAREER)
+        rows = _career_rows([r for r in json.load(f).get("hunting", []) if r.get("valid", True)], CAREER)
     bands, under = {}, []
     for r in rows:
         if r.get("kills_per_min", 0) <= 0 or r.get("driver") != "auto":

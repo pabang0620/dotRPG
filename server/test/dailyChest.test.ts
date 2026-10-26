@@ -9,6 +9,7 @@ import { getDailyQuests } from '../src/gamedata/dailyQuests';
 import { levelCap } from '../src/gamedata/chapterGate';
 import { buildRatesMarkdown } from '../src/domains/policies/ratesDisclosure';
 import { dailyRatesContent } from '../src/domains/dailies/dailyChest';
+import { gaugeCap } from '../src/domains/starshop/starshopDefs';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
 import { buildApp, createChar, DATA_DIR, randomName, resetDb, shutdown } from './helpers';
@@ -169,6 +170,38 @@ describe('일일 완료 상자', () => {
 });
 
 describe('주간 완료 상자', () => {
+  it('같은 계정의 두 캐릭터가 동시에 열어도 주간 게이지는 한 번만 지급된다', async () => {
+    const h = await unlockedHero(30);
+    const created = await createChar(app, h.s, randomName(), 'mage');
+    const id = created.body.data.character.id;
+    const alt: Hero = { s: h.s, id, dbId: Number((await getPool().query('SELECT id FROM characters WHERE uuid = $1', [id])).rows[0].id), cls: 'mage' };
+    await seedLevel(alt, 30);
+    await seedClaims(alt, ['career_path']);
+    const week = '2026-10-01';
+    for (const hero of [h, alt]) await seedClaimed(hero, 'week', week, 3);
+    const replies = await Promise.all([h, alt].map((hero) => open(hero, week, 'week')));
+    expect(replies.map((r) => r.status)).toEqual([200, 200]);
+    expect(replies.map((r) => r.body.data.opened.skin_gauge).sort()).toEqual([0, 1]);
+    expect((await getPool().query('SELECT skin_pity FROM star_wallets WHERE account_id = (SELECT account_id FROM characters WHERE id = $1)', [h.dbId])).rows[0].skin_pity).toBe(1);
+  });
+
+  it('스킨 게이지가 상한을 넘어도 주간 상자는 열리고 누적 게이지는 보존된다', async () => {
+    const h = await unlockedHero(30);
+    const week = '2026-10-01';
+    const before = gaugeCap('skin') + 11;
+    await getPool().query('INSERT INTO star_wallets (account_id, skin_pity) SELECT account_id, $2 FROM characters WHERE id = $1', [h.dbId, before]);
+    await seedClaimed(h, 'week', week, 3);
+    const rid = randomUUID();
+    const r = await open(h, week, 'week', rid);
+    expect(r.status).toBe(200);
+    expect(r.body.data.opened.skin_gauge).toBe(0);
+    expect(await countOf(h, 'mat_core')).toBe(1);
+    expect((await getPool().query('SELECT skin_pity FROM star_wallets WHERE account_id = (SELECT account_id FROM characters WHERE id = $1)', [h.dbId])).rows[0].skin_pity).toBe(before);
+    const replay = await open(h, week, 'week', rid);
+    expect(replay.status).toBe(200);
+    expect(await countOf(h, 'mat_core')).toBe(1);
+  });
+
   it('주간 칸 3개를 다 받으면 주간 상자: 고대의 핵·스킨 게이지 +1(같은 계정 다른 캐릭터는 그 주 게이지 없음)', async () => {
     const h = await unlockedHero(30);
     const week = '2026-10-01';
@@ -197,6 +230,20 @@ describe('주간 완료 상자', () => {
 });
 
 describe('강화 재료 상자', () => {
+  it('마지막 상자를 동시에 열어도 한 번만 지급하며 성공 요청 재전송은 보상을 늘리지 않는다', async () => {
+    const h = await unlockedHero(20);
+    await seedItem(h, 'box_mat', 1, 'bag', 'character');
+    const ids = [randomUUID(), randomUUID()];
+    const replies = await Promise.all(ids.map((id) => post(app, h, '/items/open', { item_key: 'box_mat' }, id)));
+    expect(replies.map((r) => r.status).sort()).toEqual([200, 422]);
+    expect(await countOf(h, 'box_mat')).toBe(0);
+    expect(await countOf(h, 'mat_essence')).toBe(1);
+    const successId = ids[replies.findIndex((r) => r.status === 200)];
+    expect((await post(app, h, '/items/open', { item_key: 'box_mat' }, successId)).status).toBe(200);
+    expect(await countOf(h, 'mat_essence')).toBe(1);
+    expect((await getPool().query("SELECT count(*) AS n FROM sealed_pulls WHERE character_id = $1 AND source = 'mat_box'", [h.dbId])).rows[0].n).toBe('1');
+  });
+
   it('구간을 고르고 구간 안에서 수량: 50~99 구간에서 77개, 기록은 구간 확률', async () => {
     const h = await unlockedHero(20);
     await seedItem(h, 'box_mat', 2, 'bag', 'character');

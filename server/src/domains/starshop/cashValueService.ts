@@ -332,8 +332,9 @@ export function buyExchangeGood(accountId: number, characterUuid: string, body: 
       }
       const w = await crystals.debitCrystals(db, { accountId, price: good.price, ref: good.id, requestId });
       if (good.kind === 'cosmetic') await repo.addCosmetic(db, accountId, itemId as string, 'crystal_shop');
-      else if (good.kind === 'skin_gauge') await wallets.setPity(db, accountId, Math.min(gaugeCap('skin'), star.skinPity + (good.count ?? 0)), 'skin');
-      else if (good.kind === 'hidden_gauge') await wallets.setPity(db, accountId, Math.min(gaugeCap('hidden'), star.hiddenPity + (good.count ?? 0)), 'hidden');
+      // 교환으로 더 채울 수 있는 양만 제한한다. 뽑기로 상한을 넘겨 쌓은 칸은 깎지 않는다.
+      else if (good.kind === 'skin_gauge') await wallets.setPity(db, accountId, Math.max(star.skinPity, Math.min(gaugeCap('skin'), star.skinPity + (good.count ?? 0))), 'skin');
+      else if (good.kind === 'hidden_gauge') await wallets.setPity(db, accountId, Math.max(star.hiddenPity, Math.min(gaugeCap('hidden'), star.hiddenPity + (good.count ?? 0))), 'hidden');
       else if (good.kind === 'gear_gauge') {
         const c = await ceilings.lockCeilings(db, accountId);
         await ceilings.setGauge(db, accountId, 'gear', c.gear + (good.count ?? 0));

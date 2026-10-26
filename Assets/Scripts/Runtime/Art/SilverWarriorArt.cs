@@ -74,7 +74,25 @@ namespace DotRPG
                 return data;
             }
         }
-        public static void ResetCache() { data = femaleData = rogueData = null; bodySheet = attackSheet = rogueBody = rogueAttack = null; skinSheets.Clear(); rogueSkinSheets.Clear(); }
+        public static void ResetCache() { data = femaleData = rogueData = null; bodySheet = attackSheet = rogueBody = rogueAttack = null; skinSheets.Clear(); rogueSkinSheets.Clear(); skinHands.Clear(); }
+        static readonly System.Collections.Generic.Dictionary<string, SilverAtlas> skinHands =
+            new System.Collections.Generic.Dictionary<string, SilverAtlas>();
+
+        // A skin may override only the grips that differ from the shared animation atlas.
+        static Vector2 SkinHand(string skin, SilverFrame frame)
+        {
+            if (!skinHands.TryGetValue(skin, out var atlas))
+            {
+                var json = Resources.Load<TextAsset>("SilverWarrior/Skins/" + skin + "/hands");
+                atlas = json == null ? null : JsonUtility.FromJson<SilverAtlas>(json.text);
+                skinHands[skin] = atlas;
+            }
+            if (atlas?.frames != null)
+                foreach (var candidate in atlas.frames)
+                    if (candidate.direction == frame.direction && candidate.clip == frame.clip)
+                        return candidate.hand;
+            return frame.hand;
+        }
         static readonly System.Collections.Generic.Dictionary<string, (Texture2D body, Texture2D attack)> skinSheets =
             new System.Collections.Generic.Dictionary<string, (Texture2D, Texture2D)>();
         /// <summary>
@@ -132,6 +150,7 @@ namespace DotRPG
             // The drawing's own hand (same pixel space as the rig: x from the left, y from the top).
             var f = SheetFrame(direction, frame);
             if (IsRogue(lookId)) return ToRig(direction, RogueFrame(f).hand);
+            if (SkinSheets(skin).HasValue) return ToRig(direction, SkinHand(skin, f));
             // Costume sheets keep their original grip coordinates. Only the new
             // default body uses the anchors reviewed against its own drawings.
             if (!SkinSheets(skin).HasValue)

@@ -1,0 +1,12 @@
+{
+  "frames": [
+    {
+      "direction": "down",
+      "clip": "walk2",
+      "hand": {
+        "x": 24,
+        "y": 41
+      }
+    }
+  ]
+}

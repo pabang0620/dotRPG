@@ -70,6 +70,7 @@ namespace DotRPG
             int levelCap = Progression.LevelCap;
             MeasureChapter3Restore();
             var meta = HRow(("build", Application.version), ("timeScale", fast ? "fixed 1/30" : (object)scale), ("huntMinutes", minutes), ("only", only), ("levelCap", levelCap),
+                ("driverRevision", "decision-trace-2"), ("measureDodge", MeasureArg("-measureDodge", "1")),
                 ("measuredAt", DateTime.Now.ToString("s")), ("wallSeconds", Mathf.RoundToInt(Time.realtimeSinceStartup - started)),
                 ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 2.4-3.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled; -measureDodge 1 (default): 0.25 s late steps out of ground warnings, stands in its 낙인 circle, hides from 섬멸, hits gimmick totems first. Potions under 40% HP / 20% MP"));
             var root = HRow(("meta", meta), ("hunting", hunting), ("dungeons", dungeons), ("raids", raids), ("bossrush", bossrush));
@@ -151,6 +152,22 @@ namespace DotRPG
         static float R1(float v) => Mathf.Round(v * 10f) / 10f;
         static float R2(float v) => Mathf.Round(v * 100f) / 100f;
 
+        static void MeasureTraceRow(Dictionary<string, object> row)
+        {
+            row["decision_seconds"] = QuestAutoPilot.MeasureDecisionSeconds.ToDictionary(x => x.Key, x => (object)R2(x.Value));
+            row["skill_requests"] = QuestAutoPilot.MeasureSkillRequests.ToDictionary(x => x.Key, x => (object)x.Value);
+            if (Game.Session != null)
+            {
+                var skills = new List<object>();
+                for (int slot = 0; slot < 8; slot++)
+                {
+                    var gem = Game.Session.Progression.Active(slot);
+                    if (gem != null) skills.Add(HRow(("slot", slot), ("id", gem.id), ("rank", Game.Session.Progression.Rank(gem.id))));
+                }
+                row["equipped_skills"] = skills;
+            }
+        }
+
         // ---------------------------------------------------------------- M1 hunting
 
         IEnumerator MeasureHunting(List<object> rows, float minutes, float scale)
@@ -178,11 +195,14 @@ namespace DotRPG
                     {
                         // auto = 자동 사냥 as players get it; skilled = a practised player (spam skill, skills on cooldown).
                         QuestAutoPilot.MeasureSkilled = skilled;
+                        QuestAutoPilot.ResetMeasureTrace();
                         Game.Player.HealFull();
                         var tally = new MeasureTally();
                         Time.timeScale = scale;
                         float t0 = Time.time, nextHuntTrace = 30f;
                         int strays = 0;
+                        float recoverySeconds = 0f;
+                        bool recoveryFailed = false;
                         while (Time.time - t0 < minutes * 60f)
                         {
                             tally.Track();
@@ -205,8 +225,22 @@ namespace DotRPG
                             {
                                 strays++;
                                 QuestAutoPilot.Stop("");
+                                float recoveryStart = Time.time;
+                                float recoveryDeadline = Time.realtimeSinceStartup + 30f;
                                 Game.Flow.TravelTo(zone.id, true);
                                 yield return null;
+                                while ((Game.Flow.IsTransitioning || Game.World == null || Game.World.MapId != zone.id)
+                                    && Time.realtimeSinceStartup < recoveryDeadline) yield return null;
+                                recoverySeconds += Time.time - recoveryStart;
+                                if (Game.Flow.IsTransitioning || Game.World == null || Game.World.MapId != zone.id)
+                                {
+                                    recoveryFailed = true;
+                                    Log("measure: hunt recovery failed for " + zone.id);
+                                    break;
+                                }
+                                // Resume only after the destination body exists; keep recovery time in the measured rate.
+                                tally.Track();
+                                MeasureEnsureHunting();
                                 continue;
                             }
                             MeasureEnsureHunting();
@@ -218,11 +252,14 @@ namespace DotRPG
                         tally.Close();
                         string name = MeasureCareerName(cls, career);
                         string driver = skilled ? "skilled" : "auto";
-                        rows.Add(HRow(("zone", zone.id), ("name", zone.name), ("mlv", zone.monsterLevel), ("career", name), ("level", Game.Session.Progression.Level),
+                        var huntRow = HRow(("zone", zone.id), ("name", zone.name), ("mlv", zone.monsterLevel), ("career", name), ("level", Game.Session.Progression.Level),
                             ("driver", driver), ("minutes", R2(mins)),
                             ("kills_per_min", R2(tally.kills / mins)), ("xp_per_min", R1(tally.Xp / mins)), ("gold_per_min", R1(tally.gold / mins)),
                             ("drops_per_min", R2(tally.drops / mins)), ("damage_taken_per_min", R1(tally.damage / mins)),
-                            ("potions_per_min", R2(tally.potions / mins)), ("deaths", tally.deaths), ("hero_hp", Game.Player != null ? Game.Player.Health.Max : 0), ("strays", strays)));
+                            ("potions_per_min", R2(tally.potions / mins)), ("deaths", tally.deaths), ("hero_hp", Game.Player != null ? Game.Player.Health.Max : 0), ("strays", strays),
+                            ("recovery_s", R1(recoverySeconds)), ("valid", !recoveryFailed));
+                        MeasureTraceRow(huntRow);
+                        rows.Add(huntRow);
                         Log($"hunt {zone.id} Lv{lv} {name} {driver}: kills/min {tally.kills / mins:0.0} xp/min {tally.Xp / mins:0} dmg/min {tally.damage / mins:0} potions {tally.potions} deaths {tally.deaths}");
                     }
                     QuestAutoPilot.MeasureSkilled = false;
@@ -269,7 +306,7 @@ namespace DotRPG
             QuestAutoPilot.MeasureSkilled = true; // runs are played by hand: time a practised player
             QuestAutoPilot.MeasureAware = MeasureArg("-measureAware", "") == "1"; // knows the raid (bursts 망자의 심판)
             QuestAutoPilot.MeasureDodge = MeasureArg("-measureDodge", "1") != "0"; // answers 낙인 / 섬멸 / ground warnings (QuestAutoPilot.Dodge.cs)
-            QuestAutoPilot.MeasureDodges = QuestAutoPilot.MeasureCoverMoves = 0;
+            QuestAutoPilot.ResetMeasureTrace();
             RaidRift.ResetCounters(); // [CH3] 공허 균열 / 잿빛 낙인 counters for this row
             GreyBrand.ResetCounters();
             row["play"] = QuestAutoPilot.MeasureAware ? "aware" : "skilled";
@@ -370,6 +407,7 @@ namespace DotRPG
             row["seal_failed"] = sealFail;
             row["ground_hits"] = groundHits;
             row["dodges"] = QuestAutoPilot.MeasureDodges;
+            MeasureTraceRow(row);
             row["cover_moves"] = QuestAutoPilot.MeasureCoverMoves;
             row["annihilate_covered"] = coverOk;
             row["annihilate_hit"] = coverMiss;
