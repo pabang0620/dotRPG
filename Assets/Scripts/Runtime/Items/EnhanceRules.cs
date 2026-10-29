@@ -101,7 +101,7 @@ namespace DotRPG
         public const int MaxPity = 100;
 
         /// <summary>Success % for +L → +L+1, L = 0..19.</summary>
-        static readonly int[] Chance = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 15, 14, 13, 12, 11, 10, 10, 10, 10 };
+        static readonly int[] Chance = { 100, 100, 100, 100, 80, 70, 60, 50, 40, 30, 25, 12, 10, 8, 7, 6, 5, 4, 3, 2 }; // [BALANCE 2026-10-29] +12.. lowered (was 15,14,13,12,11,10,10,10,10), +16 on is 6,5,4,3,2 (user)
         /// <summary>Gold multiplier per level attempted from.</summary>
         static readonly double[] GoldMul = { 1, 1, 1, 1, 2, 2.2, 2.4, 2.6, 2.8, 3, 3, 5, 16, 24, 34, 46, 60, 64, 68, 72 };
         /// <summary>

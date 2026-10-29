@@ -342,7 +342,7 @@ namespace DotRPG
         static readonly float[] EnhanceCoef =
         {
             0f, 1.1f, 2.2f, 3.3f, 4.5f, 5.7f, 7.0f, 8.3f, 11.11f, 14.7f, 18.9f,
-            27.25f, 37.13f, 43.43f, 49.8f, 56.11f, 62.38f, 68.59f, 74.77f, 80.9f, 86.98f,
+            27.25f, 37.13f, 48f, 58f, 70f, 85f, 102f, 122f, 145f, 170f, // [BALANCE 2026-10-29] +13.. raised with the lowered odds (was 43.43 .. 86.98)
         };
 
         /// <summary>
@@ -352,7 +352,7 @@ namespace DotRPG
         static readonly float[] WeaponEnhanceCoef =
         {
             0f, 1.1f, 2.2f, 3.3f, 4.5f, 5.7f, 7.0f, 8.3f, 11.11f, 14.7f, 18.9f,
-            27.25f, 37.13f, 61.7f, 72f, 85f, 92f, 99f, 106f, 113f, 120f,
+            27.25f, 37.13f, 66f, 82f, 100f, 125f, 155f, 190f, 230f, 280f, // [BALANCE 2026-10-29] +13.. raised with the lowered odds (was 61.7 .. 120)
         };
 
         /// <summary>

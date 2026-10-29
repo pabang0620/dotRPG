@@ -37,13 +37,13 @@ const inherit = (h: Hero, body: Record<string, unknown>, rid?: string) => post(a
 const bag = (key: string) => ({ target: { bag_key: key } });
 
 // enhance.json inheritTiers 골드(무기 0.25 x 새 레벨대 기본 골드 x 단위 차이, 무기 아닌 장비 80%)
-const GOLD_10_TO_20_P12 = 9973; // Lv20 기본 880
-const GOLD_20_TO_30_P12 = 28673; // Lv30 기본 2530
+const GOLD_10_TO_20_P12 = 11807; // Lv20 기본 880
+const GOLD_20_TO_30_P12 = 33944; // Lv30 기본 2530
 const GOLD_PLATE_20_TO_30_P11 = 6072; // 7590 x 0.8
 // 40 -> 50(Lv50 기본 10,000): 같은 공식 + 재료(유니크 핵 3·결정 5·인장 10, 레전더리 핵 6·결정 10·인장 20)
-const GOLD_40_TO_50_P12 = 113333;
-const GOLD_40_TO_50_P15 = 1568919;
-const GOLD_PLATE_40_TO_50_P12 = 90667;
+const GOLD_40_TO_50_P12 = 134167;
+const GOLD_40_TO_50_P15 = 2498452;
+const GOLD_PLATE_40_TO_50_P12 = 107333;
 
 async function hero(gold = 1_000_000): Promise<Hero> {
   const h = await newHero(app);
@@ -275,7 +275,7 @@ describe('챕터 3: Lv40 -> Lv50 계승', () => {
   });
 
   it('레전더리(착용 중, Lv50): 실패하면 -1, 레전더리 재료', async () => {
-    const h = await ch3Hero();
+    const h = await ch3Hero(3_000_000);
     await seedLevel(h, 50);
     await seedWorn(h, 0, 'eq_sword_40_l+15');
     roll(99);
