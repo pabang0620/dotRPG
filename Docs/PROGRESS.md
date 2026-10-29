@@ -41,7 +41,8 @@
 | +11 무기 강화 빛 오류 | 맞을 때 흰색 번쩍임 스프라이트(읽기 불가)를 읽어 +11 이상 무기에서 매 타격 오류가 나던 결함(`WeaponEnhanceVfx`) | fc4de05d |
 | 표기 이름 볼론 (2026-10-21) | 게임 표기 이름 볼론(Bolon), 영문 로고, 보스·네임드 이름 전부 부여, 마야 모티프 떡밥(`STORY.md` 7절). productName·세이브 경로는 dotRPG | 6c11170b |
 | 챕터 3 설계·구현 (2026-10-21~) | 만렙 50·특화·사얍 마을·레이드 2. 설계 `PLAN_CHAPTER3_2026-10-21.md` + `ch3/`, 0~3단계 완료(특화 48쌍, 사얍 마을·사냥터·이야기·그림), 4~7단계 남음(9절). 서버 `CHAPTER3_OPEN=0`이면 지금과 같은 Lv40 게임 | 336bcc8b~0a590311 |
-| 공유 빌드 (2026-10-26) | `games/dotRPG_online_20261026.zip`, `games/dotRPG_mobile_20261026.zip`. 도적(전직 2종·스킨 67종·동료 2명), 스킨 등급 개편(전설·히든, 세 직업 67종, 0054), 일일·주간 완료 상자(0055), 챕터 3 코드 포함이지만 서버 `CHAPTER3_OPEN` 닫힘이라 만렙 40. 시험 서버 데이터 버전 6fd32cd2e649bfac(10-26 배포, 마이그레이션 0055) | 이 커밋 |
+| 공유 빌드 (2026-10-29) | `games/dotRPG_online_20261029.zip`(PC 온라인판만, 모바일 빌드는 하지 않기로 함). 도적(전직 2종·스킨 67종·동료 2명), 스킨 등급 개편(전설·히든, 세 직업 67종, 0054), 일일·주간 완료 상자(0055), 시험 도구(일시정지 메뉴 맨 아래: 메인 퀘스트 한 칸·챕터 끝까지, 경험치 한 레벨·만렙까지), 코덱스 UI 감사 수정·도적 아이콘·컷인 그림. 챕터 3 코드 포함이지만 서버 `CHAPTER3_OPEN` 닫힘이라 만렙 40. 시험 서버 데이터 버전 6fd32cd2e649bfac(10-29 배포, 마이그레이션 변경 없음 0055). 이전 10-26 zip은 삭제 | e4a8a764, 4078545f |
+| 시험 도구·시험 계정 (2026-10-29) | 시험 서버 전용 `POST /characters/:uuid/test-tools/main-quest`·`/level`(개발 로그인 계정만, 운영은 404, `/meta`의 `test_tools`). 설계 `PLAN_TEST_TOOLS_2026-10-29.md`(우편 키트는 기획만, 구현 안 함). 시험 계정 초기화 스크립트 `server/scripts/test-reset-accounts.mjs`: admin·darac 계정을 1레벨 전사·마법사·도적으로 다시 만들고 물약 4종 500개씩, 별조각 200만(계정 공유). 밸런스 시험 순서는 `TEST_CHECKLIST_BALANCE_2026-10-29.md` | 4078545f, 이 커밋 |
 
 ## 사용자 결정 기록
 
@@ -100,15 +101,15 @@ Unity가 갱신한 `.meta`는 그대로 둔다. 커밋·푸시·배포는 하지
 - 출시 전 개선 계획: [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md), 전체 체크리스트: [MASTER_CHECKLIST.md](MASTER_CHECKLIST.md)
 - 지금까지 돌린 테스트(실측·시뮬레이션·실플레이·서버 테스트)와 결과: [TEST_LOG.md](TEST_LOG.md)
 
-## 현재 상태 (2026-10-22)
+## 현재 상태 (2026-10-29)
 
 | 항목 | 내용 |
 |---|---|
-| 작업 브랜치 | `wonho` (출시용, 사용자 작업 브랜치). 푸시는 `wonho`와 `main`에 같이. 챕터 3(Lv40→50)은 `ch3` 브랜치에서만(2026-10-22 분리, 백업 태그 `backup/pre-ch3-split-20261022`). `jaein`은 다른 작업자 |
+| 작업 브랜치 | `wonho` (출시용, 사용자 작업 브랜치). 푸시는 `git push origin wonho wonho:main wonho:ch3`. 챕터 3(Lv40→50)은 2026-10-27 wonho에 병합됐고 서버 `CHAPTER3_OPEN`으로 잠겨 있다(원격 `ch3`는 유지, 작업 폴더는 삭제). `jaein`은 다른 작업자
 | 엔진 | Unity 6000.5.9f1 (`ProjectSettings/ProjectVersion.txt`) |
 | 표기 이름 | **볼론**(Bolon, 2026-10-21 사용자 결정, 마왕 이름). 타이틀 로고는 영문 "BOLON" 하나(`Art/ui_logo_bolon`, 모든 언어 공통), 화면·문서·정책·홈페이지만 바꾼다. Unity productName·세이브 경로·레포·서버 이름은 dotRPG 유지(세이브 유실 방지). 고유 이름·떡밥은 `STORY.md` 7절 |
-| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0052 커밋됨(시험 서버는 0048까지). 0049_gear_inherit는 출시용 장비 계승(40→50도 같은 사유), 0050_rogue_class는 도적, 0051_chapter3_seal_exchange·0052_lord_difficulty는 챕터 3, 0053 보스 시즌 레벨은 5단계 계획, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
-| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0055까지 적용, 데이터 버전 6fd32cd2e649bfac(2026-10-26 배포). `CHAPTER3_OPEN` 미설정(닫힘). 여닫기는 `server/ops/chapter.sh open 3`. 절차는 `server/ops/README.md` 10절 |
+| 게임 서버 | `server/`(Node·TypeScript). 마이그레이션 0001~0055 커밋됨(시험 서버도 0055까지). 0049_gear_inherit는 출시용 장비 계승(40→50도 같은 사유), 0050_rogue_class는 도적, 0051_chapter3_seal_exchange·0052_lord_difficulty는 챕터 3, 0053 보스 시즌 레벨은 5단계 계획, 서버 테스트 122개 파일. 단계별 현황은 `PLAN_SERVER.md`와 `Docs/server/` |
+| 시험 서버 | 구글 클라우드 35.216.2.121(`https://35-216-2-121.sslip.io`), DB는 Supabase `dotrpg` 스키마. 0055까지 적용, 데이터 버전 6fd32cd2e649bfac(2026-10-29 배포, 시험 도구 포함). `CHAPTER3_OPEN` 미설정(닫힘). 여닫기는 `server/ops/chapter.sh open 3`. 절차는 `server/ops/README.md` 10절 |
 | 정책 공개 사본 | https://pabang0620.github.io/dotrpg-policy/ (저장소 pabang0620/dotrpg-policy) |
 | 홈페이지 | 로컬 `C:\Users\admin\Desktop\games\sites\dotrpg-home`(저장소 pabang0620/dotrpg-home, 비공개). OpenAI Sites 프로젝트(Next/vinext + Cloudflare), 게임 소개·스크린샷·캐릭터·스킨 화면과 로그인·가입·캐릭터 화면. 계정·OAuth 실제 연결은 아직 꺼져 있다(미설정 API는 503). 그림은 `public/assets/`(로고·배경·캐릭터·스킨·게임 캡처), 생성 기록 `docs/GENERATED_ASSETS.md`, 연결 방법 `docs/DELIVERY.md` |
 | 밸런스 기준 | 총 플레이 Lv40 약 46시간, 미니 던전을 매일 하면 약 44시간(10-21 날짜 모델 수정 뒤)(`Tools/balance/theory_progress.py --measured --mini`), 무자본 골드는 Lv40에서 한 벌 값의 약 88%(`Tools/balance/theory_gold.py`), 20명 에이전트 시뮬레이션 `analysis/player-sim` v3 |
@@ -123,3 +124,8 @@ Unity가 갱신한 `.meta`는 그대로 둔다. 커밋·푸시·배포는 하지
 - 자동 검증 모드: `dotRPG.exe <모드> <결과폴더>` -> `report.txt`의 `summary` 줄. `-dotrpgCapture`(전체·강화·BGM), `-dotrpgParty`, `-dotrpgDungeon`, `-dotrpgMonster`, `-dotrpgBalance`, 다른 작업자 쪽 `-dotrpgCanyon`, `-dotrpgWinter`, `-dotrpgChars`, `-dotrpgUi`, `-dotrpgDepth`, `-dotrpgStairs`, `-dotrpgSilver`
 - 미리보기(에디터): `DotRPG.EditorTools.MonsterSheet.Render`(몬스터 시트), `DotRPG.EditorTools.DungeonRoomPreview.RenderAll`(던전 방)
 - BGM: Flow Music 후보 생성 후 `Tools/audio/bgm_pick.py --apply`로 검증·루프·선정 (절차는 `Docs/BGM_PROMPTS.md`)
+
+## 문서 정리 로그
+
+- 2026-10-29 삭제(git 이력으로 복원 가능): `COURTYARD_HOUSES.txt`, `LIVING_WATER.txt`, `VILLAGE_BUILDINGS_PROMPTS.txt`, `VILLAGE_EAVES_PROMPTS.txt`, `VILLAGE_NATURE_PROMPTS.txt`(마을 그림 생성 프롬프트, 참조 0건), `PLAN_REMOVE_GATHERING.md`(채집 제거 완료). 다른 문서·코드 주석이 근거로 가리키는 계획서·측정 기록·라이선스 출처 문서는 남겼다.
+- 모바일 UI 계획(`MOBILE_UI_PLAN.md`)은 사용자 지시(2026-10-29)로 지금 진행하지 않는다. 문서는 보존.
