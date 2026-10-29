@@ -123,6 +123,7 @@ namespace DotRPG
             PlayerCombat.AttackPressed += net.OnAttackPressed;
             SkillCaster.Casted += net.OnCasted;
             SkillCaster.FollowedUp += net.OnFollowedUp; // [NINJA]
+            SkillCaster.CastCancelled += net.OnCastCancelled; // [CANCEL]
             PlayerController.NetSkillMoved += net.OnSkillMoved; // [ROGUE]
             RaidMechanics.RoarStarted += net.OnRaidRoar;
             RaidMechanics.MemberStunned += net.OnRaidStun;
@@ -219,6 +220,7 @@ namespace DotRPG
             PlayerCombat.AttackPressed -= net.OnAttackPressed;
             SkillCaster.Casted -= net.OnCasted;
             SkillCaster.FollowedUp -= net.OnFollowedUp;
+            SkillCaster.CastCancelled -= net.OnCastCancelled;
             PlayerController.NetSkillMoved -= net.OnSkillMoved;
             RaidMechanics.RoarStarted -= net.OnRaidRoar;
             RaidMechanics.MemberStunned -= net.OnRaidStun;

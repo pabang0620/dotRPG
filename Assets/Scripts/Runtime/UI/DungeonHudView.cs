@@ -26,7 +26,8 @@ namespace DotRPG
         Text comboText;
         int shownCombo;
         float comboPopAt = -10f;
-        Text clockText, roomText, bannerText, reviveTitle, reviveBody, mapTitle;
+        Text clockText, roomText, bannerText, reviveTitle, reviveBody, mapTitle, coinText;
+        RectTransform coinRow;
         Image bannerBg;
         readonly List<Image> cells = new List<Image>();
         readonly List<Image> links = new List<Image>();
@@ -57,7 +58,18 @@ namespace DotRPG
             UIFactory.Stretch(roomText.rectTransform, 140f, 0f, 22f, 0f);
 
             // Room map (where the round minimap sits).
-            comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -172f), new Vector2(MapWidth, 64f)); // under the 마을로 button (room map 16..112, button 120..164)
+            // [UI 2026-10-29] Revive coins under the 마을로 button (room map 16..112, button 120..164, coins 172..206): they were
+            // squeezed into the clock box ("내 부활 · 파티 부활") and wrapped over other UI. The combo moves under them.
+            coinRow = UIFactory.Place(UIFactory.Rect(root, "Coins"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -172f), new Vector2(MapWidth, 34f));
+            UIFactory.Stretch(UIFactory.Panel(coinRow, "Bg", true).rectTransform);
+            var coinIcon = UIFactory.Image(coinRow, "Coin", Game.Art.Get("icon_revive_coin"), Color.white);
+            coinIcon.preserveAspect = true; coinIcon.raycastTarget = false;
+            UIFactory.Place(coinIcon.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(8f, 0f), new Vector2(26f, 26f));
+            coinText = UIFactory.Text(coinRow, "Text", "", 18, UIColors.Cream, TextAnchor.MiddleLeft, true);
+            UIFactory.Stretch(coinText.rectTransform, 40f, 0f, 6f, 0f);
+            coinText.resizeTextForBestFit = true; coinText.resizeTextMinSize = 11; coinText.resizeTextMaxSize = coinText.fontSize;
+            coinRow.gameObject.SetActive(false);
+            comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -214f), new Vector2(MapWidth, 64f)); // under the coins
             comboText = UIFactory.Text(comboRoot, "Count", "", 30, UIColors.Highlight, TextAnchor.MiddleRight, true);
             UIFactory.Place(comboText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(MapWidth, 44f));
             var comboTrack = UIFactory.Image(comboRoot, "Track", Game.Art.Get("ui_white"), new Color(1f, 1f, 1f, .15f));
@@ -205,6 +217,7 @@ namespace DotRPG
                 wasInRun = inRun;
                 clock.gameObject.SetActive(inRun);
                 roomMap.gameObject.SetActive(inRun);
+                coinRow.gameObject.SetActive(inRun);
                 if (minimap == null)
                 {
                     var mm = transform.parent != null ? transform.parent.GetComponentInChildren<MinimapView>(true) : null;
@@ -226,11 +239,13 @@ namespace DotRPG
             if (roomKey != shownRoom)
             {
                 shownRoom = roomKey;
-                // [REVIVE] Coins: my own revives, and with people the party's shared pool.
+                // [REVIVE] Coins: my own revives, and with people the party's shared pool (alone the two are the same).
+                // [UI 2026-10-29] Shown on their own row under the room map; the clock box keeps only the room.
                 int mine = Mathf.Max(0, run.Numbers.revives - run.RevivesUsed);
-                string revivesTag = (mine > 0 ? L.F("내 부활 {0}/{1}", mine, run.Numbers.revives) : L.F("<color=#ff8a7a>내 부활 0/{0}</color>", run.Numbers.revives)) +
-                                    (run.Humans > 1 ? L.F("  파티 부활 {0}/{1}", run.PartyRevivesLeft, run.PartyRevives) : "");
-                roomText.text = L.F("방 <color=#ffe066>{0}</color>/{1}    {2}", run.RoomIndex + 1, run.RoomCount, revivesTag);
+                int total = run.Humans > 1 ? run.PartyRevivesLeft : mine;
+                coinText.text = L.F("개인 {0} · 전체 {1}", mine, total);
+                coinText.color = mine > 0 ? (Color)UIColors.Cream : new Color32(255, 138, 122, 255);
+                roomText.text = L.F("방 <color=#ffe066>{0}</color>/{1}", run.RoomIndex + 1, run.RoomCount);
             }
             RefreshRoomMap(run);
 

@@ -158,7 +158,7 @@ namespace DotRPG
         /// follow the walking player, 25% less damage taken for 1 s.</summary>
         void Whirl(SkillNumbers n)
         {
-            if (n.spec == 'a' || n.spec == 'b') { StartCoroutine(WhirlSpins(n)); return; }
+            if (n.spec == 'a' || n.spec == 'b') { whirlRoutine = StartCoroutine(WhirlSpins(n)); return; } // [CANCEL] Shift stops the spins
             Spin(n, owner.Center, null);
         }
 

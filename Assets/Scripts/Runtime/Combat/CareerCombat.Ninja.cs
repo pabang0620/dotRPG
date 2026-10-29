@@ -7,7 +7,7 @@ namespace DotRPG
     /// <summary>
     /// 닌자 (rogue career, Docs/PLAN_CLASS_ROGUE.md 2.4): thrown kunai at range. The ninja's basic attack is always a kunai
     /// throw (투척술 only makes it stronger); 연막 도약 is the escape; 분신술 (user skill) puts two clones beside me that copy
-    /// every attack of mine (basic attack and attack skills, same direction) at 60% of my damage. Clone damage is my own damage. 쿠나이 순간이동 moved to the assassin (2026-10-23) but its anchor state
+    /// every attack of mine (basic attack and attack skills, same direction) at 12% of my damage each (2026-10-29). Clone damage is my own damage. 쿠나이 순간이동 moved to the assassin (2026-10-23) but its anchor state
     /// and the free-spot search stay here, next to the clone swap that shares them.
     /// </summary>
     public sealed partial class CareerCombat
@@ -58,7 +58,7 @@ namespace DotRPG
         readonly List<NinjaClone> clones = new List<NinjaClone>();
         float clonesEnd, cloneShare;
         bool cloneSwapUsed;
-        /// <summary>The amount of the direct hit being dealt, before my multipliers (ModifyDamage): a clone copies 60% of it.</summary>
+        /// <summary>The amount of the direct hit being dealt, before my multipliers (ModifyDamage): a clone copies its share (cloneShare) of it.</summary>
         int echoRaw;
         /// <summary>A clone's copy is landing (it is not copied again) / a moving skill's hit is landing (not copied).</summary>
         bool echoing;
@@ -199,16 +199,17 @@ namespace DotRPG
         }
 
         /// <summary>
-        /// 분신술: two clones beside me for 8 s (longer with ranks) that copy every attack of mine at 60% of the damage
-        /// (user, fixed: the ranks and the specializations change the time and the count, never the share).
+        /// 분신술: two clones beside me for 3 min (cooldown 2 min, so they are always up) that copy every attack of mine at
+        /// 12% of the damage each. [2026-10-29 user "지속 3분, 쿨 2분, 무한이어야지. 대신 딜을 조정"] The time is fixed;
+        /// the ranks raise the share (rank potency) and the specializations change the count, the total share staying the same.
         /// </summary>
         void Clones(Run c)
         {
             DismissClones();
-            cloneShare = c.s.power / 100f;
-            clonesEnd = Time.time + c.s.duration * c.Scale * (c.n.spec == 'a' ? CloneOneTime : c.n.spec == 'b' ? CloneThreeTime : 1f);
+            cloneShare = c.s.power / 100f * c.Scale * (c.n.spec == 'a' ? CloneOneShare : c.n.spec == 'b' ? CloneThreeShare : 1f);
+            clonesEnd = Time.time + c.s.duration;
             cloneSwapUsed = false;
-            // [ROGUE SPEC] 단일 분신 A: one clone for twice as long. 분신 셋 B: three for two thirds of the time.
+            // [ROGUE SPEC] 단일 분신 A: one clone at 24%. 분신 셋 B: three at 8% each.
             if (c.n.spec != 'a') clones.Add(NinjaClone.Spawn(owner, -1));
             clones.Add(NinjaClone.Spawn(owner, 1));
             if (c.n.spec == 'b') clones.Add(NinjaClone.Spawn(owner, -2));
@@ -226,7 +227,7 @@ namespace DotRPG
 
         /// <summary>
         /// [NINJA] A direct hit of mine landed while the clones are out: each clone does the same blow on the same monster
-        /// a moment later at 60% (the base kit's stab, backstab, dance and the like). Career skills copy themselves (the
+        /// a moment later at its share (the base kit's stab, backstab, dance and the like). Career skills copy themselves (the
         /// throws) or are not copied (<see cref="NotEchoed"/>), and a clone's copy is never copied again.
         /// </summary>
         void CloneEcho(EnemyController enemy)

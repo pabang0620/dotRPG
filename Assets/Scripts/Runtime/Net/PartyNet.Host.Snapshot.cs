@@ -90,7 +90,31 @@ namespace DotRPG
             }
             WriteWarnings(w);
             WriteProjectiles(w);
+            WriteGroggy(w); // [PARTY 19] trailing: an older member build stops before it
         });
+
+        /// <summary>
+        /// [PARTY 19] The 무력화 gauge as the host has it (every member's hit lands on the host's monster, so this is the
+        /// whole party's gauge). Members draw it from here instead of their own puppet, which takes no hits.
+        /// </summary>
+        void WriteGroggy(System.IO.BinaryWriter w)
+        {
+            int count = 0;
+            foreach (var kv in enemies) if (kv.Value != null && !kv.Value.IsDead && kv.Value.GroggyMax > 0f) count++;
+            w.Write((byte)Mathf.Min(count, 32));
+            int sent = 0;
+            foreach (var kv in enemies)
+            {
+                var e = kv.Value;
+                if (e == null || e.IsDead || e.GroggyMax <= 0f) continue;
+                if (sent++ >= 32) break;
+                w.Write(kv.Key);
+                w.Write(e.Groggy);
+                w.Write(e.GroggyMax);
+                w.Write(e.GroggyRemaining);
+                w.Write(e.GroggyDuration);
+            }
+        }
 
         // ---------------- actions (puppets on member PCs replay them) ----------------
 
@@ -100,6 +124,9 @@ namespace DotRPG
 
         /// <summary>[NINJA] Second press of the same slot (move to the kunai / swap with a clone): act kind 2.</summary>
         void OnFollowedUp(PlayerController m, int slot) => SendAct(m, 2, slot);
+
+        /// <summary>[CANCEL] Shift cut a cast (the host's own, or a member's copy here): act kind 3, members stop the look.</summary>
+        void OnCastCancelled(PlayerController m) => SendAct(m, 3, -1);
 
         /// <summary>[RAID] The roar started on the host: members draw the same line, count, edge and safe circles.</summary>
         void OnRaidRoar(EnemyController boss, float cast, Vector2[] circles)

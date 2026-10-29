@@ -238,7 +238,7 @@ namespace DotRPG
                 // [NINJA 2026-10-23] User: "분신 버프, 분신은 데미지의 60%, 캐릭터와 동일한 스킬 사용". The clones copy every attack of mine
                 // (basic attack included, same skill, same direction) at 60% each; moving and setting skills are not copied.
                 // Cooldown 57 -> 40 s, 8 s (rank-scaled): 2 x 60% x 8/40 = +24% on average, the old 25% clones' 1.235 (plan 2.4, 3.2).
-                S(n,2,"n_clone","분신술","분신 둘이 8초 동안 내 기본 공격과 공격 스킬을 같은 방향으로 똑같이 따라 쓴다(분신마다 본체 피해의 60%). 이동·설치 스킬(연막 도약·회수·기폭 쿠나이·그림자 질주·허수아비)과 각성기는 따라 하지 않는다. 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.","clone",60,30,57,0,0,.1f,8),
+                S(n,2,"n_clone","분신술","분신 둘이 3분 동안 내 기본 공격과 공격 스킬을 같은 방향으로 똑같이 따라 쓴다(분신마다 본체 피해의 12%). 이동·설치 스킬(연막 도약·회수·기폭 쿠나이·그림자 질주·허수아비)과 각성기는 따라 하지 않는다. 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.","clone",12,30,171.5f,0,0,.1f,180), // [2026-10-29 user] always up: 3 min, cooldown 171.5 x 0.7 = 120 s; share 12% keeps the old average (2 x 60% x 8 s / 40 s = 24%)
                 S(n,3,"n_recall","회수","8m 안에 남은 쿠나이를 모두(최대 12개) 손으로 끌어당긴다. 돌아오는 길의 적을 쿠나이마다 벤다. 회수한 쿠나이마다 MP 1% 회복.","recall",.6f,16,8,8,0,.15f),
                 S(n,4,"n_far","원거리 집중","6m 이상 떨어진 적에게 직접 공격 피해 +12%.","far",12,0,0,0,0,0),
                 S(n,5,"n_volley","연발 쿠나이","재사용 대기시간 없이 쿠나이 두 개를 0.17초 간격으로 8m 직선에 던진다. 첫 적에게 꽂힌다.","volley",.75f,18,0,8,.35f,.1f,0,2),

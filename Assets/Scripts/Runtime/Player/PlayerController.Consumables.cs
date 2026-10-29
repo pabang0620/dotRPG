@@ -7,11 +7,22 @@ namespace DotRPG
         float lockedUntil;
         readonly System.Collections.Generic.Dictionary<string, float> potionReadyAt = new System.Collections.Generic.Dictionary<string, float>();
 
-        /// <summary>Holds the character still (reading the return scroll).</summary>
-        public void LockMovement(float seconds)
+        /// <summary>[CANCEL] The lock comes from a skill (a rooted channel): the mobility key may break it.</summary>
+        bool lockBySkill;
+
+        /// <summary>Holds the character still (reading the return scroll; <paramref name="bySkill"/>: a skill's rooted channel).</summary>
+        public void LockMovement(float seconds, bool bySkill = false)
         {
             CancelMobility();
             lockedUntil = Time.time + seconds;
+            lockBySkill = bySkill;
+        }
+
+        /// <summary>[CANCEL] Ends a skill's root at once (its cast was cut); a scroll's lock stays.</summary>
+        public void ReleaseSkillLock()
+        {
+            if (lockBySkill && Time.time < lockedUntil) lockedUntil = 0f;
+            lockBySkill = false;
         }
 
         /// <summary>The potion key: the plain potion first, the greater one (cash) only once the plain ones run out.</summary>

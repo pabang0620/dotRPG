@@ -30,8 +30,9 @@ namespace DotRPG
 
         // ---------- 닌자 ----------
         const float ThrowHeavyGap = .4f, ThrowHeavyScale = 1.33f, ThrowQuickGap = .24f, ThrowQuickScale = .8f;
-        /// <summary>분신술 A/B (2026-10-23): the share stays 60% (user); one clone lasts twice as long, three last two thirds.</summary>
-        const float CloneOneTime = 2f, CloneThreeTime = 2f / 3f;
+        /// <summary>분신술 A/B (2026-10-29, user: always up, damage adjusted): the time is the same for every spec; the clones
+        /// together keep the base total (2 x 12% = 24%): one clone 2x the share (24%), three clones 2/3 of it (8% each).</summary>
+        const float CloneOneShare = 2f, CloneThreeShare = 2f / 3f;
         const float PortPierceMul = 3.2f / 2.11f, PortAnchorMul = 1.92f / 2.11f, PortAnchorGuardSeconds = 1.5f;
         const int PortAnchorGuard = 40;
         const float RecallTargetMul = 1.0f / .79f, RecallWideMul = .33f / .79f, RecallWideHalf = 1.2f;

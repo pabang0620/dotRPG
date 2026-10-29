@@ -29,10 +29,10 @@ namespace DotRPG
         const float HudLeftReach = 396f, HudLeftBottom = 214f;
         float barTop = Top;
         float WarningTop => barTop + BarBlockHeight + 4f;
-        // [UI 2026-10-29] The top-right status card (dungeon clock with 방 / 내 부활 / 파티 부활, the boss rush and mini dungeon
+        // [UI 2026-10-29] The top-right status card (dungeon clock with the room count, the boss rush and mini dungeon
         // cards) starts at x W-528. At UI size 1.0 / 0.9 the top-centre bar reaches past that (right edge 840 / 911) and the
         // card covered the "xN" line count (카마츠 raid): then the bar steps down under the card.
-        const float CardGap = 8f, ClockCardBottom = DungeonHudView.ClockTop + DungeonHudView.ClockHeight + 8f; // +8: the 방/부활 line may wrap below the frame
+        const float CardGap = 8f, ClockCardBottom = DungeonHudView.ClockTop + DungeonHudView.ClockHeight; // the revive coins moved under the room map
         const float TallCardBottom = DungeonHudView.ClockTop + 126f; // BossRushHudView / MiniDungeonHudView card height
         static float CardLeftFromRight => DungeonHudView.ClockRight + DungeonHudView.ClockWidth;
 

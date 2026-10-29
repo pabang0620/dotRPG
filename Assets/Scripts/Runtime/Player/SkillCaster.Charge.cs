@@ -87,7 +87,7 @@ namespace DotRPG
             readyAt[slot] = Time.time + (NoCooldown ? Mathf.Min(n.cooldown, 0.2f) : n.cooldown);
             // The cooldown belongs to the skill that was charged, even if the key was changed meanwhile.
             if (!string.IsNullOrEmpty(chargeGem)) skillReady[chargeGem] = readyAt[slot];
-            StartCoroutine(CareerCombat.For(owner).Cast(chargeSkill, n));
+            RunCast(CareerCombat.For(owner).Cast(chargeSkill, n)); // [CANCEL]
             Casted?.Invoke(owner, slot);
         }
 

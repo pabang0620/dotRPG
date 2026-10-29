@@ -58,7 +58,7 @@ namespace DotRPG
                 case "shadowform":effect=L.F("변신 {0:0.#}초 · 피해 +{1}% · 공격 속도 +{2}% · 끝날 때 폭발 {3} · 반경 {4:0.#}m", s.duration, CareerCombat.FormDamagePct, CareerCombat.FormSpeedPct, d, n.radius);break;
                 case "stealth":effect=L.F("은신 {0:0.#}초 · 이동 속도 +30% · 첫 공격 +{1}%(등 뒤)", s.duration, Mathf.RoundToInt(s.power*scale));break;
                 case "kunaiport":effect=L.F("관통 피해 {0} · {1:0.#}m · 다시 누르면 이동({2:0.#}초 안)", d, n.range, s.duration);break;
-                case "clone":effect=L.F("분신 2 · {0:0.#}초 · 기본 공격·공격 스킬을 본체 피해의 {1}%로 따라 씀", s.duration*scale, Mathf.RoundToInt(s.power));break;
+                case "clone":effect=L.F("분신 2 · {0:0.#}초 · 기본 공격·공격 스킬을 본체 피해의 {1}%로 따라 씀", s.duration, Mathf.RoundToInt(s.power*scale));break;
                 case "recall":effect=L.F("쿠나이마다 피해 {0} · {1:0.#}m 안 최대 12개 · 1개당 MP 1%", d, n.range);break;
                 case "volley":effect=L.F("피해 {0} × {1}발 · 직선 {2:0.#}m", d, s.hits, n.range);break;
                 case "fuma":effect=L.F("관통 피해 {0} · 같은 적 최대 {1}회 · {2:0.#}m 왕복", d, s.hits, n.range);break;

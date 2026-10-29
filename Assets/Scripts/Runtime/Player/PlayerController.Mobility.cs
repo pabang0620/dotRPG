@@ -15,6 +15,8 @@ namespace DotRPG
         float mobilityReadyAt, dashRemaining, nextDashDust;
         Vector2 dashDirection;
         bool mobilityBraking;
+        /// <summary>[CANCEL] The running dash belongs to a skill (돌진 베기 and the like): the mobility key may cut it.</summary>
+        bool skillDashing;
 
         public bool IsDashing => dashRemaining > 0f;
         public float MobilityCooldownRemaining => Mathf.Max(0f, mobilityReadyAt - Time.time);
@@ -24,14 +26,14 @@ namespace DotRPG
         public bool TryMobility(Vector2 movement)
         {
             if (!isActiveAndEnabled || IsDead || !Game.IsWorldRunning || (IsLocal && !(QuestAutoPilot.Drives(this) && QuestAutoPilot.WindowOpenInRunningWorld) && (!Game.IsPlaying || Game.State.ChangedThisFrame)) ||
-                IsDashing || MobilityCooldownRemaining > 0f || Time.time < knockbackUntil ||
-                Time.time < lockedUntil || skills.IsCasting) return false;
+                (IsDashing && !skillDashing) || MobilityCooldownRemaining > 0f || Time.time < knockbackUntil ||
+                (Time.time < lockedUntil && !lockBySkill)) return false;
 
             Vector2 direction = SnapTo8(movement.sqrMagnitude > .01f ? movement : AimDirection);
             // [FIGHTER] 섬광보 learned: Shift casts it (toward the move direction) instead of the plain dash.
             if (Class == CharacterClass.Warrior && skills.RushOnMobility)
             {
-                combat.Cancel();
+                CutForMobility();
                 Facing = FacingExtensions.FromVector(direction, Facing);
                 AimDirection = direction;
                 if (!skills.TryCastRush(out float rushCooldown)) return false;
@@ -42,7 +44,7 @@ namespace DotRPG
             float distance = MobilityClearance(direction, blink ? BlinkDistance : shadow ? ShadowDashDistance : DashDistance);
             if (distance < .08f) return false;
 
-            combat.Cancel();
+            CutForMobility();
             Facing = FacingExtensions.FromVector(direction, Facing);
             AimDirection = direction;
             desiredVelocity = Vector2.zero;
@@ -69,6 +71,17 @@ namespace DotRPG
                 if (shadow) skills.ShadowDash(direction); // [ROGUE] the path is cut 0.6 s later
             }
             return true;
+        }
+
+        /// <summary>
+        /// [CANCEL] Shift works at any time: the attack and whatever skill is being cast (channels, multi-hits, awakenings, a
+        /// skill dash, a charge) stop before the dash / teleport. Cooldowns stay spent.
+        /// </summary>
+        void CutForMobility()
+        {
+            skills.CancelCast();
+            combat.Cancel();
+            CancelMobility();
         }
 
         /// <summary>[ROGUE] 연쇄 도약: no knockback (damage still lands) until this time.</summary>
@@ -150,6 +163,7 @@ namespace DotRPG
             body.SetVelocity(Vector2.zero);
             dashDirection = direction;
             dashRemaining = clear;
+            skillDashing = true; // [CANCEL]
             nextDashDust = 0f;
             animator.Play(CharacterAnim.Walk, Facing);
             animator.SpeedMultiplier = 2.2f;
@@ -310,6 +324,7 @@ namespace DotRPG
         void CancelMobility()
         {
             dashRemaining = 0f;
+            skillDashing = false;
             if (animator != null) animator.SpeedMultiplier = 1f;
         }
 

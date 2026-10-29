@@ -391,7 +391,8 @@ namespace DotRPG
             if (NetDriven) { NetUpdate(cmd); return; } // [PARTY NET] position from the network
             // Mobility owns the pose and movement until the dash ends; a successful blink
             // consumes this frame too, so an X/Q press cannot also begin an attack.
-            if (IsDashing || (cmd.mobility && TryMobility(cmd.move)))
+            // [CANCEL] The key is tried first: it may cut a skill's own dash (TryMobility refuses during a mobility dash).
+            if ((cmd.mobility && TryMobility(cmd.move)) || IsDashing)
             {
                 desiredVelocity = Vector2.zero;
                 animator.Play(IsDashing ? CharacterAnim.Walk : CharacterAnim.Idle, Facing);

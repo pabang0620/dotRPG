@@ -139,9 +139,9 @@ namespace DotRPG
                 castEnd=Time.time+career.cast+CareerMoves.Recovery(career)+.08f;
                 // [BALANCE] 회귀의 방패: each node rank above 1 throws 0.04 s sooner (rank 3: about 4.5 throws a second).
                 if (career.effect == "shieldthrow") castEnd -= .04f * (Mathf.Clamp(Prog.Rank(career.id), 1, 3) - 1);
-                StartCoroutine(CareerCombat.For(owner).Cast(career,n));
+                RunCast(CareerCombat.For(owner).Cast(career,n));
             }
-            else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();StartCoroutine(Cast(gem, n));}
+            else {owner.GetComponent<CharacterAnimator>()?.EndCareerPose();RunCast(Cast(gem, n));}
             Casted?.Invoke(owner, slot); // [PARTY NET] the host replays it on member PCs
         }
 
@@ -174,7 +174,7 @@ namespace DotRPG
             // On Shift it keeps the plain dash's rhythm: the dash cooldown + 0.2 s (not the skill's own cooldown).
             cooldown = NoCooldown ? Mathf.Min(RushCooldown, 0.2f) : RushCooldown;
             castEnd = Time.time + s.cast + CareerMoves.Recovery(s) + .08f;
-            StartCoroutine(CareerCombat.For(owner).Cast(s, n, true)); // the dash goes where the player points, not at a monster
+            RunCast(CareerCombat.For(owner).Cast(s, n, true)); // the dash goes where the player points, not at a monster
             Casted?.Invoke(owner, RushSlot); // [PARTY NET] the host replays it on member PCs
             return true;
         }
@@ -195,25 +195,83 @@ namespace DotRPG
                     // [SKILL v2]
                     case "crush": Crush(n); break;
                     case "lance": Lance(n); break;
-                    case "charge": yield return StartCoroutine(Charge(n)); break;
+                    case "charge": yield return Charge(n); break; // [CANCEL] nested steps run inside the cast (RunCast)
                     case "firefield": StartCoroutine(FireField(n)); break;
                     // v1 + v2
                     case "whirl": Whirl(n); break;
                     case "cry": WarCry(n); break;
-                    case "blades": yield return StartCoroutine(Blades(n, i == 0)); break;
+                    case "blades": yield return Blades(n, i == 0); break;
                     case "nova": Nova(n); break;
                     case "frostorb": StartCoroutine(FrostOrb(n)); break;
-                    case "meteor": yield return StartCoroutine(Meteor(n, i == 0)); break;
+                    case "meteor": yield return Meteor(n, i == 0); break;
                     // [ROGUE] SkillCaster.Rogue
                     case "stab": if (ninja) NinjaStab(n); else Stab(n); break;
-                    case "leap": yield return StartCoroutine(ninja ? NinjaLeap(n) : Leap(n)); break;
+                    case "leap": yield return ninja ? NinjaLeap(n) : Leap(n); break;
                     case "backstab": if (ninja) NinjaBackstab(n); else Backstab(n); break;
                     case "raid": if (ninja) NinjaRaid(n); else Raid(n); break;
-                    case "dance": yield return StartCoroutine(Dance(n, i == 0)); break;
+                    case "dance": yield return Dance(n, i == 0); break;
                     case "scarecrow": Scarecrow(n); break;
                 }
                 if (i < n.repeats) yield return new WaitForSeconds(0.28f);
             }
+        }
+
+        // ---------- Cancel (Shift) ----------
+
+        /// <summary>[CANCEL] Any member's cast was cut by its mobility key (the host can replay it on member PCs as NetAct 3).</summary>
+        public static event System.Action<PlayerController> CastCancelled;
+
+        sealed class CastRun { public IEnumerator body; public bool done; }
+        readonly List<CastRun> liveCasts = new List<CastRun>();
+        Coroutine whirlRoutine;
+
+        /// <summary>
+        /// [CANCEL] Starts a cast as one coroutine: nested steps (yield return of an IEnumerator) are driven inside it instead of
+        /// as separate coroutines, so <see cref="CancelCast"/> stops every step and pending hit of the cast at once. What the
+        /// cast already let go (projectiles, fields, burns, clones) runs on its own coroutines and goes on.
+        /// </summary>
+        void RunCast(IEnumerator cast)
+        {
+            liveCasts.RemoveAll(r => r.done);
+            var run = new CastRun();
+            run.body = Flatten(cast, run);
+            liveCasts.Add(run);
+            StartCoroutine(run.body);
+        }
+
+        static IEnumerator Flatten(IEnumerator root, CastRun run)
+        {
+            var stack = new Stack<IEnumerator>();
+            stack.Push(root);
+            while (stack.Count > 0)
+            {
+                var top = stack.Peek();
+                if (!top.MoveNext()) { stack.Pop(); continue; }
+                object step = top.Current;
+                if (step is IEnumerator nested && !(step is CustomYieldInstruction)) { stack.Push(nested); continue; }
+                yield return step;
+            }
+            run.done = true;
+        }
+
+        /// <summary>
+        /// [CANCEL] The mobility key cuts whatever is being cast: the cast coroutines stop (no hit of it lands afterwards),
+        /// a charge is dropped, a rooted channel lets go and the cast pose ends. Cooldowns and MP stay spent.
+        /// Returns true when something was cut.
+        /// </summary>
+        public bool CancelCast()
+        {
+            bool cut = IsCasting || Charging;
+            foreach (var r in liveCasts)
+                if (!r.done) { StopCoroutine(r.body); r.done = true; cut = true; }
+            liveCasts.Clear();
+            if (whirlRoutine != null) { StopCoroutine(whirlRoutine); whirlRoutine = null; }
+            if (Charging) CancelCharge();
+            castEnd = 0f;
+            owner.GetComponent<CharacterAnimator>()?.EndCareerPose();
+            owner.ReleaseSkillLock();
+            if (cut) CastCancelled?.Invoke(owner);
+            return cut;
         }
 
         // ---------- Hits ----------

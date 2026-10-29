@@ -69,6 +69,27 @@ namespace DotRPG
             frozenUntil = frozen ? Time.time + 0.25f : 0f;
         }
 
+        /// <summary>[PARTY 19] The host's 무력화 gauge and groggy time (the puppet takes no hits, so its own gauge never moves).</summary>
+        public void ApplyNetGroggy(float gauge, float max, float remaining, float duration)
+        {
+            if (!Puppet || state == State.Dead || max <= 0f) return;
+            bool was = IsGroggy;
+            GroggyMax = max;
+            Groggy = Mathf.Clamp(gauge, 0f, max);
+            if (remaining > 0f)
+            {
+                groggyActive = true;
+                groggyUntil = Time.time + remaining;
+                GroggyDuration = duration;
+                if (!was) GroggyStarted?.Invoke(this);
+            }
+            else if (was)
+            {
+                groggyActive = false;
+                GroggyEnded?.Invoke(this);
+            }
+        }
+
         /// <summary>The host's monster died: same death as offline (loot report included).</summary>
         public void PuppetDie(int goldHits, int creditMask = 0xFF)
         {

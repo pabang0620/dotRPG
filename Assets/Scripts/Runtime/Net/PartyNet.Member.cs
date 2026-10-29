@@ -436,6 +436,14 @@ namespace DotRPG
             }
             ReadWarnings(r);
             ReadProjectiles(r);
+            if (r.BaseStream.Position >= r.BaseStream.Length) return; // [PARTY 19] older host: no gauge block
+            int groggies = r.ReadByte();
+            for (int i = 0; i < groggies; i++)
+            {
+                int id = r.ReadInt32();
+                float gauge = r.ReadSingle(), max = r.ReadSingle(), remaining = r.ReadSingle(), duration = r.ReadSingle();
+                if (puppets.TryGetValue(id, out var e) && e != null) e.ApplyNetGroggy(gauge, max, remaining, duration);
+            }
         }
     }
 }

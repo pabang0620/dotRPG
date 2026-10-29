@@ -227,7 +227,7 @@
  "혼자이면서 여럿": "Alone, Yet Many",
  "맹독 {0}": "Venom {0}",
  "분신 {0}": "Clones {0}",
- "분신이 내 공격을 본체 피해의 60%로 똑같이 따라 쓴다. 다시 누르면 분신과 자리 바꾸기.": "Clones copy your attacks at 60% of your damage. Press again to swap places with a Clone.",
+ "분신이 내 공격을 똑같이 따라 쓴다(분신을 모두 합쳐 본체 피해의 24%). 다시 누르면 분신과 자리 바꾸기.": "Clones copy your attacks (24% of your damage for all Clones together). Press again to swap places with a Clone.",
  "은신 {0}": "Stealth {0}",
  "일반 몬스터가 추적을 멈춘다. 첫 공격은 피해 증가·등 뒤 판정, 공격하면 풀린다.": "Normal monsters stop chasing. Your first attack deals more damage and counts as a backstab; attacking ends it.",
  "직접 공격 피해의 {0}%만큼 독(3초, 방어 무시).": "Poison equal to {0}% of direct attack damage (3s, ignores defense).",
@@ -284,5 +284,6 @@
  "손끝에서 표창이 쉬지 않고 쏟아진다. T 슬롯에서 표창 난사 사용 가능.": "Shuriken pour from your fingertips without pause. Shuriken Barrage is now usable in the T slot.",
  "그림자 모습. 모든 공격 피해 +{0}%, 공격 속도 +{1}%. 끝날 때 주변을 터뜨린다.": "Shadow form. All attack damage +{0}%, attack speed +{1}%. Bursts around you when it ends.",
  "변신 {0}": "Form {0}",
- "분신 둘이 8초 동안 내 기본 공격과 공격 스킬을 같은 방향으로 똑같이 따라 쓴다(분신마다 본체 피해의 60%). 이동·설치 스킬(연막 도약·회수·기폭 쿠나이·그림자 질주·허수아비)과 각성기는 따라 하지 않는다. 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.": "Two Clones copy your basic attack and attack skills in the same direction for 8s (each deals 60% of your damage). They don't copy moving or placed skills (Smoke Leap, Retrieve, Detonating Kunai, Shadow Rush, Scarecrow) or awakenings. Press again while active to swap places with the farther Clone."
+ "분신 둘이 8초 동안 내 기본 공격과 공격 스킬을 같은 방향으로 똑같이 따라 쓴다(분신마다 본체 피해의 60%). 이동·설치 스킬(연막 도약·회수·기폭 쿠나이·그림자 질주·허수아비)과 각성기는 따라 하지 않는다. 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.": "Two Clones copy your basic attack and attack skills in the same direction for 8s (each deals 60% of your damage). They don't copy moving or placed skills (Smoke Leap, Retrieve, Detonating Kunai, Shadow Rush, Scarecrow) or awakenings. Press again while active to swap places with the farther Clone.",
+ "분신 둘이 3분 동안 내 기본 공격과 공격 스킬을 같은 방향으로 똑같이 따라 쓴다(분신마다 본체 피해의 12%). 이동·설치 스킬(연막 도약·회수·기폭 쿠나이·그림자 질주·허수아비)과 각성기는 따라 하지 않는다. 지속 중 한 번 더 누르면 더 먼 분신과 자리를 바꾼다.": "Two Clones copy your basic attack and attack skills in the same direction for 3 min (each deals 12% of your damage). They don't copy moving or placed skills (Smoke Leap, Retrieve, Detonating Kunai, Shadow Rush, Scarecrow) or awakenings. Press again while active to swap places with the farther Clone."
 }

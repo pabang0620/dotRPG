@@ -129,6 +129,8 @@ namespace DotRPG
             }
             // [NINJA] 쿠나이 순간이동 / 분신술 second press: the kunai vanishes, smoke, clones move (position comes from the snapshot).
             else if (kind == 2 && skillSlot >= 0 && skillSlot < SkillGems.Slots) skills.NetFollowUp(skillSlot);
+            // [CANCEL] The member's Shift cut its cast (SkillCaster.CastCancelled on the host): stop the replayed look too.
+            else if (kind == 3) { skills.CancelCast(); combat.Cancel(); }
         }
 
         /// <summary>Update for a network-driven member: no own movement, actions from the command (host copy).</summary>
@@ -143,6 +145,15 @@ namespace DotRPG
                     FaceTowards(Position + cmd.aim);
                 if (cmd.attack) combat.TryAttack();
                 if (cmd.skillSlot >= 0 && cmd.skillSlot < SkillGems.Slots) skills.TryCast(cmd.skillSlot);
+                // [CANCEL] A member's Shift cut its cast on its PC: cut the host copy's too, so none of its hits land after the
+                // dash. The member's mobility cooldown is mirrored, so a press while it cools down cuts nothing here either.
+                if (cmd.mobility && MobilityCooldownRemaining <= 0f)
+                {
+                    skills.CancelCast();
+                    combat.Cancel();
+                    mobilityReadyAt = Time.time + (Class == CharacterClass.Mage ? BlinkCooldown : Class == CharacterClass.Rogue ? ShadowDashCooldown
+                        : Class == CharacterClass.Warrior && skills.RushOnMobility ? SkillCaster.RushCooldown : DashCooldown);
+                }
                 // [FIGHTER] A member's Shift 섬광보 runs here on the host (damage + replay to the other members).
                 if (cmd.mobility && skills.RushOnMobility)
                 {

@@ -64,7 +64,7 @@ namespace DotRPG
         {
             bool pull = n.spec == 'a';
             int spins = Mathf.Max(1, n.hits);
-            if (pull) owner.LockMovement(0.9f);
+            if (pull) owner.LockMovement(0.9f, true); // [CANCEL] a skill's root: Shift may break it
             else CareerCombat.For(owner).AddGuard(25, 1f);
             for (int i = 0; i < spins; i++)
             {
