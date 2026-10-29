@@ -36,7 +36,7 @@ const denied = (code: string, message: string, questId: string, extra: Record<st
  * 선행 퀘스트는 이 퀘스트를 받기 전에 끝나므로 처치가 겹치지 않는다(C#은 퀘스트마다 받은 뒤 0부터 센다).
  * 선행 관계가 없는 퀘스트는 동시에 진행되고 처치 한 번이 함께 올라가므로 더하지 않는다(2026-10-15)
  */
-function cumulative(
+export function cumulative(
   eco: EconomyData,
   claimed: Set<string>,
   rule: QuestRule,
@@ -69,7 +69,7 @@ function ancestorsOf(eco: EconomyData, rule: QuestRule): Set<string> {
   return seen;
 }
 
-async function processClaim(ctx: EconCtx, questId: string) {
+export async function processClaim(ctx: EconCtx, questId: string) {
   const eco = getGameData().economy;
   const rule = eco.quests.get(questId);
   if (!rule) throw new AppError(422, '알 수 없는 퀘스트입니다.', 'QUEST_UNKNOWN');

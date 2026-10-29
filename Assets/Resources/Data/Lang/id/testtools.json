@@ -1,0 +1,16 @@
+{
+ "메인 퀘스트 {0}개를 완료했습니다.": "{0} misi utama selesai.",
+ "전직을 먼저 마쳐야 다음 메인 퀘스트를 진행할 수 있습니다.": "Selesaikan Kenaikan Kelas dulu untuk melanjutkan misi utama.",
+ "시험 도구": "Alat Uji",
+ "레벨 상한까지 올릴까요?": "Naikkan sampai batas level?",
+ "레벨 한 칸 올리기": "Naik Satu Level",
+ "만렙까지 올리기": "Naik ke Level Maks",
+ "메인 퀘스트 챕터 끝까지": "Misi Utama: Sampai Akhir Bab",
+ "메인 퀘스트 한 칸 진행": "Misi Utama: Langkah Berikutnya",
+ "시험 서버 전용입니다. 진행이 서버에 바로 반영됩니다.": "Khusus server uji. Perubahan langsung berlaku di server.",
+ "열린 챕터의 메인 퀘스트를 모두 완료할까요?": "Selesaikan semua misi utama di bab yang terbuka?",
+ "개발 로그인 계정만 쓸 수 있습니다.": "Hanya akun login pengembang yang bisa memakai ini.",
+ "시험 서버에서만 쓸 수 있습니다.": "Hanya tersedia di server uji.",
+ "이미 최고 레벨입니다.": "Sudah di level tertinggi.",
+ "진행할 수 있는 메인 퀘스트가 없습니다.": "Tidak ada misi utama yang bisa dilanjutkan."
+}

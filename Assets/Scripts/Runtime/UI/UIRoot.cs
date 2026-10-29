@@ -34,6 +34,7 @@ namespace DotRPG
         public CreditsScreen Credits { get; private set; }
         public SaveSlotScreen Slots { get; private set; }
         public HelpScreen Help { get; private set; }
+        public TestToolsScreen TestTools { get; private set; } // [TEST TOOLS]
         public ControlsScreen Controls { get; private set; }
         public GameOverScreen GameOver { get; private set; }
         public EndingScreen Ending { get; private set; }
@@ -146,6 +147,7 @@ namespace DotRPG
             ui.Credits = CreditsScreen.Create(t, ui);
             ui.Slots = SaveSlotScreen.Create(t, ui); // [I]
             ui.Help = HelpScreen.Create(t, ui); // [E5]
+            ui.TestTools = TestToolsScreen.Create(t, ui); // [TEST TOOLS]
             ui.Controls = ControlsScreen.Create(t, ui);
             ui.CharacterSelect = CharacterSelectScreen.Create(t, ui);
             ui.Equipment = EquipmentScreen.Create(t, ui);
@@ -257,7 +259,7 @@ namespace DotRPG
             foreach (var s in stack) s.Hide();
             stack.Clear();
             // Make sure no stray screen stays open.
-            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, OnlineRename, Withdrawal, Consent, Policies, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm, choice })
+            foreach (var s in new MenuScreen[] { OnlineLogin, OnlineCharacters, OnlineCreate, OnlineRename, Withdrawal, Consent, Policies, Title, Pause, Settings, KeyBind, LootFilter, Slots, Help, TestTools, Controls, GameOver, Ending, CharacterSelect, Equipment, Enhance, Skills, WorldMap, QuestLog, Dungeon, Raid, Shop, Storage, confirm, choice })
                 if (s != null) s.Hide();
             if (Party != null) Party.Hide(); // [PARTY]
             if (Cosmetics != null) Cosmetics.Hide();

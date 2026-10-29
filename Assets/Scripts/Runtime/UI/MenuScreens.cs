@@ -172,9 +172,13 @@ namespace DotRPG
 
         public override void Show()
         {
+            // [TEST TOOLS] The entry exists only while a test server said so (/meta test_tools), so the list is rebuilt when that changes.
+            if (TestTools.Visible != withTestTools) BuildMenu(TestTools.Visible);
             base.Show();
             panel.Find("Title").GetComponent<Text>().text = Game.IsOnlineWorld ? L.T("메뉴 · 온라인 진행 중") : L.T("일시정지");
         }
+
+        bool withTestTools;
 
         public static PauseScreen Create(Transform canvas, UIRoot ui)
         {
@@ -182,6 +186,15 @@ namespace DotRPG
             var screen = root.gameObject.AddComponent<PauseScreen>();
             screen.ui = ui;
             screen.BuildPanel(root, L.T("일시정지"), 420);
+            screen.BuildMenu(false);
+            return screen;
+        }
+
+        void BuildMenu(bool testTools)
+        {
+            withTestTools = testTools;
+            var screen = this;
+            menu.Clear();
             screen.menu.AddButton(L.T("계속하기"), () => Game.Flow.Resume());
             screen.menu.AddButton(L.T("가방 · 장비"), () => Game.Flow.OpenWindow(null));
             screen.menu.AddButton(L.T("설정"), () => ui.Push(ui.Settings));
@@ -191,9 +204,9 @@ namespace DotRPG
                 screen.menu.AddButton(L.T("캐릭터 변경"), () => ui.Confirm(L.T("다른 체험 캐릭터로 바꿀까요?"), () => Game.Flow.SwitchCharacter()));
             screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?"), () => Game.Flow.ReturnToTitle()));
             screen.menu.AddButton(L.T("게임 종료"), () => ui.Confirm(L.T("게임을 종료할까요?"), () => Game.Flow.QuitGame(), keepOpenOnYes: true));
+            if (testTools) screen.menu.AddButton(L.T("시험 도구"), () => ui.Push(ui.TestTools));
             screen.menu.OnCancel = () => Game.Flow.Resume();
             screen.FitPanel();
-            return screen;
         }
 
         void Update()

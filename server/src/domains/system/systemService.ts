@@ -84,5 +84,7 @@ export function getMeta(now = getNow()) {
     // 챕터 3 잠금(CHAPTER3_OPEN): 클라이언트는 이 값으로 같은 레벨 상한·3장 콘텐츠 숨김 규칙을 쓴다
     chapter3_open: chapter3Open(),
     level_cap: levelCap(),
+    // 시험 도구 버튼 표시(시험 서버만 true). 실제 허용은 서버가 다시 확인한다(개발 로그인 계정만)
+    test_tools: cfg.deployStage === 'test',
   };
 }

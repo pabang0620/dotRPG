@@ -47,6 +47,8 @@ import { createWithdrawalRouter } from '../domains/withdrawal/withdrawalRoutes';
 import { createChestRouter } from '../domains/chests/chestRoutes';
 import { createPolicyRouter } from '../domains/policies/policyRoutes';
 import { consentGate } from '../domains/policies/consentGate';
+import { createTestToolsRouter } from '../domains/testtools/testToolsRoutes';
+import { testToolsEnabled } from '../domains/testtools/testToolsService';
 
 export function createRouter(): Router {
   const r = Router();
@@ -117,5 +119,7 @@ export function createRouter(): Router {
   r.use(createClientErrorRouter());
   // 챕터 3 이야기 묶음(3장이 열린 서버만 응답, 스포일러 보호)
   r.use(createContentRouter());
+  // 시험 도구(메인 퀘스트·경험치 밀기): 시험 서버(DEPLOY_STAGE=test)에만 등록한다. 운영에는 경로 자체가 없다(404)
+  if (testToolsEnabled()) r.use(createTestToolsRouter());
   return r;
 }

@@ -1,0 +1,16 @@
+{
+ "메인 퀘스트 {0}개를 완료했습니다.": "{0} Hauptquests abgeschlossen.",
+ "전직을 먼저 마쳐야 다음 메인 퀘스트를 진행할 수 있습니다.": "Schließe zuerst deinen Aufstieg ab, um die Hauptquest fortzusetzen.",
+ "시험 도구": "Testwerkzeuge",
+ "레벨 상한까지 올릴까요?": "Bis zur Stufengrenze erhöhen?",
+ "레벨 한 칸 올리기": "Eine Stufe aufsteigen",
+ "만렙까지 올리기": "Bis zur Max. Stufe aufsteigen",
+ "메인 퀘스트 챕터 끝까지": "Hauptquest: bis Kapitelende",
+ "메인 퀘스트 한 칸 진행": "Hauptquest: nächster Schritt",
+ "시험 서버 전용입니다. 진행이 서버에 바로 반영됩니다.": "Nur auf dem Testserver. Änderungen gelten sofort auf dem Server.",
+ "열린 챕터의 메인 퀘스트를 모두 완료할까요?": "Alle Hauptquests der offenen Kapitel abschließen?",
+ "개발 로그인 계정만 쓸 수 있습니다.": "Nur Konten mit Entwickler-Login können das nutzen.",
+ "시험 서버에서만 쓸 수 있습니다.": "Nur auf dem Testserver verfügbar.",
+ "이미 최고 레벨입니다.": "Bereits auf der höchsten Stufe.",
+ "진행할 수 있는 메인 퀘스트가 없습니다.": "Keine Hauptquest kann fortgesetzt werden."
+}

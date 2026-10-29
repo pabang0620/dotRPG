@@ -93,6 +93,11 @@ namespace DotRPG
             string url = null;
             var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++) if (args[i] == "-dotrpgServer") url = args[i + 1];
+            if (DevCapture.IsolatedUiAuditTokenStore)
+            {
+                BaseUrl = DevCapture.IsolatedOnlineUiAudit ? url.TrimEnd('/') : "http://127.0.0.1:1";
+                return;
+            }
             if (string.IsNullOrEmpty(url)) { try { url = PlayerPrefs.GetString(ServerKey, ""); } catch (Exception) { } }
             BaseUrl = (string.IsNullOrEmpty(url) ? DefaultServer : url).TrimEnd('/');
 #endif
@@ -105,6 +110,7 @@ namespace DotRPG
         /// </summary>
         public void SetServer(string url)
         {
+            if (DevCapture.IsolatedUiAuditTokenStore) return;
             url = (url ?? "").Trim().TrimEnd('/');
             if (url.Length > 0 && !url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) url = "http://" + url;
             try
@@ -219,6 +225,14 @@ namespace DotRPG
 
         IEnumerator Raw(string method, string path, object body, bool auth, Action<ApiResult> done)
         {
+#if !DOTRPG_RELEASE
+            if (DevCapture.IsolatedUiAuditTokenStore && (!DevCapture.IsolatedOnlineUiAudit ||
+                !Uri.TryCreate(BaseUrl, UriKind.Absolute, out var auditUri) || !auditUri.IsLoopback || auditUri.Scheme != "http"))
+            {
+                done(new ApiResult { ok = false, status = 0, code = "UI_AUDIT_OFFLINE", message = "" });
+                yield break;
+            }
+#endif
             using (var req = new UnityWebRequest(BaseUrl + path, method))
             {
                 if (body != null)

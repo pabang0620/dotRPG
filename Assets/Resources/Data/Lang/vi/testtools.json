@@ -1,0 +1,16 @@
+{
+ "메인 퀘스트 {0}개를 완료했습니다.": "Đã hoàn thành {0} nhiệm vụ chính.",
+ "전직을 먼저 마쳐야 다음 메인 퀘스트를 진행할 수 있습니다.": "Hãy hoàn thành Thăng cấp nghề trước để tiếp tục nhiệm vụ chính.",
+ "시험 도구": "Công cụ thử nghiệm",
+ "레벨 상한까지 올릴까요?": "Tăng đến giới hạn cấp?",
+ "레벨 한 칸 올리기": "Tăng một cấp",
+ "만렙까지 올리기": "Tăng lên cấp tối đa",
+ "메인 퀘스트 챕터 끝까지": "Nhiệm vụ chính: đến hết chương",
+ "메인 퀘스트 한 칸 진행": "Nhiệm vụ chính: bước tiếp theo",
+ "시험 서버 전용입니다. 진행이 서버에 바로 반영됩니다.": "Chỉ dành cho máy chủ thử nghiệm. Tiến trình được áp dụng ngay trên máy chủ.",
+ "열린 챕터의 메인 퀘스트를 모두 완료할까요?": "Hoàn thành mọi nhiệm vụ chính của các chương đang mở?",
+ "개발 로그인 계정만 쓸 수 있습니다.": "Chỉ tài khoản đăng nhập phát triển mới dùng được.",
+ "시험 서버에서만 쓸 수 있습니다.": "Chỉ dùng được trên máy chủ thử nghiệm.",
+ "이미 최고 레벨입니다.": "Đã ở cấp cao nhất.",
+ "진행할 수 있는 메인 퀘스트가 없습니다.": "Không có nhiệm vụ chính nào để tiến hành."
+}

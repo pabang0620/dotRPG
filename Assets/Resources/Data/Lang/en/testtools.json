@@ -1,0 +1,16 @@
+{
+ "메인 퀘스트 {0}개를 완료했습니다.": "Completed {0} main quests.",
+ "전직을 먼저 마쳐야 다음 메인 퀘스트를 진행할 수 있습니다.": "Finish your Advancement first to continue the main quest.",
+ "시험 도구": "Test Tools",
+ "레벨 상한까지 올릴까요?": "Raise to the level cap?",
+ "레벨 한 칸 올리기": "Level Up Once",
+ "만렙까지 올리기": "Level Up to Max",
+ "메인 퀘스트 챕터 끝까지": "Main Quest: To Chapter End",
+ "메인 퀘스트 한 칸 진행": "Main Quest: Next Step",
+ "시험 서버 전용입니다. 진행이 서버에 바로 반영됩니다.": "Test server only. Changes apply on the server at once.",
+ "열린 챕터의 메인 퀘스트를 모두 완료할까요?": "Complete every main quest in the open chapters?",
+ "개발 로그인 계정만 쓸 수 있습니다.": "Only dev-login accounts can use this.",
+ "시험 서버에서만 쓸 수 있습니다.": "Available on the test server only.",
+ "이미 최고 레벨입니다.": "Already at the highest level.",
+ "진행할 수 있는 메인 퀘스트가 없습니다.": "No main quest can be advanced."
+}
