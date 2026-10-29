@@ -1,6 +1,6 @@
 // 부활 코인(Docs/server/phase12_revive_coins.md). 일일 지급은 조회·사용 시점에 계산한다(lazy).
 // 캐릭터 행을 FOR UPDATE로 잠근 한 트랜잭션 안에서 지급 반영, 소모, revive_log 기록을 한다.
-import { withTransaction } from '../../db/pool';
+import { withTransaction, type Queryable } from '../../db/pool';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import { resetBoundaries } from '../../utils/resetBoundaries';
@@ -8,7 +8,10 @@ import { assertNoHold } from '../antiabuse/holds';
 import * as repo from './reviveRepository';
 import type { ReviveBody } from './reviveValidation';
 
-export const REVIVE_MAX = 5;
+/** 보유 상한(0056): 아이템·구매로 여기까지 채울 수 있다 */
+export const REVIVE_MAX = 100;
+/** 일일 무료 지급은 이 수까지만 채운다(이미 더 가졌으면 그대로 둔다) */
+export const REVIVE_DAILY_MAX = 5;
 export const REVIVE_FREE_UNTIL_LEVEL = 10;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -19,16 +22,20 @@ export function gameDay(now: Date): { day: string; nextGrantAt: string } {
   return { day: new Date(Date.parse(b.dailyStartAt) + KST_OFFSET_MS).toISOString().slice(0, 10), nextGrantAt: b.nextDailyAt };
 }
 
-/** 일일 지급 반영: 마지막 반영 이후 지난 게임 일수만큼 더하고 상한 5. day가 NULL이면 오늘부터 시작 */
+/**
+ * 일일 지급 반영: 마지막 반영 이후 지난 게임 일수만큼 더하되 지급으로는 5개(REVIVE_DAILY_MAX)까지만 채운다.
+ * 아이템으로 5개보다 많이 가졌으면 그대로 둔다(깎지 않는다). day가 NULL이면 오늘부터 시작
+ */
 export function applyGrant(coins: number, lastDay: string | null, today: string): number {
   if (!lastDay) return coins;
   const days = Math.floor((Date.parse(today) - Date.parse(lastDay)) / DAY_MS);
-  return days > 0 ? Math.min(REVIVE_MAX, coins + days) : coins;
+  return days > 0 ? Math.max(coins, Math.min(REVIVE_DAILY_MAX, coins + days)) : coins;
 }
 
 export interface ReviveStatus {
   coins: number;
   max: number;
+  daily_max: number;
   free: boolean;
   free_until_level: number;
   next_grant_at: string;
@@ -48,7 +55,7 @@ export async function reviveStatus(accountId: number, uuid: string): Promise<Rev
     const { day, nextGrantAt } = gameDay(getNow());
     const coins = applyGrant(c.revive_coins, c.revive_coin_day, day);
     if (coins !== c.revive_coins || c.revive_coin_day !== day) await repo.setCoins(db, c.id, coins, day);
-    return { coins, max: REVIVE_MAX, free: c.level <= REVIVE_FREE_UNTIL_LEVEL, free_until_level: REVIVE_FREE_UNTIL_LEVEL, next_grant_at: nextGrantAt };
+    return { coins, max: REVIVE_MAX, daily_max: REVIVE_DAILY_MAX, free: c.level <= REVIVE_FREE_UNTIL_LEVEL, free_until_level: REVIVE_FREE_UNTIL_LEVEL, next_grant_at: nextGrantAt };
   });
 }
 
@@ -83,4 +90,27 @@ export async function revive(accountId: number, uuid: string, body: ReviveBody):
     await repo.insertLog(db, { characterId: c.id, requestId: body.request_id, context, free, coinsAfter: coins, level: c.level, mapId: body.map_id ?? null, at: now });
     return { free, coins, max: REVIVE_MAX, next_grant_at: nextGrantAt };
   });
+}
+
+/**
+ * 부활 코인 아이템 1개 -> 이 캐릭터의 부활 코인 +1(0056). 아이템 사용(POST /characters/:uuid/items/use)의 트랜잭션 안에서
+ * 아이템을 빼기 전에 부른다. 캐릭터 행을 잠그고 일일 지급을 반영한 뒤 상한(100)이면 409 REVIVE_COINS_FULL.
+ * revive_log 에 context = item 으로 한 줄 남긴다(아이템 쪽은 item_ledger use_item 줄)
+ */
+export async function addCoinFromItem(
+  db: Queryable,
+  accountId: number,
+  characterUuid: string,
+  requestId: string,
+  now: Date,
+): Promise<{ coins: number; max: number; next_grant_at: string }> {
+  const c = await repo.lockOwned(db, accountId, characterUuid);
+  if (!c) throw new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
+  const { day, nextGrantAt } = gameDay(now);
+  const before = applyGrant(c.revive_coins, c.revive_coin_day, day);
+  if (before >= REVIVE_MAX) throw new AppError(409, `부활 코인은 ${REVIVE_MAX}개까지 가질 수 있습니다.`, 'REVIVE_COINS_FULL', { coins: before, max: REVIVE_MAX });
+  const coins = before + 1;
+  await repo.setCoins(db, c.id, coins, day);
+  await repo.insertLog(db, { characterId: c.id, requestId, context: 'item', free: false, coinsAfter: coins, level: c.level, mapId: null, at: now });
+  return { coins, max: REVIVE_MAX, next_grant_at: nextGrantAt };
 }

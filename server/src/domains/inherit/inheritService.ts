@@ -8,6 +8,7 @@ import { getGameData } from '../../gamedata/loader';
 import { inheritResultLevel } from '../../gamedata/inheritData';
 import { AppError } from '../../utils/AppError';
 import { keyAt, parseItemKey } from '../../utils/itemKey';
+import { carryHidden } from '../../utils/hiddenOption';
 import { getRng } from '../../utils/rng';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
@@ -85,7 +86,7 @@ async function processInherit(ctx: EconCtx, body: InheritBody) {
   const keepPercent = table.keepPercent[parsed.level] ?? 0;
   const { kept } = rollKeep(eco.enhance.rollRange, keepPercent);
   const newLevel = inheritResultLevel(table, parsed.level, parsed.inherit, kept);
-  const newKey = keyAt(row.to, newLevel, parsed.inherit + 1);
+  const newKey = keyAt(row.to, newLevel, parsed.inherit + 1, carryHidden(eco, parsed.hidden, row.to)); // 히든 옵션은 그대로 옮긴다
 
   // 4. 장비 바꾸기(귀속은 소모한 행 그대로, 승급과 같다)
   let bind: string | null = null;

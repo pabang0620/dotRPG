@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace DotRPG
@@ -164,16 +165,37 @@ namespace DotRPG
             }
             // [CH3 step 5] 익시 offers 특화 조정 after her own line when no quest talk waits (SpecTalk).
             bool specAfter = def.npcId == SpecTalk.Ixi && !Game.Quest.HasQuestTalk(def.npcId) && SpecTalk.Offers(def.npcId);
-            // A shop NPC with a quest conversation waiting (errand, report, offer) talks first; the shop opens on the next talk.
-            if (def.service != NpcService.None && !Game.Quest.HasQuestTalk(def.npcId))
+            if (def.service != NpcService.None)
             {
-                moving = false;
-                facing = FacingExtensions.FromVector(player.Position - (Vector2)transform.position, facing);
-                animator.Play(CharacterAnim.Idle, facing);
-                PoseTool(0f);
-                Game.UI.OpenService(def);
+                if (!Game.Quest.HasQuestTalk(def.npcId)) { OpenServiceFor(player); return; }
+                if (QuestAutoPilot.Drives(player)) { Talk(player, specAfter); return; } // auto-progress came for the quest talk
+                // [UX 2026-10-29] A service NPC with a quest conversation waiting (errand, report, offer): ask which one,
+                // so the forge / shop stays usable while the quest waits (it used to open only the quest talk).
+                var who = player;
+                Game.UI.Choose(L.T(def.displayName), new List<(string label, System.Action act)>
+                {
+                    (L.T("대화하기"), () => Talk(who, specAfter)),
+                    (ServiceLabel(def.service), () => OpenServiceFor(who)),
+                    (L.T("그만두기"), null),
+                });
                 return;
             }
+            Talk(player, specAfter);
+        }
+
+        static string ServiceLabel(NpcService service) => service == NpcService.Dungeon ? L.T("던전 선택") : MapRegistry.ServiceName(service);
+
+        void OpenServiceFor(PlayerController player)
+        {
+            moving = false;
+            facing = FacingExtensions.FromVector(player.Position - (Vector2)transform.position, facing);
+            animator.Play(CharacterAnim.Idle, facing);
+            PoseTool(0f);
+            Game.UI.OpenService(def);
+        }
+
+        void Talk(PlayerController player, bool specAfter)
+        {
             talking = true;
             moving = false;
             facing = FacingExtensions.FromVector(player.Position - (Vector2)transform.position, facing);

@@ -456,7 +456,8 @@ namespace DotRPG.EditorTools
             // [2026-10-14] The server holds a clear faster than 60% of these (any difficulty uses the largest value up to it).
             // Was 87 s (hold under 52 s): after the early-game damage cut and the doubled weapon enhancement a legit
             // two-player Normal clear took 30.5 s and was held. 20 s holds only clearly impossible runs (under 12 s).
-            j.Arr("minClearSeconds", new[] { 20, 0, 0, 0, 0 }, (o, v) => o.Val(v)); // [CH3] + 군주
+            // [CH3][TIERS 2026-10-29] one per difficulty (일반~심연 + 군주): only 일반 has a floor, the rest use the largest one up to them.
+            j.Arr("minClearSeconds", Enumerable.Range(0, DungeonDatabase.DifficultyCount).Select(i => i == 0 ? 20 : 0), (o, v) => o.Val(v));
             // [SERVER 4] Raids: no measured floor yet (the server falls back to 0.5 x referenceSeconds), key item, AI mercenaries.
             j.Key("raidMinClearSeconds").Obj().End();
             // [RAID] 영웅 레이드: multipliers on each raid's raidNumbers (server diffOf, difficulty 1).
@@ -475,7 +476,7 @@ namespace DotRPG.EditorTools
                         .Num("goldMin", d.sure.goldMin).Num("goldMax", d.sure.goldMax).End();
                 o.Arr("openDays", d.openDays ?? new DayOfWeek[0], (x, day) => x.Val(day.ToString()));
                 o.Arr("referenceSeconds", d.referenceSeconds ?? new float[0], (x, s) => x.Val(s));
-                // [CH3] one floor per reference time: the weekday dungeons have a 5th (군주), raids and 일반 던전 keep 4
+                // [CH3][TIERS] one floor per reference time: the weekday dungeons have 8 (일반~심연 + 군주), raids and 일반 던전 keep 4
                 o.Arr("clearXpFloor", Enumerable.Range(0, d.referenceSeconds != null ? Math.Min(d.referenceSeconds.Length, DungeonDatabase.DifficultyCount) : 4),
                     (x, i) => x.Val(HuntingGrounds.DungeonClearFloor(d, DungeonDatabase.DifficultyFor(d, (DungeonDifficulty)i))));
                 if (d.lordSure != null) // [CH3] 군주 extra sure material (server rollLordBonus)

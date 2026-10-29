@@ -6,6 +6,7 @@ import { assertNoHold } from '../antiabuse/holds';
 import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { keyAt, parseItemKey } from '../../utils/itemKey';
+import { carryHidden } from '../../utils/hiddenOption';
 import type { EconCtx } from '../economy/economyContext';
 import { runEconomy, type StoredResult } from '../economy/economyService';
 import type { PromoteBody } from './promoteValidation';
@@ -54,7 +55,7 @@ async function processPromote(ctx: EconCtx, body: PromoteBody) {
   const logId = randomUUID();
   if (row.gold > 0) await ctx.changeGold(-row.gold, 'promote_cost', logId);
   await ctx.removeItem('bag', table.coreItem, row.cores, 'promote_cost', logId);
-  const newKey = keyAt(row.to, parsed.level, parsed.inherit); // 계승 횟수는 승급해도 그대로
+  const newKey = keyAt(row.to, parsed.level, parsed.inherit, carryHidden(eco, parsed.hidden, row.to)); // 계승 횟수·히든 옵션은 승급해도 그대로(새로 굴리지 않는다)
   let promotedBind: string | null = null;
   if (wornSlot !== null) {
     const w = await ctx.client.query<{ bind: string }>(

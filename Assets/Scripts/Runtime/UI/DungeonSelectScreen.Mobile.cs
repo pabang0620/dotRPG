@@ -22,7 +22,8 @@ namespace DotRPG
             {
                 if (b == null) continue;
                 var rt = (RectTransform)b.transform;
-                if (Mathf.Approximately(rt.sizeDelta.x, DiffW)) MobileTouch.GrowHeight(rt, tap, MobileTouch.Grow.Centre);
+                // [TIERS 2026-10-29] Weekday buttons are narrower with 7~8 shown: every button but the raid ones grows.
+                if (!Mathf.Approximately(rt.sizeDelta.x, RaidDiffW)) MobileTouch.GrowHeight(rt, tap, MobileTouch.Grow.Centre);
             }
         }
     }

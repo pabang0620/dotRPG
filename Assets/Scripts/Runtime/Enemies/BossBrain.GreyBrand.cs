@@ -59,9 +59,17 @@ namespace DotRPG
             }
             GreyBrand.Started++;
             Shout(ShoutGreyBrand);
-            string line = L.F("잿빛 낙인! {0}, 동료 곁으로", branded.DisplayName);
+            // [UI 2026-10-29] The real nickname (the local player was "나") and the meeting spot numbered on the ground with
+            // both names; the party members get the same line and spot through the gimmick line message.
+            string line = L.F("잿빛 낙인! {0}, 동료 곁으로", RaidDoom.NameOf(branded));
             WorldPopupText.Show(branded.transform, L.T("낙인"), GreyBrand.Ash, time, 1.9f);
             Announce?.Invoke(this, line, GreyBrand.Ash);
+            if (partner != null)
+            {
+                string packed = RaidDoom.Pack(line, time, new[] { meet }, new[] { RaidDoom.NameOf(branded) + ", " + RaidDoom.NameOf(partner) });
+                RaidDoom.Unpack(packed); // the spot label here
+                RaidSeal.RaiseLine(E, packed); // and on the members' PCs
+            }
             Game.Audio.PlaySfx("enemy_windup");
         }
 

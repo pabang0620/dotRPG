@@ -24,14 +24,14 @@ namespace DotRPG
         public static ExchangeShopScreen Instance { get; private set; }
 
         RectTransform goodsTab, gearTab, pickPage;
-        Button goodsTabBtn, gearTabBtn, codexBtn, dismantleAllBtn;
+        Button goodsTabBtn, gearTabBtn, starTabBtn, codexBtn, dismantleAllBtn;
         Text balanceText, codexText, gearHead, pickTitle;
         readonly List<GoodView> goods = new List<GoodView>();
         readonly List<GearView> gears = new List<GearView>();
         readonly List<(Button btn, Text label)> pickRows = new List<(Button, Text)>();
         (Button prev, Text label, Button next) gearPager, pickPager;
         int gearPage, pickPageIndex;
-        bool showGear, busy;
+        bool showGear, showStar, busy;
         ExchangeGood picking;
 
         public static ExchangeShopScreen Create(Transform canvas)
@@ -40,8 +40,10 @@ namespace DotRPG
             Instance = w;
             var tl = new Vector2(0f, 1f);
             var tr = new Vector2(1f, 1f);
-            w.goodsTabBtn = Button(w.content, "TabGoods", L.T("교환 품목"), "ui_btn", tl, tl, Vector2.zero, new Vector2(200f, 52f), () => w.ShowTab(false), 20);
-            w.gearTabBtn = Button(w.content, "TabGear", L.T("장비 분해"), "ui_btngray", tl, tl, new Vector2(212f, 0f), new Vector2(200f, 52f), () => w.ShowTab(true), 20);
+            w.goodsTabBtn = Button(w.content, "TabGoods", L.T("교환 품목"), "ui_btn", tl, tl, Vector2.zero, new Vector2(134f, 52f), () => w.ShowTab(false), 18);
+            w.gearTabBtn = Button(w.content, "TabGear", L.T("장비 분해"), "ui_btngray", tl, tl, new Vector2(140f, 0f), new Vector2(134f, 52f), () => w.ShowTab(true), 18);
+            // [0056] 별조각 상품 (revive coin packs): the same goods rows, paid with Star Shards
+            w.starTabBtn = Button(w.content, "TabStar", L.T("별조각 상품"), "ui_btngray", tl, tl, new Vector2(280f, 0f), new Vector2(134f, 52f), w.ShowStarTab, 18);
 
             var header = UIFactory.Image(w.content, "Header", Game.Art.Get("ui_exchange_header"), Color.white);
             header.preserveAspect = true; header.raycastTarget = false;
@@ -106,6 +108,7 @@ namespace DotRPG
             }
             Button(page.transform, "Cancel", L.T("취소"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 14f), new Vector2(200f, 48f), w.ClosePick, 18);
             w.pickPage.gameObject.SetActive(false);
+            w.BuildGoodsExtras(); // goods pages + 별의 결정 -> 별조각 (ExchangeShopScreen.Convert.cs)
 
             w.status = Label(w.content, "Status", "", 17, new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(1200f, 30f), TextAnchor.MiddleLeft);
             StarShopClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
@@ -118,6 +121,7 @@ namespace DotRPG
         {
             base.Show();
             ClosePick();
+            CloseConvert();
             if (!StarShopClient.Available) { Refresh(); return; }
             SetStatus(L.T("불러오는 중..."));
             StarShopClient.LoadExchange((ok, msg) => { if (!ok) SetStatus(msg, false); else SetStatus(""); Refresh(); });
@@ -126,11 +130,26 @@ namespace DotRPG
         void ShowTab(bool gear)
         {
             showGear = gear;
+            showStar = false;
+            goodsPage = 0;
             ClosePick();
+            CloseConvert();
             goodsTab.gameObject.SetActive(!gear);
             gearTab.gameObject.SetActive(gear);
+            goodsBar.gameObject.SetActive(!gear);
             goodsTabBtn.image.sprite = UiTheme.Tab(!gear);
             gearTabBtn.image.sprite = UiTheme.Tab(gear);
+            starTabBtn.image.sprite = UiTheme.Tab(false);
+            Refresh();
+        }
+
+        /// <summary>[0056] The Star Shard goods page (revive coin packs) in the goods rows.</summary>
+        void ShowStarTab()
+        {
+            ShowTab(false);
+            showStar = true;
+            goodsTabBtn.image.sprite = UiTheme.Tab(false);
+            starTabBtn.image.sprite = UiTheme.Tab(true);
             Refresh();
         }
 
@@ -174,24 +193,45 @@ namespace DotRPG
                 : L.T("<color=#8c96a8>온라인 전용</color>");
             codexText.text = L.F("장비 도감 {0}종 · 최대 체력 <color=#8fe28f>+{1:0.#}%</color>", StarShopClient.CodexCount, StarShopClient.CodexHealth);
             codexBtn.interactable = StarShopClient.Available && !busy && StarShopClient.CodexHealth < StarShopClient.CodexHealthMax;
-            if (showGear) RefreshGear(); else RefreshGoods();
+            if (showGear) RefreshGear(); else if (showStar) RefreshStarGoods(); else RefreshGoods();
+        }
+
+        /// <summary>[0056] Star Shard goods: bag items bought with Star Shards, no purchase limit.</summary>
+        void RefreshStarGoods()
+        {
+            var list = StarShopClient.StarGoods;
+            int start = GoodsPageStart(list.Count);
+            for (int i = 0; i < goods.Count; i++)
+            {
+                var v = goods[i];
+                bool on = start + i < list.Count;
+                v.row.gameObject.SetActive(on);
+                if (!on) { v.id = null; continue; }
+                var g = list[start + i];
+                v.id = g.id;
+                v.name.text = $"<b>{L.T(g.name)}</b>";
+                v.info.text = L.F("<color=#b8c4d8>{0} {1}개를 가방으로 받습니다 · {2}</color>", L.T(DungeonDatabase.ItemName(g.itemId)), g.count, StarShopClient.Stars(StarShopClient.Balance));
+                TextOf(v.buy).text = L.F("별조각 {0:N0}", g.price);
+                v.buy.interactable = !busy && StarShopClient.ExchangeLoaded && StarShopClient.Balance >= g.price;
+            }
         }
 
         void RefreshGoods()
         {
-            var list = StarShopClient.Goods;
+            var list = ShownGoods(); // own class skins first, paged (ExchangeShopScreen.Convert.cs)
+            int start = GoodsPageStart(list.Count);
             for (int i = 0; i < goods.Count; i++)
             {
                 var v = goods[i];
-                bool on = i < list.Count;
+                bool on = start + i < list.Count;
                 v.row.gameObject.SetActive(on);
                 if (!on) { v.id = null; continue; }
-                var g = list[i];
+                var g = list[start + i];
                 v.id = g.id;
                 bool ownedOnly = g.kind == "cosmetic" && !string.IsNullOrEmpty(g.itemId) && StarShopClient.Owned.Contains(g.itemId);
                 bool noChoice = g.kind == "cosmetic" && string.IsNullOrEmpty(g.itemId) && g.choices.Count == 0;
                 string stock = g.left < 0 ? L.T("재고 제한 없음") : L.F("이번 주 남은 재고 {0}/{1}", g.left, g.weekly);
-                v.name.text = $"<b>{L.T(g.name)}</b>";
+                v.name.text = $"<b>{L.T(g.name)}</b>" + ClassTag(g);
                 v.info.text = $"<color=#b8c4d8>{KindText(g)} · {stock}</color>";
                 TextOf(v.buy).text = ownedOnly ? L.T("보유 중") : noChoice ? L.T("모두 보유") : g.left == 0 ? L.T("이번 주 품절") : L.F("결정 {0:N0}", g.price);
                 v.buy.interactable = !busy && !Closed && StarShopClient.ExchangeLoaded && !ownedOnly && !noChoice && g.left != 0 && StarShopClient.Crystals >= g.price;
@@ -232,6 +272,7 @@ namespace DotRPG
         void AskBuy(string id)
         {
             if (busy || string.IsNullOrEmpty(id)) return;
+            if (showStar) { AskBuyStar(id); return; }
             var g = StarShopClient.Goods.Find(x => x.id == id);
             if (g == null) return;
             if (g.kind == "cosmetic" && string.IsNullOrEmpty(g.itemId)) { OpenPick(g); return; }
@@ -241,7 +282,7 @@ namespace DotRPG
         void Confirm(ExchangeGood g, string itemId)
         {
             string what = g.kind == "cosmetic" ? L.T(CosmeticCatalog.Find(itemId)?.Name ?? g.name) : L.T(g.name);
-            Game.UI.Confirm(L.F("{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 별조각·골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>", what, g.price), () => Buy(g, itemId), true);
+            Game.UI.Confirm(L.F("{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>", what, g.price), () => Buy(g, itemId), true);
         }
 
         void Buy(ExchangeGood g, string itemId)
@@ -264,8 +305,34 @@ namespace DotRPG
             });
         }
 
+        void AskBuyStar(string id)
+        {
+            var g = StarShopClient.StarGoods.Find(x => x.id == id);
+            if (g == null) return;
+            Game.UI.Confirm(L.F("{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>", L.T(g.name), g.price, ReviveCoins.Max), () =>
+            {
+                if (busy) return;
+                busy = true;
+                Refresh();
+                StarShopClient.BuyStarItem(g.id, (ok, msg) =>
+                {
+                    busy = false;
+                    if (!ok) { SetStatus(msg, false); Game.Audio.PlaySfx("cancel"); }
+                    else
+                    {
+                        Game.Audio.PlaySfx("quest");
+                        SetStatus(L.F("구매 완료 · {0}", L.T(g.name)));
+                        GameEvents.RaiseToast(L.F("<color=#ffd76a>별조각 상품</color> {0}", L.T(g.name)));
+                    }
+                    Refresh();
+                });
+            }, true);
+        }
+
         void OpenPick(ExchangeGood g)
         {
+            CloseConvert();
+            SortChoices(g);
             picking = g;
             pickPageIndex = 0;
             pickPage.gameObject.SetActive(true);
@@ -276,6 +343,11 @@ namespace DotRPG
         protected override void Update()
         {
             // The choice panel takes Esc (closes itself, not the exchange), as the shop's bulk sell panel does.
+            if (ConvertOpen)
+            {
+                if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) { Game.Audio.PlaySfx("cancel"); CloseConvert(); }
+                return;
+            }
             if (picking != null && pickPage != null && pickPage.gameObject.activeSelf)
             {
                 if (TakesInput && (Game.Input.CancelPressed || Game.Input.InventoryPressed)) { Game.Audio.PlaySfx("cancel"); ClosePick(); }

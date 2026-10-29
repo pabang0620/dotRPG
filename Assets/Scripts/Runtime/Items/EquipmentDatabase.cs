@@ -8,7 +8,8 @@ namespace DotRPG
     /// as instance keys: the base id at +0 and "{baseId}+{level}" for +1..+20 ("eq_sword_iron+12"), so
     /// every piece carries its own +level and identical keys stack. Base ids never contain '+'. A piece that was inherited
     /// k times (<see cref="InheritRules"/>) adds "^k" after the level, which is then always written: "eq_sword_20_r+0^1",
-    /// "eq_sword_30_r+12^2". Anything that splits a key at '+' still finds the base id.
+    /// "eq_sword_30_r+12^2". Anything that splits a key at '+' still finds the base id. [HIDDEN 2026-10-29] A piece with a hidden
+    /// option (<see cref="HiddenOptions"/>) ends in "~letter", again with the +level always written: "eq_sword_20_un+0~d".
     /// Attempt rules (chances, costs, failures) live in <see cref="EnhanceRules"/>.
     /// </summary>
     public static class EquipmentDatabase
@@ -58,6 +59,8 @@ namespace DotRPG
             public int level;
             /// <summary>How often the piece was inherited (0 = never, no "^k" in the key).</summary>
             public int inherit;
+            /// <summary>[HIDDEN] The hidden option ("~letter" at the end of the key), None for most keys.</summary>
+            public HiddenOption hidden;
         }
 
         /// <summary>Every valid key (21 per item, more with inheritance counts), so lookups never parse or allocate.</summary>
@@ -116,28 +119,52 @@ namespace DotRPG
             return u >= 0 && int.TryParse(iconKey.Substring(u + 1), out int tier) ? tier : 0;
         }
 
+        /// <summary>
+        /// Key lookup. [HIDDEN] Keys with a hidden option are not pre-built (they are rare): the first lookup of a valid one
+        /// ("id+N(^k)~letter", the letter allowed for that item) adds it to the index, later lookups are plain hits.
+        /// </summary>
+        static bool TryInfo(string key, out KeyInfo info)
+        {
+            if (key == null) { info = default; return false; }
+            if (ByKey.TryGetValue(key, out info)) return true;
+            int tilde = key.Length - 2;
+            if (tilde <= 0 || key[tilde] != HiddenOptions.Separator) return false;
+            string core = key.Substring(0, tilde);
+            if (core.IndexOf(KeySeparator) <= 0) return false;
+            // A plain +0 piece is the bare id, so "id+0~d" looks its core up without the "+0" ("id+0^k" is a built key)
+            if (!ByKey.TryGetValue(core, out var coreInfo)
+                && !(core.EndsWith("+0", System.StringComparison.Ordinal) && ByKey.TryGetValue(core.Substring(0, core.Length - 2), out coreInfo) && coreInfo.level == 0 && coreInfo.inherit == 0))
+                return false;
+            if (coreInfo.hidden != HiddenOption.None) return false;
+            var option = HiddenOptions.FromCode(key[tilde + 1]);
+            if (!HiddenOptions.Allowed(coreInfo.item, option)) return false;
+            info = new KeyInfo { item = coreInfo.item, level = coreInfo.level, inherit = coreInfo.inherit, hidden = option };
+            ByKey[key] = info;
+            return true;
+        }
+
         public static IReadOnlyList<EquipmentItem> All => Items;
         public static IReadOnlyList<MaterialItem> AllMaterials => Materials;
 
         // ---------- Instance keys ----------
 
         /// <summary>True for any valid gear key ("eq_sword_iron", "eq_sword_iron+12").</summary>
-        public static bool IsEquipment(string key) => !string.IsNullOrEmpty(key) && ByKey.ContainsKey(key);
+        public static bool IsEquipment(string key) => !string.IsNullOrEmpty(key) && TryInfo(key, out _);
 
         /// <summary>The base item of a key (null for anything that is not a valid gear key).</summary>
-        public static EquipmentItem Get(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.item : null;
+        public static EquipmentItem Get(string key) => key != null && TryInfo(key, out var info) ? info.item : null;
 
         /// <summary>"eq_sword_iron+12" → "eq_sword_iron". Anything else comes back unchanged (up to a '+').</summary>
         public static string BaseId(string key)
         {
             if (string.IsNullOrEmpty(key)) return key;
-            if (ByKey.TryGetValue(key, out var info)) return info.item.id;
+            if (TryInfo(key, out var info)) return info.item.id;
             int plus = key.IndexOf(KeySeparator);
             return plus >= 0 ? key.Substring(0, plus) : key;
         }
 
         /// <summary>+level of a key ("eq_sword_iron+12" → 12); 0 for bare ids and anything that is not gear.</summary>
-        public static int LevelOfKey(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.level : 0;
+        public static int LevelOfKey(string key) => key != null && TryInfo(key, out var info) ? info.level : 0;
 
         /// <summary>
         /// Key of an item at a level (clamped to 0..<see cref="MaxEnhance"/>; +0 = the bare id). Also accepts a key, whose
@@ -147,7 +174,9 @@ namespace DotRPG
         {
             if (string.IsNullOrEmpty(baseId)) return baseId;
             level = Mathf.Clamp(level, 0, MaxEnhance);
-            if (ByKey.TryGetValue(baseId, out var info)) return info.inherit > 0 ? KeyFor(info.item.id, level, info.inherit) : info.item.keys[level];
+            if (TryInfo(baseId, out var info))
+                return info.hidden != HiddenOption.None ? KeyFor(info.item.id, level, info.inherit, info.hidden) // [HIDDEN] kept too
+                    : info.inherit > 0 ? KeyFor(info.item.id, level, info.inherit) : info.item.keys[level];
             string root = BaseId(baseId);
             return level > 0 ? $"{root}{KeySeparator}{level}" : root;
         }
@@ -161,8 +190,21 @@ namespace DotRPG
             return $"{root}{KeySeparator}{level}{InheritSeparator}{inherit}";
         }
 
+        /// <summary>[HIDDEN] Key with an inheritance count and a hidden option ("id+N^k~d"; None = <see cref="KeyFor(string, int, int)"/>).</summary>
+        public static string KeyFor(string baseId, int level, int inherit, HiddenOption hidden)
+        {
+            if (hidden == HiddenOption.None) return KeyFor(baseId, level, inherit);
+            level = Mathf.Clamp(level, 0, MaxEnhance);
+            string root = BaseId(baseId);
+            string k = inherit > 0 ? $"{InheritSeparator}{inherit}" : "";
+            return $"{root}{KeySeparator}{level}{k}{HiddenOptions.Separator}{HiddenOptions.CodeOf(hidden)}";
+        }
+
+        /// <summary>[HIDDEN] The hidden option of a key (None for plain keys and non-gear).</summary>
+        public static HiddenOption HiddenOfKey(string key) => TryInfo(key, out var info) ? info.hidden : HiddenOption.None;
+
         /// <summary>How often the piece behind a key was inherited ("eq_sword_30_r+12^2" -> 2); 0 for plain keys and non-gear.</summary>
-        public static int InheritOfKey(string key) => key != null && ByKey.TryGetValue(key, out var info) ? info.inherit : 0;
+        public static int InheritOfKey(string key) => key != null && TryInfo(key, out var info) ? info.inherit : 0;
 
         /// <summary>
         /// Repairs odd spellings of a gear key from old or hand-edited saves: "eq_sword_iron+0" → "eq_sword_iron",
@@ -170,7 +212,7 @@ namespace DotRPG
         /// </summary>
         public static string Canonicalize(string key)
         {
-            if (string.IsNullOrEmpty(key) || ByKey.ContainsKey(key)) return key;
+            if (string.IsNullOrEmpty(key) || TryInfo(key, out _)) return key;
             int plus = key.IndexOf(KeySeparator);
             if (plus <= 0) return key;
             if (!ByKey.TryGetValue(key.Substring(0, plus), out var info) || info.level != 0) return key;
@@ -198,14 +240,29 @@ namespace DotRPG
             string name = $"<color={RarityColor(item.rarity)}>{item.name}</color>";
             if (level > 0) name = $"{name} {LevelTag(level)}";
             int k = InheritOfKey(key);
-            return k > 0 ? name + " <color=#9fb4d8>" + L.F("(계승 {0}회)", k) + "</color>" : name;
+            if (k > 0) name += " <color=#9fb4d8>" + L.F("(계승 {0}회)", k) + "</color>";
+            var hidden = HiddenOfKey(key);
+            return hidden != HiddenOption.None ? name + " [" + HiddenOptions.Tag(hidden) + "]" : name; // [HIDDEN] shows wherever the name does
+        }
+
+        /// <summary>[HIDDEN] Stats with the hidden option: 피해 x1.3 attack, 최대 체력 x1.3 HP (this piece's own, enhancement included),
+        /// 이동 속도 +10 speed. The other options act on character stats (Equipment.Hidden*).</summary>
+        public static GearStats ApplyHidden(GearStats s, HiddenOption hidden)
+        {
+            switch (hidden)
+            {
+                case HiddenOption.Damage: s.attack = Mathf.RoundToInt(s.attack * (1f + HiddenOptions.DamagePct / 100f)); break;
+                case HiddenOption.MaxHealth: s.maxHealth = Mathf.RoundToInt(s.maxHealth * (1f + HiddenOptions.MaxHealthPct / 100f)); break;
+                case HiddenOption.MoveSpeed: s.speed += HiddenOptions.MoveSpeedPct; break;
+            }
+            return s;
         }
 
         /// <summary>Stats of a key at its own +level (default for null / non-gear).</summary>
         public static GearStats StatsOfKey(string key)
         {
-            var item = Get(key);
-            return item != null ? StatsAt(item, LevelOfKey(key)) : default;
+            if (!TryInfo(key, out var info)) return default;
+            return ApplyHidden(StatsAt(info.item, info.level), info.hidden);
         }
 
         /// <summary>Bag order of gear keys: <see cref="All"/> order, then the higher +level first. Non-gear sorts last.</summary>
@@ -217,7 +274,9 @@ namespace DotRPG
             int byItem = ia.Order.CompareTo(ib.Order);
             if (byItem != 0) return byItem;
             int byLevel = LevelOfKey(b).CompareTo(LevelOfKey(a));
-            return byLevel != 0 ? byLevel : InheritOfKey(a).CompareTo(InheritOfKey(b));
+            if (byLevel != 0) return byLevel;
+            int byInherit = InheritOfKey(a).CompareTo(InheritOfKey(b));
+            return byInherit != 0 ? byInherit : HiddenOfKey(a).CompareTo(HiddenOfKey(b));
         }
 
         /// <summary>The gear keys held in an inventory, in bag order (a new list, safe to change the inventory while using it).</summary>

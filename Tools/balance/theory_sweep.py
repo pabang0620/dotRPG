@@ -106,6 +106,8 @@ def compute():
         if d["isRaid"]:
             continue
         for i, diff in enumerate(DUNGEONS["difficulties"]):
+            if i >= len(d["clearXpFloor"]):  # 악몽~군주(4~7)는 요일 던전만(일반 던전은 칸이 4개, 2026-10-29)
+                continue
             base = clear_base(d, diff, i)
             sweep_xp = apply_bonus(base, SWEEP["xpBonusPercent"])
             clear_s = round_half_even(sweep_xp * (1 + TOP_RANK_BONUS / 100.0))  # 문서 표의 방식: 반올림한 기본값에 S 보너스(서버는 float 그대로 곱해 최대 1 차이)

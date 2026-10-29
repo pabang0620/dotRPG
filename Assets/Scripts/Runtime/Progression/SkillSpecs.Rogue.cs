@@ -59,7 +59,7 @@ namespace DotRPG
         static SpecParams NBombA() => new SpecParams { projectiles = 1, radius = Own("n_bomb", s => s.radius) * 1.3f, duration = 3f, extra = "bomb_one" };
         static SpecParams NBombB() => new SpecParams { projectiles = 8, duration = 1f, extra = "bomb_field" };
         // [NINJA 2026-10-23] 표창 난사 (was 분신 난무): A 12 stars in 1 s, B 36 in 9 s, the same total (each star 24 / count).
-        static SpecParams NAwakeA() => new SpecParams { hits = 12, duration = 1f, extra = "stars_burst" };
-        static SpecParams NAwakeB() => new SpecParams { hits = 36, duration = 9f, extra = "stars_rain" };
+        static SpecParams NAwakeA() => new SpecParams { hits = 36, duration = 1f, extra = "stars_burst" }; // [2026-10-29] x3 with the base
+        static SpecParams NAwakeB() => new SpecParams { hits = 108, duration = 9f, extra = "stars_rain" }; // [2026-10-29] x3 with the base
     }
 }

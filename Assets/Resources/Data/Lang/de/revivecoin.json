@@ -1,0 +1,15 @@
+{
+ "부활 코인": "Wiederbelebungsmünze",
+ "쓰면 이 캐릭터의 부활 코인이 1개 늘어난다. (최대 100개) 던전·레이드에서 쓰러졌을 때 그 자리에서 일어나는 데 쓴다. (계정 공용)": "Benutzen, um diesem Charakter 1 Wiederbelebungsmünze zu geben. (Max. 100) Damit stehst du in Dungeons und Raids dort auf, wo du gefallen bist. (Kontoweit)",
+ "{0}: 부활 코인 {1}/{2}": "{0}: Wiederbelebungsmünzen {1}/{2}",
+ "부활 코인은 {0}개까지 가질 수 있습니다.": "Du kannst bis zu {0} Wiederbelebungsmünzen besitzen.",
+ "<color=#b8c4d8>{0} {1}개를 가방으로 받습니다 · {2}</color>": "<color=#b8c4d8>{1} x {0} in die Tasche · {2}</color>",
+ "<color=#ffd76a>별조각 상품</color> {0}": "<color=#ffd76a>Sternsplitter-Waren</color> {0}",
+ "{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>": "{0}\nFür {1:N0} Sternsplitter kaufen.\n<size=18>Sie kommen in die Tasche. Jede benutzte gibt diesem Charakter 1 Wiederbelebungsmünze. (Max. {2})</size>",
+ "구매 완료 · {0}": "Gekauft · {0}",
+ "별조각 상품": "Sternsplitter-Waren",
+ "없는 상품입니다.": "Dieses Produkt gibt es nicht.",
+ "부활 코인 1개": "1 Wiederbelebungsmünze",
+ "부활 코인 10개": "10 Wiederbelebungsmünzen",
+ "부활 코인 50개": "50 Wiederbelebungsmünzen"
+}

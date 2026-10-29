@@ -41,6 +41,9 @@ namespace DotRPG
             }
             int guard = Data.GuardReduction; // class passive (was 철벽 / 마나 보호막)
             if (guard > 0) info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * (1f - guard / 100f)));
+            // [HIDDEN] 받는 피해 -15% (hidden armour option; instant-death gimmicks still kill)
+            float takenMul = Data.Stats.DamageTakenMul;
+            if (takenMul < 1f && !info.lethal) info.amount = Mathf.Max(1, Mathf.RoundToInt(info.amount * takenMul));
             if(health.IsInvulnerable && !info.lethal) return false;
             if (!info.lethal) info.amount = CareerCombat.For(this).Absorb(info.amount);
             if(info.amount<=0) return true;

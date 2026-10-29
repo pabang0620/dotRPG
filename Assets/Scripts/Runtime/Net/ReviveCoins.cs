@@ -6,12 +6,14 @@ namespace DotRPG
 {
     /// <summary>
     /// [REVIVE] Get up where you fell (Docs/server/phase12_revive_coins.md). In hunting grounds (fields) it is always
-    /// free; in dungeons, weekday dungeons and raids it is free up to Lv.10, and from Lv.11 each revive spends one revive coin, one coin comes every game day (06:00) and at most 5 are kept. Online the server
+    /// free; in dungeons, weekday dungeons and raids it is free up to Lv.10, and from Lv.11 each revive spends one revive coin, one coin comes every game day (06:00) up to 5, and the 부활 코인 bag item
+    /// (bought with Star Shards or mailed) adds more up to 100 (0056). Online the server
     /// owns the count; offline play (demos) keeps the same rule in PlayerPrefs per save slot.
     /// </summary>
     public static class ReviveCoins
     {
-        public const int FreeUntilLevel = 10, Max = 5, StartCoins = 1;
+        /// <summary>Max = held cap (items can fill up to it); DailyMax = what the free daily grant refills up to.</summary>
+        public const int FreeUntilLevel = 10, Max = 100, DailyMax = 5, StartCoins = 1;
 
         public static int Coins { get; private set; } = StartCoins;
         public static bool Busy { get; private set; }
@@ -47,6 +49,24 @@ namespace DotRPG
             }
             LoadLocal();
             Changed?.Invoke();
+        }
+
+        /// <summary>[0056] Reads the server's count (the "revive" object of an item use) and tells the listeners.</summary>
+        public static void Apply(Dictionary<string, object> d)
+        {
+            Read(d);
+            Changed?.Invoke();
+        }
+
+        /// <summary>[0056] Offline: one 부활 코인 item turns into one coin. False when the character already holds the max.</summary>
+        public static bool AddLocal()
+        {
+            LoadLocal();
+            if (Coins >= Max) return false;
+            Coins++;
+            SaveLocal();
+            Changed?.Invoke();
+            return true;
         }
 
         static void Read(Dictionary<string, object> d)
@@ -114,7 +134,7 @@ namespace DotRPG
             if (today > dayStamp)
             {
                 int days = (int)Math.Min(Max, (today - dayStamp) / TimeSpan.TicksPerDay);
-                Coins = Mathf.Min(Max, Coins + Math.Max(1, days));
+                Coins = Mathf.Max(Coins, Mathf.Min(DailyMax, Coins + Math.Max(1, days))); // the daily grant fills up to 5 only
                 dayStamp = today;
             }
             SaveLocal();

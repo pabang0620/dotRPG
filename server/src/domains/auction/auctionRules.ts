@@ -3,6 +3,7 @@ import { getGameData } from '../../gamedata/loader';
 import type { AuctionData } from '../../gamedata/auctionData';
 import { RARITY_ORDER } from '../../gamedata/economyData';
 import { parseItemKey } from '../../utils/itemKey';
+import { hiddenPoolOf } from '../../utils/hiddenOption';
 import { isCharacterClass, usableBy, type CharacterClassId } from '../../utils/characterClass';
 
 export type Category = 'weapon' | 'armor' | 'accessory' | 'material' | 'consumable';
@@ -56,6 +57,8 @@ export function factsOf(itemKey: string): ItemFacts | null {
   const equip = eco.shop.equipment.get(p.base);
   if (equip) {
     if (p.level > eco.enhance.maxEnhance) return null;
+    // 히든 옵션은 그 장비 부위에 맞는 글자만(맞지 않는 키는 모르는 키로 본다)
+    if (p.hidden && !(hiddenPoolOf(equip) as readonly string[]).includes(p.hidden)) return null;
     const category: Category =
       equip.category === 'Weapon' ? 'weapon' : equip.category === 'Ring' || equip.category === 'Necklace' ? 'accessory' : 'armor';
     // class_only 열은 옛 내보내기 호환 첫 값만 둔다. 실제 착용 판정은 usableBy(검색은 classRestrictedBasesFor)
@@ -69,7 +72,7 @@ export function factsOf(itemKey: string): ItemFacts | null {
       classOnly,
     };
   }
-  if (p.level !== 0 || p.inherit !== 0) return null;
+  if (p.level !== 0 || p.inherit !== 0 || p.hidden) return null;
   return {
     base: p.base,
     enhance: 0,

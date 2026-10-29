@@ -76,13 +76,18 @@ namespace DotRPG
             RaidDoom.Begin(time);
             int start = NextFloat(0f, 1f) < .5f ? 0 : 1;
             var text = new System.Text.StringBuilder(L.T("운명의 낙인!"));
+            var who = new[] { new List<string>(), new List<string>() };
             for (int i = 0; i < members.Count; i++)
             {
                 int side = (start + i) % 2;
                 RaidDoom.Assign(members[i], fateCircles[side]);
-                text.Append(i == 0 ? " " : ", ").Append(members[i].DisplayName).Append(" → ").Append(side == 0 ? L.T("왼쪽 원") : L.T("오른쪽 원"));
+                // [UI 2026-10-29] Real nicknames (the local player was "나", which read as the host on the other PCs) and the
+                // circle's number, drawn big on the ground with the names under it.
+                string name = RaidDoom.NameOf(members[i]);
+                who[side].Add(name);
+                text.Append(i == 0 ? " " : ", ").Append(name).Append(" → ").Append(L.F("{0}번", side + 1));
             }
-            string line = text.ToString();
+            string line = RaidDoom.Pack(text.ToString(), time, fateCircles, new[] { string.Join(", ", who[0]), string.Join(", ", who[1]) });
             RaidSeal.ShowLine(E, line);
             RaidSeal.RaiseLine(E, line);
             fateUntil = Time.time + time;
@@ -207,6 +212,62 @@ namespace DotRPG
         }
 
         public static void Assign(PlayerController m, Vector2 spot) { if (m != null) spots[m] = spot; }
+
+        // ---------- [UI 2026-10-29] who goes where, by name and number ----------
+
+        /// <summary>A member's nickname for gimmick lines: the character name for the local player (its party name is "나"),
+        /// the roster name for the others and the AI companions.</summary>
+        public static string NameOf(PlayerController m)
+        {
+            if (m == null) return "";
+            if (m.IsLocal) { string mine = Game.Session?.Journal?.PlayerName; if (!string.IsNullOrEmpty(mine)) return mine; }
+            return m.DisplayName;
+        }
+
+        const char DataMark = '\u001F', SpotMark = '\u001E', FieldMark = '\u001D';
+
+        /// <summary>
+        /// The line plus its spots (numbered 1, 2, ... with the names under them) in one string, so the party members get
+        /// the spots through the same gimmick line message. <see cref="Unpack"/> splits it again.
+        /// </summary>
+        public static string Pack(string text, float seconds, Vector2[] at, string[] names)
+        {
+            var sb = new System.Text.StringBuilder(text).Append(DataMark).Append(seconds.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            for (int i = 0; i < at.Length; i++)
+                sb.Append(SpotMark).Append(at[i].x.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)).Append(FieldMark)
+                  .Append(at[i].y.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)).Append(FieldMark).Append(i < names.Length ? names[i] : "");
+            return sb.ToString();
+        }
+
+        /// <summary>The readable line of a packed one; draws its numbered spots (every PC calls this when it shows the line).</summary>
+        public static string Unpack(string line)
+        {
+            int cut = line != null ? line.IndexOf(DataMark) : -1;
+            if (cut < 0) return line;
+            var parts = line.Substring(cut + 1).Split(SpotMark);
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            float.TryParse(parts[0], System.Globalization.NumberStyles.Float, inv, out float seconds);
+            string mine = Game.Session?.Journal?.PlayerName;
+            for (int i = 1; i < parts.Length; i++)
+            {
+                var f = parts[i].Split(FieldMark);
+                if (f.Length < 3 || !float.TryParse(f[0], System.Globalization.NumberStyles.Float, inv, out float x) || !float.TryParse(f[1], System.Globalization.NumberStyles.Float, inv, out float y)) continue;
+                bool own = !string.IsNullOrEmpty(mine) && System.Array.IndexOf(f[2].Split(new[] { ", " }, System.StringSplitOptions.None), mine) >= 0;
+                ShowSpot(new Vector2(x, y), i, f[2], own, Mathf.Max(1f, seconds));
+            }
+            return line.Substring(0, cut);
+        }
+
+        /// <summary>A big order number on the ground with the names under it; the local player's own spot is gold.</summary>
+        static void ShowSpot(Vector2 at, int number, string names, bool own, float seconds)
+        {
+            var anchor = new GameObject("RaidSpotLabel");
+            if (Fx.Root != null) anchor.transform.SetParent(Fx.Root, false);
+            anchor.transform.position = at;
+            Object.Destroy(anchor, seconds + 1f);
+            var color = own ? new Color(1f, .86f, .3f) : new Color(.86f, .9f, 1f, .9f);
+            WorldPopupText.Show(anchor.transform, $"<size=120>{number}</size>\n<size=44>{names}</size>", color, seconds, .1f);
+        }
 
         public static void End()
         {

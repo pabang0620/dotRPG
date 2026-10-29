@@ -130,6 +130,7 @@ namespace DotRPG
         public static void ShowLine(EnemyController boss, string line)
         {
             if (boss == null) return;
+            line = RaidDoom.Unpack(line); // [UI 2026-10-29] a who-goes-where line carries its numbered spots
             WorldPopupText.Show(boss.transform, line, Violet, LineLead + 1f, 1.4f + 1.1f * boss.Size);
             var b = boss.GetComponent<BossBrain>();
             if (b != null) BossBrain.RaiseAnnounce(b, line, Violet);

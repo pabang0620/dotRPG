@@ -73,6 +73,12 @@ namespace DotRPG
             sb.Append(L.T("<size=24><b>확률 공개 · 봉인된 상자</b></size>") + "\n" + L.F("<color=#8c96a8>1회 별조각 {0:N0} · 10+1회 {1:N0}</color>", CashClient.PriceOne, CashClient.PriceEleven) + "\n\n");
             Table(sb, L.T("기본"), CashClient.Table);
             if (CashClient.BoostedTable.Count > 0) { sb.Append('\n'); Table(sb, L.T("부스터 (10회마다 다음 1회, 수량 x2)"), CashClient.BoostedTable); }
+            if (CashClient.StarBoxTable.Count > 0)
+            {
+                // [CASH sealed-2] the star box's own open table (nested box rates are disclosed like the luck boxes)
+                sb.Append("\n<b>" + L.F("{0} 열기 (무료 별조각)", L.T(DungeonDatabase.ItemName(ConsumableDatabase.StarBox))) + "</b>\n");
+                foreach (var r in CashClient.StarBoxTable) sb.Append(L.F("별조각 {0:N0}", r.count) + $"  {r.rate:0.###}%\n");
+            }
             sb.Append("\n" + L.F("<color=#b8c4d8>확률 상자 \"+N 강화권 상자 (P%)\"는 열면 P% 확률로 +N 강화권, 아니면 마력 정수 20개가 나옵니다.\n천장: 봉인된 상자를 열 때마다(캐시샵·가방 상자 모두, 11연은 11칸) 1칸 찹니다. {0}칸이 다 차면 {1}과(와) 바꿀 수 있습니다. 바꾸면 {0}칸 줄고 넘친 칸은 남습니다. 확률로 나와도 게이지는 줄지 않습니다.</color>", CashClient.CeilingMax, L.T(DungeonDatabase.ItemName(CashClient.CeilingReward)) + (CashClient.CeilingRewardCount > 1 ? " x" + CashClient.CeilingRewardCount : "")));
             return sb.ToString();
         }

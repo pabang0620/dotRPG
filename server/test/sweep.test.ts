@@ -109,7 +109,7 @@ describe('B1 정상 소탕 S2', () => {
     const h = await prep();
     expect((await post(app, h, '/sweep/run', { dungeon_id: 'gold_vein', difficulty: 0, xp: 99999 })).status).toBe(400);
     expect((await post(app, h, '/sweep/run', { dungeon_id: 'gold_vein', difficulty: 0, count: 5 })).status).toBe(400);
-    expect((await post(app, h, '/sweep/run', { dungeon_id: 'gold_vein', difficulty: 5 })).status).toBe(400);
+    expect((await post(app, h, '/sweep/run', { dungeon_id: 'gold_vein', difficulty: 8 })).status).toBe(400); // 0~7이 형식에 맞다(2026-10-29)
     expect((await post(app, h, '/sweep/run', { difficulty: 0 })).status).toBe(400);
     expect((await post(app, h, '/sweep/run-all', { dungeon_id: 'gold_vein', difficulty: 0, tickets: 9 })).status).toBe(400);
     expect(await sweepRows(h)).toHaveLength(0);

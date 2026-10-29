@@ -5,7 +5,8 @@ import { charKey } from '../economy/economyRouting';
 import { getAccount } from '../../middleware/authMiddleware';
 import { charParams } from '../economy/economyValidation';
 import * as controller from './starshopController';
-import { claimBody, codexBody, collectionBody, dismantleBody, exchangeBody, exchangeBuyBody, gearCeilingBody, gearDismantleBody, pullBody, synthBody } from './starshopValidation';
+import { crystalConvertBody } from './starshopValidation';
+import { claimBody, codexBody, collectionBody, dismantleBody, exchangeBody, exchangeBuyBody, gearCeilingBody, gearDismantleBody, pullBody, starItemBuyBody, synthBody } from './starshopValidation';
 
 /** 캐시샵(별조각): 지갑·확률표 조회, 뽑기, 확정 교환, 합성·분해·컬렉션. 인증·버전 검사는 /characters 공통 미들웨어가 한다 */
 export function createStarshopRouter(): Router {
@@ -29,5 +30,9 @@ export function createStarshopRouter(): Router {
   r.post('/characters/:uuid/starshop/exchange-shop/buy', limit, validate({ params: charParams, body: exchangeBuyBody }), controller.exchangeBuy);
   r.post('/characters/:uuid/starshop/gear-dismantle', limit, validate({ params: charParams, body: gearDismantleBody }), controller.gearDismantle);
   r.post('/characters/:uuid/starshop/codex', limit, validate({ params: charParams, body: codexBody }), controller.codex);
+  // 0056 별조각 상품(부활 코인 등): 소비 경로라 분당 상한을 함께 건다
+  r.post('/characters/:uuid/starshop/item-buy', limit, spendPerMin, validate({ params: charParams, body: starItemBuyBody }), controller.itemBuy);
+  // 별의 결정 -> 무료 별조각(바꾸는 양·횟수 제한 없음, 분당 소비 상한도 걸지 않는다)
+  r.post('/characters/:uuid/starshop/crystal-convert', limit, validate({ params: charParams, body: crystalConvertBody }), controller.crystalConvert);
   return r;
 }

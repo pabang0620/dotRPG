@@ -17,9 +17,10 @@ TABLE = [
     ("buff_power_30m", 27.624, False),   # 30분 공격 +15% 주문서
     ("essence_x10", 12.75, False),
     ("protect_x1", 8.5, False),
+    ("box_stars", 4.6, False),         # 별조각 상자(sealed-2, 2026-10-29): 무료 별조각 100~3000, 기대 265
     ("protect_x3", 6.0, True),
-    ("box10_30", 4.5, True),           # +10 강화권 상자(30%)
-    ("ticket10", 2.4, True),
+    ("box10_30", 1.5, True),           # +10 강화권 상자(30%), sealed-1 4.5
+    ("ticket10", 0.8, True),           # sealed-1 2.4
     ("box12_10", 1.2, True),           # +12 강화권 상자(10%)
     ("box12_50", 0.55, True),          # +12 강화권 상자(50%)
     ("ticket12", 0.2, True),
@@ -56,6 +57,18 @@ def per_box(target):
     return (p_of(target, False) * BOOST_EVERY + p_of(target, True)) / (BOOST_EVERY + 1)
 
 
+# 별조각 상자 1개를 열면 나오는 무료 별조각 (수량, 확률 %), server/data/sealed_box.json starBox
+STAR_BOX = [(100, 40), (200, 30), (300, 15), (500, 10), (1000, 4), (3000, 1)]
+STAR_BOX_EV = sum(s * r / 100 for s, r in STAR_BOX)
+
+
+def stars_per_box():
+    """상자 1회(부스터 포함 평균)에서 돌아오는 무료 별조각 기대값"""
+    def p(boost):
+        return sum(r / 100 * (2 if boost else 1) for i, r in rates(boost) if i == "box_stars")
+    return (p(False) * BOOST_EVERY + p(True)) / (BOOST_EVERY + 1) * STAR_BOX_EV
+
+
 def won(boxes):
     return boxes * BOX_STARS * WON_PER_STAR
 
@@ -64,6 +77,8 @@ if __name__ == "__main__":
     print("상자 1회 = %d원 (별조각 %d)" % (won(1), BOX_STARS))
     rare = sum(r for _, r, h in TABLE if h)
     print("희귀 이상 등급 합: 기본 %.2f%% / 부스터 %.2f%%" % (rare, rare * 2))
+    sp = stars_per_box()
+    print("별조각 상자: 1개 기대 %.1f개, 상자 1회당 무료 별조각 %.2f개 = 가격의 %.1f%%" % (STAR_BOX_EV, sp, sp / BOX_STARS * 100))
     for t in ("ticket10", "ticket12", "ticket13", "ticket15"):
         p = per_box(t)
         print("%-9s 상자당 기대 %.4f%%  ->  평균 %6.0f회, 약 %s원" % (t, p * 100, 1 / p, format(int(won(1 / p)), ",")))

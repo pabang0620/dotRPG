@@ -1,0 +1,14 @@
+{
+ "별조각으로 바꾸지 못했습니다.": "Umwandlung in Sternsplitter fehlgeschlagen.",
+ "<color=#b8c4d8>별의 결정 {0}개 = 별조각 1개. 받은 별조각은 무료 별조각이며, 바꾼 결정은 되돌릴 수 없습니다.</color>": "<color=#b8c4d8>{0} Sternkristalle = 1 Sternsplitter. Die erhaltenen Sternsplitter sind kostenlose Sternsplitter, umgewandelte Kristalle gibt es nicht zurück.</color>",
+ "<color=#d8b8ff>별의 결정</color> → <color=#ffd76a>별조각 +{0:N0}</color>": "<color=#d8b8ff>Sternkristalle</color> → <color=#ffd76a>Sternsplitter +{0:N0}</color>",
+ "{0} 전용 (내 직업)": "nur {0} (deine Klasse)",
+ "바꾸기": "Umwandeln",
+ "바꾸기 완료 · 별조각 +{0:N0}": "Umgewandelt · Sternsplitter +{0:N0}",
+ "별의 결정 {0:N0}개 → <color=#ffd76a>별조각 {1:N0}개</color>": "{0:N0} Sternkristalle → <color=#ffd76a>{1:N0} Sternsplitter</color>",
+ "별의 결정 → 별조각": "Sternkristalle → Sternsplitter",
+ "별조각으로 바꾸기": "In Sternsplitter umwandeln",
+ "보유 · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>": "Besitz · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>",
+ "{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>": "{0}\nFür {1:N0} Sternkristalle tauschen.\n<size=18>Sternkristalle lassen sich nicht in Gold umwandeln, und Tausche können nicht rückgängig gemacht werden.</size>",
+ "별의 결정 {0}개부터 바꿀 수 있습니다.": "Umwandeln ab {0} Sternkristallen möglich."
+}

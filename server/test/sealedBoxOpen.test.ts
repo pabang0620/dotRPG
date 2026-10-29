@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 import { setRng } from '../src/utils/rng';
+import { getSealedBox } from '../src/gamedata/sealedBox';
 import * as sealed from '../src/domains/sealedbox/sealedBoxService';
 import { countOf, expectLedgerConsistent, post, seedItem } from './economyHelpers';
 import { resetDb, shutdown } from './helpers';
@@ -112,6 +113,76 @@ describe('봉인된 상자 아이템', () => {
     expect(r.status).toBe(422);
     expect(r.body.errors.code).toBe('USE_OPEN_INSTEAD');
     expect(await countOf(pl.hero, 'box_sealed')).toBe(1);
+  });
+});
+
+describe('별조각 상자(sealed-2)', () => {
+  const amountRoll = (stars: number): number => {
+    let acc = 0;
+    for (const a of getSealedBox().starBox!.amounts) {
+      if (a.stars === stars) return Math.floor(((acc + a.rate / 2) / 100) * 100_000_000);
+      acc += a.rate;
+    }
+    throw new Error(`amount ${stars} 없음`);
+  };
+  const starLedger = async (accountId: number) =>
+    (await getPool().query<{ delta: string; paid_delta: string; ref: string; request_id: string }>("SELECT delta, paid_delta, ref, request_id::text FROM star_ledger WHERE account_id = $1 AND reason = 'star_box' ORDER BY id", [accountId])).rows;
+
+  it('봉인된 상자에서 별조각 상자 칸이 나오면 가방에 box_stars 1개', async () => {
+    const pl = await newPlayer(app);
+    await seedItem(pl.hero, 'box_sealed', 1);
+    scriptRng([rollOf('box_stars', false)]);
+    const r = await openApi(app, pl, 'box_sealed');
+    expect(r.body.data.results[0]).toMatchObject({ item_key: 'box_stars', count: 1, row_id: 'box_stars' });
+    expect(await countOf(pl.hero, 'box_stars')).toBe(1);
+  });
+
+  it('열면 무료 별조각(원장 star_box, paid_delta 0), 상자 1개 소모, 게이지는 그대로, 기록', async () => {
+    const pl = await newPlayer(app, 30);
+    await seedItem(pl.hero, 'box_stars', 2);
+    scriptRng([amountRoll(500)]);
+    const rid = randomUUID();
+    const r = await openApi(app, pl, 'box_stars', rid);
+    expect(r.status).toBe(200);
+    expect(r.body.data.results).toEqual([expect.objectContaining({ item_key: 'stars', count: 500, boosted: false })]);
+    expect(r.body.data.stars).toEqual({ balance: 530, paid_balance: 0 });
+    expect(await countOf(pl.hero, 'box_stars')).toBe(1);
+    expect(await starLedger(pl.p.accountId)).toEqual([{ delta: '500', paid_delta: '0', ref: 'box_stars', request_id: rid }]);
+    const log = await getPool().query("SELECT source, item_key, count, rate FROM sealed_pulls WHERE account_id = $1", [pl.p.accountId]);
+    expect(log.rows).toEqual([{ source: 'star_box', item_key: 'stars', count: 500, rate: 10 }]);
+    expect((await sealedInfo(app, pl)).body.data.booster.gauge).toBe(0);
+    await expectLedgerConsistent(pl.hero);
+  });
+
+  it('같은 request_id 재전송은 한 번만 지급, 동시 열기는 상자 1개로 한 번만 성공', async () => {
+    const pl = await newPlayer(app);
+    await seedItem(pl.hero, 'box_stars', 1);
+    scriptRng([amountRoll(100)]);
+    const rid = randomUUID();
+    const a = await openApi(app, pl, 'box_stars', rid);
+    const b = await openApi(app, pl, 'box_stars', rid);
+    expect(b.body.data).toEqual(a.body.data);
+    expect(await starLedger(pl.p.accountId)).toHaveLength(1);
+
+    await seedItem(pl.hero, 'box_stars', 1);
+    const rs = await Promise.allSettled([
+      sealed.openItem(pl.p.accountId, pl.hero.id, { request_id: randomUUID(), item_key: 'box_stars' }),
+      sealed.openItem(pl.p.accountId, pl.hero.id, { request_id: randomUUID(), item_key: 'box_stars' }),
+    ]);
+    expect(rs.filter((x) => x.status === 'fulfilled')).toHaveLength(1);
+    expect((rs.find((x) => x.status === 'rejected') as PromiseRejectedResult).reason).toMatchObject({ code: 'NOT_ENOUGH_ITEMS' });
+    expect(await starLedger(pl.p.accountId)).toHaveLength(2);
+    expect(await countOf(pl.hero, 'box_stars')).toBe(0);
+  });
+
+  it('상자가 없으면 NOT_ENOUGH_ITEMS(별조각 없음), /items/use 로는 열 수 없다', async () => {
+    const pl = await newPlayer(app);
+    expect((await openApi(app, pl, 'box_stars')).body.errors.code).toBe('NOT_ENOUGH_ITEMS');
+    expect(await starLedger(pl.p.accountId)).toHaveLength(0);
+    await seedItem(pl.hero, 'box_stars', 1);
+    const u = await post(app, pl.hero, '/items/use', { item_id: 'box_stars' });
+    expect(u.status).toBe(422);
+    expect(await countOf(pl.hero, 'box_stars')).toBe(1);
   });
 });
 

@@ -60,7 +60,7 @@ namespace DotRPG
         public static void Hit(Vector2 at, Vector2 dir, Career career, int weight)
         {
             float k = weight == 2 ? 1.5f : weight == 1 ? 1.15f : 0.85f;
-            if (career == Career.Assassin) k *= 1.25f; // [VFX 2026-10-29] the assassin's pale steel mark read too small (ninja is fine)
+            if (career == Career.Assassin || career == Career.Ninja) k *= 1.25f; // [VFX 2026-10-29] the rogue careers' pale steel mark read too small
             // [ROGUE] Both rogue careers cut like the fighter (the blade mark along the blow), in their own colour.
             bool blade = career == Career.Fighter || career == Career.Assassin || career == Career.Ninja;
             string clip = blade ? "f_x" : career == Career.Guardian ? "g_clang" : career == Career.Arcanist ? "m_hit" : "b_cross";

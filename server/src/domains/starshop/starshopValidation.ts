@@ -71,3 +71,18 @@ export const codexBody = z.strictObject({ request_id: requestId });
 export type GearDismantleBodyT = z.infer<typeof gearDismantleBody>;
 export type ExchangeBuyBodyT = z.infer<typeof exchangeBuyBody>;
 export type CodexBodyT = z.infer<typeof codexBody>;
+
+// ---------------- 0056 별조각 상품 ----------------
+export const starItemBuyBody = z.strictObject({
+  request_id: requestId,
+  good_id: z.string().regex(/^[a-z0-9_]{1,40}$/),
+});
+export type StarItemBuyBodyT = z.infer<typeof starItemBuyBody>;
+
+// ---------------- 별의 결정 -> 별조각 바꾸기 ----------------
+/** crystals: 낼 결정 수(서버가 비율의 배수로 내린다). 상한은 입력 크기 검사일 뿐 바꾸는 양 제한이 아니다(BIGINT 안전 범위) */
+export const crystalConvertBody = z.strictObject({
+  request_id: requestId,
+  crystals: z.number().int().min(1).max(1_000_000_000),
+});
+export type CrystalConvertBodyT = z.infer<typeof crystalConvertBody>;

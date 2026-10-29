@@ -19,7 +19,8 @@ namespace DotRPG
 
         Text header, chestTitle, chestBody;
         Image chestBg;
-        Button refresh, tabDaily, tabWeekly, chestOpen;
+        Button refresh, tabDaily, tabWeekly, chestOpen, claimAll, acceptAll;
+        bool batchRunning; // [UI 2026-10-29] 모두 받기 / 모두 수락 in progress
         bool weekly;
         sealed class Row { public Image bg; public Text title, text, progress, reward; public Button action; }
         readonly List<Row> rows = new List<Row>();
@@ -30,7 +31,12 @@ namespace DotRPG
             Instance = w;
             w.tabDaily = Button(w.content, "TabDaily", L.T("일일 의뢰"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(170f, 44f), () => w.SetTab(false), 20);
             w.tabWeekly = Button(w.content, "TabWeekly", L.T("주간 의뢰"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(true), 20);
-            w.header = Label(w.content, "Header", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(362f, 0f), new Vector2(694f, 44f), TextAnchor.MiddleLeft);
+            w.header = Label(w.content, "Header", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(362f, 0f), new Vector2(360f, 44f), TextAnchor.MiddleLeft);
+            w.header.resizeTextForBestFit = true; w.header.resizeTextMinSize = 11; w.header.resizeTextMaxSize = w.header.fontSize; // [UI 2026-10-29] narrower: room for the two buttons
+            w.header.verticalOverflow = VerticalWrapMode.Truncate;
+            // [UI 2026-10-29] One press for every ready reward (and chest) / every offered job, both tabs.
+            w.acceptAll = Button(w.content, "AcceptAll", L.T("모두 수락"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-320f, 0f), new Vector2(150f, 44f), () => w.RunAll(false), 17);
+            w.claimAll = Button(w.content, "ClaimAll", L.T("모두 받기"), "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-160f, 0f), new Vector2(150f, 44f), () => w.RunAll(true), 17);
             // [DAILY CHEST] completion chest strip (between the tabs and the job rows)
             w.chestBg = Panel(w.content, "Chest", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -50f), new Vector2(1200f, 80f), new Color32(70, 52, 24, 235));
             w.chestTitle = Label(w.chestBg.transform, "ChestTitle", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(12f, 0f), new Vector2(470f, 72f), TextAnchor.MiddleLeft);
@@ -143,6 +149,63 @@ namespace DotRPG
             TextOf(chestOpen).text = c.Claimed ? L.T("열었음") : c.Ready ? L.T("상자 열기") : L.T("의뢰 진행 중");
         }
 
+        // ---------- [UI 2026-10-29] 모두 받기 / 모두 수락 ----------
+
+        /// <summary>The next ready job (either tab) or, when none is left, the next chest that can be opened.</summary>
+        static bool NextClaim(out DailyQuestClient.Slot slot, out DailyQuestClient.Chest chest)
+        {
+            slot = null; chest = null;
+            foreach (var s in DailyQuestClient.Slots) if (DailyQuestClient.CanClaim(s)) { slot = s; return true; }
+            foreach (var s in DailyQuestClient.WeeklySlots) if (DailyQuestClient.CanClaim(s)) { slot = s; return true; }
+            foreach (var c in DailyQuestClient.DayChests) if (DailyQuestClient.CanOpen(c)) { chest = c; return true; }
+            if (DailyQuestClient.CanOpen(DailyQuestClient.WeekChest)) { chest = DailyQuestClient.WeekChest; return true; }
+            return false;
+        }
+
+        static DailyQuestClient.Slot NextAccept()
+        {
+            foreach (var s in DailyQuestClient.Slots) if (DailyQuestClient.CanAccept(s)) return s;
+            foreach (var s in DailyQuestClient.WeeklySlots) if (DailyQuestClient.CanAccept(s)) return s;
+            return null;
+        }
+
+        void RunAll(bool claim)
+        {
+            if (batchRunning || DailyQuestClient.Busy) return;
+            StartCoroutine(RunAllRoutine(claim));
+        }
+
+        /// <summary>One request at a time (each with its own request_id), waiting for each answer; stops at the first error.</summary>
+        System.Collections.IEnumerator RunAllRoutine(bool claim)
+        {
+            batchRunning = true;
+            Refresh();
+            var done = new List<string>();
+            string error = null;
+            for (int guard = 0; guard < 24; guard++)
+            {
+                DailyQuestClient.Slot slot = null; DailyQuestClient.Chest chest = null;
+                if (claim ? !NextClaim(out slot, out chest) : (slot = NextAccept()) == null) break;
+                bool? result = null; string message = null;
+                System.Action<bool, string> answer = (ok, msg) => { result = ok; message = msg; };
+                if (chest != null) DailyQuestClient.OpenChest(chest, answer);
+                else if (claim) DailyQuestClient.Claim(slot, answer);
+                else DailyQuestClient.Accept(slot, answer);
+                float until = Time.unscaledTime + 15f;
+                while (result == null && Time.unscaledTime < until) yield return null;
+                if (result != true) { error = message ?? L.T("서버에 연결할 수 없습니다."); break; }
+                done.Add(message);
+                while (DailyQuestClient.Busy && Time.unscaledTime < until) yield return null;
+            }
+            batchRunning = false;
+            Game.Audio.PlaySfx(done.Count > 0 && error == null ? "quest" : "cancel");
+            string head = done.Count == 0 ? (error == null ? L.T("받을 것이 없습니다.") : "") : claim ? L.F("모두 받기: {0}건", done.Count) : L.F("모두 수락: {0}건", done.Count);
+            if (done.Count > 0) head += "\n" + string.Join("\n", done);
+            if (error != null) head += (head.Length > 0 ? "\n" : "") + L.F("<color=#ff9f7a>멈춤: {0}</color>", error);
+            GameEvents.RaiseToast(head);
+            if (gameObject.activeInHierarchy) Refresh();
+        }
+
         void Answer(bool ok, string msg)
         {
             Game.Audio.PlaySfx(ok ? "quest" : "cancel");
@@ -185,6 +248,10 @@ namespace DotRPG
                 : $"{(string.IsNullOrEmpty(DailyQuestClient.Giver) ? "" : DailyQuestClient.Giver + "  ·  ")}<color=#b8c4d8>{rule}</color>  ·  <color=#8c96a8>{reset}</color>";
             refresh.gameObject.SetActive(online);
             refresh.interactable = !DailyQuestClient.Busy;
+            claimAll.gameObject.SetActive(online);
+            acceptAll.gameObject.SetActive(online);
+            claimAll.interactable = !batchRunning && NextClaim(out _, out _);
+            acceptAll.interactable = !batchRunning && NextAccept() != null;
             bool show = online && DailyQuestClient.Loaded && DailyQuestClient.Unlocked;
             RefreshChest(show);
             string today = null; // ISO dates: the latest one is today, the others were carried over

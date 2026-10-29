@@ -7,6 +7,8 @@ import { COLLECTION_ATTACK_MAX, COSMETIC_DAMAGE_MAX } from '../starshop/starshop
 import type { Rng } from '../../utils/rng';
 import { levelCap } from '../../gamedata/chapterGate';
 import { dropTierOfLevel } from '../../utils/gearTier';
+import { HIDDEN_VALUE, hiddenAttackMul } from '../../utils/hiddenOption';
+import { setBonusOf } from '../../utils/gearSet';
 
 /** 몬스터 경험치: xpByLevel 표가 있으면 표, 없으면 round(xp * (1 + xpPerLevel * (레벨 - 1))) (.5는 짝수 쪽) */
 export function monsterXp(eco: EconomyData, def: MonsterDef, level: number): number {
@@ -20,16 +22,17 @@ export function effectiveHp(eco: EconomyData, def: MonsterDef, level: number, hp
   return def.hp * hpMul * (1 + eco.monsterRules.hpPerLevel * (level - 1));
 }
 
-/** 장비 키 하나의 공격력(강화 단계 반영). 단계표 밖(만렙)은 마지막 증가분을 한 번 더 더한다 */
+/** 장비 키 하나의 공격력(강화 단계 반영). 단계표 밖(만렙)은 마지막 증가분을 한 번 더 더한다. 히든 "피해" 옵션은 x1.3 */
 export function gearAttack(eco: EconomyData, key: string): number {
   const p = parseItemKey(key);
   if (!p) return 0;
   const levels = eco.enhance.steps.get(p.base);
   if (!levels || levels.length === 0) return 0;
-  if (p.level < levels.length) return (levels[p.level] as { statsAttack: number }).statsAttack;
+  const mul = p.hidden === 'd' ? 1 + HIDDEN_VALUE.d / 100 : 1;
+  if (p.level < levels.length) return (levels[p.level] as { statsAttack: number }).statsAttack * mul;
   const last = (levels[levels.length - 1] as { statsAttack: number }).statsAttack;
   const prev = levels.length > 1 ? (levels[levels.length - 2] as { statsAttack: number }).statsAttack : last;
-  return last + Math.max(0, last - prev);
+  return (last + Math.max(0, last - prev)) * mul;
 }
 
 export interface PowerPolicy {
@@ -40,9 +43,13 @@ export interface PowerPolicy {
 
 /** 3.2.3 attackCap(level, worn) */
 export function attackCap(eco: EconomyData, pol: PowerPolicy, level: number, wornKeys: string[]): number {
-  const gear = wornKeys.reduce((a, k) => a + gearAttack(eco, k), 0);
+  const raw = wornKeys.reduce((a, k) => a + gearAttack(eco, k), 0);
+  // 세트 효과는 장비 공격력 합에 곱한다(클라이언트는 반올림하므로 올림으로 맞춘다, Docs/PLAN_GEAR_SETS_2026-10-29.md)
+  const setPct = setBonusOf(eco, wornKeys).attackPct;
+  const gear = setPct > 0 ? Math.ceil(raw * (1 + setPct / 100)) : raw;
   // 착용 외형(오라·코스튬 스킨)의 공격력 보너스는 클라이언트 설정이라, 가능한 최대치만큼 넓힌다
-  return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1)) * (1 + (COSMETIC_DAMAGE_MAX + COLLECTION_ATTACK_MAX) / 100);
+  // 히든 옵션(공격 속도·치명타)은 정상 장비가 걸리지 않게 그만큼 넓힌다(Docs/PLAN_GEAR_HIDDEN_2026-10-29.md 4절)
+  return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1)) * (1 + (COSMETIC_DAMAGE_MAX + COLLECTION_ATTACK_MAX) / 100) * hiddenAttackMul(wornKeys);
 }
 
 /** 챕터 3 확산형 특화가 있는 Lv41+ 캐릭터의 다중 적중 상한(Docs/ch3/SKILL_SPECIALIZATION.md 1절) */

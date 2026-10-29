@@ -11,6 +11,7 @@ import { isSweepTicketKey } from '../../gamedata/sweepData';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import { parseItemKey } from '../../utils/itemKey';
+import { hiddenValidFor } from '../../utils/hiddenOption';
 import { auditView, runAdminAction, type ActionResult } from '../common/audit';
 import type { AdminCtx } from '../common/adminTypes';
 import * as repo from './mailCampaignsRepository';
@@ -80,7 +81,7 @@ async function validateCreate(b: CreateBody, now: Date): Promise<{ startsAt: Dat
     } else if (a.kind === 'item') {
       const parsed = parseItemKey(a.item_key);
       const def = parsed ? gd.economy.items.get(parsed.base) : undefined;
-      if (!parsed || !def || def.kind === 'currency' || isSweepTicketKey(gd.sweep, parsed.base)) throw new AppError(422, '지급할 수 없는 아이템입니다.', 'ITEM_NOT_FOUND');
+      if (!parsed || !def || def.kind === 'currency' || isSweepTicketKey(gd.sweep, parsed.base) || !hiddenValidFor(gd.economy, a.item_key)) throw new AppError(422, '지급할 수 없는 아이템입니다.', 'ITEM_NOT_FOUND');
       if (seenKeys.has(a.item_key)) throw limitErr('attachments', '같은 아이템을 두 번 넣을 수 없습니다.');
       seenKeys.add(a.item_key);
       if (a.count > cfg.admin.grantMaxItemCount) throw limitErr('attachments.item', `아이템 수량 한도(${cfg.admin.grantMaxItemCount})를 넘었습니다.`);

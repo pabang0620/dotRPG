@@ -45,11 +45,12 @@ namespace DotRPG
         void FitQuestMobile()
         {
             if (mobileQuestArrow == null) return; // RefreshQuest runs once before BuildMobile
-            if (questBody.gameObject.activeSelf != mobileQuestOpen) questBody.gameObject.SetActive(mobileQuestOpen);
             mobileQuestArrow.text = mobileQuestOpen ? "▲" : "▼";
             if (mobileQuestOpen) return;
+            // [UI 2026-10-29] Folded: the title line plus the one objective line RefreshQuest left in the body.
             questTitle.verticalOverflow = VerticalWrapMode.Truncate; // one line in the folded panel
-            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, MobileQuestFoldedHeight);
+            questBody.verticalOverflow = VerticalWrapMode.Truncate;
+            questPanel.sizeDelta = new Vector2(questPanel.sizeDelta.x, MobileQuestFoldedHeight + 22f);
         }
     }
 }

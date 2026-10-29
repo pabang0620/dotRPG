@@ -37,7 +37,7 @@ describe('부활 코인', () => {
     const r = await get(h);
     expect(r.status).toBe(200);
     expect(r.body.success).toBe(true);
-    expect(r.body.data).toEqual({ coins: 1, max: 5, free: true, free_until_level: 10, next_grant_at: '2026-10-07T21:00:00.000Z' });
+    expect(r.body.data).toEqual({ coins: 1, max: 100, daily_max: 5, free: true, free_until_level: 10, next_grant_at: '2026-10-07T21:00:00.000Z' });
   });
 
   it('Lv10 이하는 무료: 코인이 줄지 않고 로그만 남는다', async () => {
@@ -45,7 +45,7 @@ describe('부활 코인', () => {
     await setLevel(h, 10);
     const r = await use(h);
     expect(r.status).toBe(200);
-    expect(r.body.data).toMatchObject({ free: true, coins: 1, max: 5 });
+    expect(r.body.data).toMatchObject({ free: true, coins: 1, max: 100 });
     expect(await state(h)).toBe(1);
     expect(await logCount(h)).toBe(1);
   });

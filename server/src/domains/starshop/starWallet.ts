@@ -145,10 +145,10 @@ export async function creditPaid(db: Queryable, o: { accountId: number; orderId:
   return { balance: f.balance, paidBalance: f.paid, debt: f.debt, settled: s.applied };
 }
 
-/** 무료 입금: 분해, 승인된 운영 지급, 시험 지급. 환불 대상이 아니다 */
+/** 무료 입금: 분해, 승인된 운영 지급, 시험 지급, 별의 결정 바꾸기, 별조각 상자 열기. 환불 대상이 아니다 */
 export async function creditFree(
   db: Queryable,
-  o: { accountId: number; reason: 'dismantle' | 'admin_grant' | 'test_grant' | 'level_reward' | 'pass_daily'; amount: number; ref: string | null; requestId: string | null },
+  o: { accountId: number; reason: 'dismantle' | 'admin_grant' | 'test_grant' | 'level_reward' | 'pass_daily' | 'crystal_convert' | 'star_box'; amount: number; ref: string | null; requestId: string | null },
 ): Promise<CreditResult> {
   await lockWallet(db, o.accountId);
   const a = await apply(db, { accountId: o.accountId, delta: o.amount, paidDelta: 0, debtDelta: 0, reason: o.reason, ref: o.ref, requestId: o.requestId });
@@ -160,7 +160,7 @@ export async function creditFree(
 /** 소비(뽑기·교환): 무료분 먼저, 유료분은 오래된 로트부터(8.3). 모자라거나 부채가 있으면 던진다 */
 export async function debit(
   db: Queryable,
-  o: { accountId: number; reason: 'gacha' | 'exchange' | 'sealed_pull' | 'pass_buy' | 'skill_style_buy'; price: number; ref: string | null; requestId: string | null },
+  o: { accountId: number; reason: 'gacha' | 'exchange' | 'sealed_pull' | 'pass_buy' | 'skill_style_buy' | 'item_buy'; price: number; ref: string | null; requestId: string | null },
 ): Promise<{ balance: number; paidBalance: number }> {
   const w = await lockWallet(db, o.accountId);
   assertNoStarDebt(w);

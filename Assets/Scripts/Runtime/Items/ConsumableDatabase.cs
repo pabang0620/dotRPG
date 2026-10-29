@@ -34,6 +34,10 @@ namespace DotRPG
         DungeonReset,
         /// <summary>[DAILY CHEST] 강화 재료 상자 from the daily / weekly completion chest: the server opens it (1-100 mana essence).</summary>
         MatBox,
+        /// <summary>[REVIVE COIN 0056] 부활 코인 item: using it adds one revive coin to this character (held max 100, the server records it).</summary>
+        ReviveCoin,
+        /// <summary>[CASH sealed-2] 별조각 상자 from the sealed box: the server opens it into free Star Shards (sealed_box.json starBox).</summary>
+        StarBox,
     }
 
     /// <summary>Money and usable items (bag "소모품" tab, quick-use keys Q / R / T) plus the protection ticket.</summary>
@@ -63,6 +67,10 @@ namespace DotRPG
         /// <summary>[DAILY CHEST] Docs/PLAN_DAILY_REWARDS_2026-10-24.md: fragments merge into a protection ticket on the server (10 = 1).</summary>
         public const string ProtectFragment = "frag_protect", MatBox = "box_mat";
         public const string HpPotionHi = "potion_hp_hi", MpPotionHi = "potion_mp_hi", PowerScroll = "scroll_power", SealedBox = "box_sealed";
+        /// <summary>[REVIVE COIN 0056] Bag item bought with Star Shards (or mailed): use it for +1 revive coin (account-bound).</summary>
+        public const string ReviveCoin = "item_revive_coin";
+        /// <summary>[CASH sealed-2] 별조각 상자: a sealed box reward that opens into free Star Shards (account-bound).</summary>
+        public const string StarBox = "box_stars";
         public static string EnhanceTicket(int level) => "ticket_enh" + level;
         public static string LuckBox(int level, int chance) => $"box_enh{level}_{chance}";
 
@@ -122,6 +130,10 @@ namespace DotRPG
                 description = L.T("쓰면 오늘 요일 던전 입장 횟수가 처음(3회)으로 돌아간다. 입장 횟수를 하나도 쓰지 않았으면 쓸 수 없다. (계정 공용)") },
             new ConsumableItem { id = SealedBox, name = L.T("봉인된 상자"), iconKey = "icon_box_sealed", kind = ConsumableKind.SealedBox, grade = ItemRarity.Epic,
                 description = L.T("캐시샵의 봉인된 상자와 같은 상자. 열면 확률표에 따라 보상 하나가 나온다. 봉인 해제 게이지도 함께 찬다.") },
+            new ConsumableItem { id = ReviveCoin, name = L.T("부활 코인"), iconKey = "icon_revive_coin", kind = ConsumableKind.ReviveCoin, grade = ItemRarity.Rare,
+                description = L.T("쓰면 이 캐릭터의 부활 코인이 1개 늘어난다. (최대 100개) 던전·레이드에서 쓰러졌을 때 그 자리에서 일어나는 데 쓴다. (계정 공용)") },
+            new ConsumableItem { id = StarBox, name = L.T("별조각 상자"), iconKey = "icon_star_shard", kind = ConsumableKind.StarBox, grade = ItemRarity.Rare,
+                description = L.T("열면 무료 별조각이 나온다. 수량과 확률은 캐시샵의 확률 보기에 있다. (계정 공용)") },
         };
 
         static ConsumableItem Ticket(int level, ItemRarity grade) => new ConsumableItem
@@ -140,7 +152,7 @@ namespace DotRPG
         /// <summary>[CASH] The sealed-box family: high potions, the buff scroll, enhancement tickets and boxes.</summary>
         public static IEnumerable<ConsumableItem> Cash
         {
-            get { foreach (var i in Items) if (i.kind == ConsumableKind.Buff || i.kind == ConsumableKind.EnhanceTicket || i.kind == ConsumableKind.LuckBox || i.kind == ConsumableKind.SealedBox || i.kind == ConsumableKind.DungeonReset || i.id == HpPotionHi || i.id == MpPotionHi) yield return i; }
+            get { foreach (var i in Items) if (i.kind == ConsumableKind.Buff || i.kind == ConsumableKind.EnhanceTicket || i.kind == ConsumableKind.LuckBox || i.kind == ConsumableKind.SealedBox || i.kind == ConsumableKind.DungeonReset || i.kind == ConsumableKind.ReviveCoin || i.kind == ConsumableKind.StarBox || i.id == HpPotionHi || i.id == MpPotionHi) yield return i; }
         }
 
         /// <summary>Usable items in bag order (money and the protection ticket excluded).</summary>

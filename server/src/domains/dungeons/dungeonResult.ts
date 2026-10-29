@@ -5,6 +5,7 @@ import { getGameData } from '../../gamedata/loader';
 import { AppError } from '../../utils/AppError';
 import { getRng } from '../../utils/rng';
 import { applyUniqueBonus } from './uniquePity';
+import { rollHiddenCards } from '../../utils/hiddenOption';
 import type { EconCtx } from '../economy/economyContext';
 import * as econRepo from '../economy/economyRepository';
 import { effectiveHp, attackCap, powerAllows } from '../kills/killRules';
@@ -331,6 +332,8 @@ export async function finalizeCleared(ctx: EconCtx, run: repo.RunRow, inp: Clear
       lordBonus = rollLordBonus(dungeon, run.difficulty, getRng());
       if (lordBonus) await ctx.addItem('bag', lordBonus.item_key, lordBonus.count, 'dungeon_card', run.uuid);
     }
+    // 히든 옵션: 카드가 정해질 때(뒤집기 전) 장비 카드마다 2%로 굴려 판에 저장한다(별도 난수 흐름)
+    if (cards) cards = rollHiddenCards(eco, cards);
     if (dungeon.isRaid) {
       if (dungeon.raidTier === 'Final' && dungeon.keyCost > 0) {
         keyCost = dungeon.keyCost;

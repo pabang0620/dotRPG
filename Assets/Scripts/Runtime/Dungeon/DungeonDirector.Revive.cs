@@ -20,7 +20,8 @@ namespace DotRPG
                 // [REVIVE] No revive left: a member waits for the next room; the host stays down in the boss room while
                 // another person fights on (elsewhere only the host can lead through the door, so the run ends).
                 if (Follower) { GameEvents.RaiseToast(run.InBossRoom ? L.T("부활할 수 없습니다. 파티원을 응원하세요.") : L.T("부활할 수 없습니다. 다음 방에서 다시 일어납니다.")); return true; }
-                if (HostWaits) { GameEvents.RaiseToast(run.InBossRoom ? L.T("부활할 수 없습니다. 파티원을 응원하세요.") : L.T("부활할 수 없습니다. 다음 방에서 다시 일어납니다.")); return true; }
+                // [REVIVE 24] A host never fails the party on its own: the wipe clock (10 s for anyone's coin) decides.
+                if (NetHost) { GameEvents.RaiseToast(run.InBossRoom ? L.T("부활할 수 없습니다. 파티원을 응원하세요.") : L.T("부활할 수 없습니다. 다음 방에서 다시 일어납니다.")); return true; }
                 StartCoroutine(FailLater("부활 횟수를 모두 사용했습니다.")); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
                 return true;
             }
@@ -37,17 +38,78 @@ namespace DotRPG
         /// the party through the door and the host rises in the next room like a member does).
         /// </summary>
         bool HostWaits => NetHost && run != null && PartyNet.Current.AnyHumanUp;
-        float allDownFor;
+
+        // ---------------- [REVIVE 24] wipe ----------------
+
+        /// <summary>[REVIVE 24] Every person down (AI do not count): this long for someone to use a coin, then the run fails.</summary>
+        public const float WipeSeconds = 10f;
+        /// <summary>[REVIVE 24] A key press opens the coin only after this long, so attack keys mashed while falling spend nothing.</summary>
+        const float ReviveInputGrace = 1f;
+        bool wipeActive;
+        /// <summary>[REVIVE 24] Seconds left before the wiped party is sent out (0 = no wipe). The host's clock in a party run.</summary>
+        public float WipeRemaining { get; private set; }
+
+        /// <summary>[REVIVE 24] Every frame: solo or host judges the wipe; a member counts down the host's clock for the display.</summary>
+        void UpdateWipe()
+        {
+            if (run == null || run.State != DungeonRunState.Playing) { wipeActive = false; WipeRemaining = 0f; return; }
+            if (Follower)
+            {
+                if (wipeActive && Game.IsWorldRunning) WipeRemaining = Mathf.Max(0f, WipeRemaining - Time.deltaTime);
+                return; // the host fails the run (RunEnd)
+            }
+            bool allDown = NetHost ? !PartyNet.Current.AnyHumanUp : Game.Player != null && Game.Player.IsDead;
+            if (!allDown)
+            {
+                if (wipeActive) SetWipe(false, 0f);
+                return;
+            }
+            if (!Game.IsWorldRunning) return;
+            if (!wipeActive) SetWipe(true, WipeSeconds);
+            if (ReviveCoins.Busy) return; // a coin being paid must not time out
+            WipeRemaining -= Time.deltaTime;
+            if (WipeRemaining > 0f) return;
+            SetWipe(false, 0f);
+            ReviveOpen = false;
+            Fail("파티원이 모두 쓰러졌습니다."); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
+        }
+
+        void SetWipe(bool on, float seconds)
+        {
+            wipeActive = on;
+            WipeRemaining = on ? seconds : 0f;
+            if (NetHost) PartyNet.Current.HostSendWipe(WipeRemaining);
+            if (on) OpenReviveForWipe();
+        }
+
+        /// <summary>[REVIVE 24] Host's wipe clock on a member PC (0 = over: someone got up).</summary>
+        public void FollowWipe(float seconds)
+        {
+            if (run == null || run.State != DungeonRunState.Playing) return;
+            wipeActive = seconds > 0f;
+            WipeRemaining = Mathf.Max(0f, seconds);
+            if (wipeActive) OpenReviveForWipe();
+        }
+
+        /// <summary>[REVIVE 24] The wipe gives everyone who still has a revive the coin window for the whole countdown.</summary>
+        void OpenReviveForWipe()
+        {
+            var local = Game.Player;
+            if (local == null || !local.IsDead || run.RevivesLeft <= 0) return;
+            if (!ReviveOpen)
+            {
+                ReviveOpen = true;
+                reviveClock = 0f;
+                reviveUntil = WipeSeconds;
+                ReviveCoins.Refresh();
+                return;
+            }
+            reviveUntil = Mathf.Max(reviveUntil, reviveClock + WipeSeconds);
+        }
 
         void UpdateRevive()
         {
             if (run == null || run.State != DungeonRunState.Playing) { ReviveOpen = false; return; }
-            // [REVIVE] Party run: it fails once every person is down and nobody revived for a while (AI cannot finish it).
-            if (NetHost && Game.IsWorldRunning)
-            {
-                allDownFor = PartyNet.Current.AnyHumanUp || ReviveOpen ? 0f : allDownFor + Time.deltaTime;
-                if (allDownFor > ReviveSeconds + 2f) { allDownFor = 0f; Fail("파티원이 모두 쓰러졌습니다."); return; } // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
-            }
             if (Game.Player != null && !Game.Player.IsDead) { ReviveOpen = false; return; }
             if (!Game.IsWorldRunning) return;
             if (ReviveCoins.Busy) return; // [REVIVE] the countdown waits for the coin answer (a paid coin must not time out)
@@ -55,13 +117,15 @@ namespace DotRPG
             var input = Game.Input;
             if (Game.IsPlaying && !Game.State.ChangedThisFrame && input != null)
             {
-                if (input.SubmitPressed || input.InteractPressed || input.AttackPressed) { AcceptRevive(); return; }
+                // [REVIVE 24] Only the revive key (Enter) after a short grace or the 부활 button spends a coin: attack and
+                // interact presses (mashed while falling, or held by auto-hunting) never do.
+                if (input.SubmitPressed && reviveClock >= ReviveInputGrace) { AcceptRevive(); return; }
                 if (input.CancelPressed) { if (Follower || HostWaits) { ReviveOpen = false; return; } GiveUp(); return; }
             }
             if (reviveClock >= reviveUntil)
             {
                 ReviveOpen = false;
-                if (Follower || HostWaits) { GameEvents.RaiseToast(L.T("부활하지 않았습니다.")); return; }
+                if (Follower || HostWaits || wipeActive) { GameEvents.RaiseToast(L.T("부활하지 않았습니다.")); return; } // [REVIVE 24] the wipe clock decides
                 Fail("부활하지 않았습니다. (시간 초과)"); // i18n-ignore raw reason goes to party members; shown through L.T(FailReason)
             }
         }

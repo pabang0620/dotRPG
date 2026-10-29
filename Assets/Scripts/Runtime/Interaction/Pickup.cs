@@ -136,7 +136,7 @@ namespace DotRPG
             else if (gear != null)
             {
                 int level = EquipmentDatabase.LevelOfKey(itemId);
-                GameEvents.RaiseToast(L.F("장비 획득: <color={0}>[{1}] {2}</color>  ({3})  [{4}] 가방", EquipmentDatabase.RarityColor(gear.rarity), EquipmentDatabase.RarityName(gear.rarity), L.T(gear.NameAt(level)), gear.StatLine(level), Game.Input.GetBindingLabel(GameAction.Inventory)));
+                GameEvents.RaiseToast(L.F("장비 획득: <color={0}>[{1}] {2}</color>  ({3})  [{4}] 가방", EquipmentDatabase.RarityColor(gear.rarity), EquipmentDatabase.RarityName(gear.rarity), L.T(gear.NameAt(level)), gear.StatLine(level, EquipmentDatabase.HiddenOfKey(itemId)), Game.Input.GetBindingLabel(GameAction.Inventory)));
             }
             else
                 GameEvents.RaiseToast($"+{amount} {L.T(Game.Config.GetItem(itemId).displayName)}");

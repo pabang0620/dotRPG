@@ -90,5 +90,6 @@
  "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Game data validation failed: enhance.inheritTiers {0}",
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} differ in grade or slot",
  "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Rows ask for materials but coreItem, shardItem or sealItem is missing",
- "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Take a shadow form for 6s: all attack damage +18%, attack speed +20%. When the form ends, it bursts in a 7m radius (480%)."
+ "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Take a shadow form for 6s: all attack damage +18%, attack speed +20%. When the form ends, it bursts in a 7m radius (480%).",
+ "난이도는 4개(옛 형식) 또는 8개여야 합니다": "There must be 4 difficulties (old format) or 8"
 }

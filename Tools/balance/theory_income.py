@@ -152,14 +152,17 @@ def best_difficulty(band_min_level):
 
 
 def day_lumps(difficulty):
-    """요일 던전 하루 dailyEntries판: 경험치 = 3 x max(던전별 clearXpFloor[난이도] x xpMul) x 최고 등급 보너스, 골드 = 3 x 카드 골드 최댓값 x rewardMul."""
-    # 군주(4)처럼 일부 던전에만 있는 난이도는 그 난이도가 있는 던전만 본다(상시 일반 던전은 칸이 4개)
-    plain = [d for d in DUNGEONS["dungeons"] if not d["isRaid"] and len(d["clearXpFloor"]) > difficulty]
-    runs = DUNGEONS["dailyEntries"]
-    xp = runs * max(d["clearXpFloor"][difficulty] * d["xpMul"] for d in plain) * TOP_RANK_XP_MUL
-    card_gold = max((r["max"] for d in plain for r in d["rewards"] if r["itemId"] == "gold"), default=0)
-    gold = runs * card_gold * DUNGEONS["difficulties"][difficulty]["rewardMul"]
-    return xp, gold
+    """요일 던전 하루 dailyEntries판: 경험치 = 3 x max(던전별 clearXpFloor[난이도] x xpMul) x 최고 등급 보너스, 골드 = 3 x 카드 골드 최댓값 x rewardMul.
+    상한이므로 입장 가능한 난이도(0..difficulty) 중 가장 큰 값을 쓴다(2026-10-29: 악몽·지옥·심연의 하한은 몬스터 레벨이 높아 영웅보다 낮다)."""
+    def one(k):
+        # 악몽~군주(4~7)처럼 요일 던전에만 있는 난이도는 그 난이도가 있는 던전만 본다(상시 일반 던전은 칸이 4개)
+        plain = [d for d in DUNGEONS["dungeons"] if not d["isRaid"] and len(d["clearXpFloor"]) > k]
+        runs = DUNGEONS["dailyEntries"]
+        xp = runs * max(d["clearXpFloor"][k] * d["xpMul"] for d in plain) * TOP_RANK_XP_MUL
+        card_gold = max((r["max"] for d in plain for r in d["rewards"] if r["itemId"] == "gold"), default=0)
+        return xp, runs * card_gold * DUNGEONS["difficulties"][k]["rewardMul"]
+    lumps = [one(k) for k in range(difficulty + 1)]
+    return max(x for x, _ in lumps), max(g for _, g in lumps)
 
 
 def raid_lumps(tier, band_max_level=None):

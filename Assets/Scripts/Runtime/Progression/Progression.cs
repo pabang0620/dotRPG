@@ -211,6 +211,28 @@ namespace DotRPG
             Changed?.Invoke();
         }
 
+        /// <summary>
+        /// [GEM AUTO 2026-10-29] Sets both support sockets of a slot at once (간편 젬 세팅), with the same rules as SetGem and
+        /// the server (stateRules.checkGems): open slot, unlocked support gems, not the same gem twice. Changed fires once,
+        /// after both, so auto-socket never sees the half-set slot. False (nothing changed) when the pair is not allowed.
+        /// </summary>
+        public bool SetSupports(int slot, string first, string second)
+        {
+            if (!IsSlotOpen(slot) || (first != null && first == second)) return false;
+            foreach (var id in new[] { first, second })
+            {
+                if (id == null) continue;
+                var g = SkillGems.Get(id);
+                if (g == null || g.kind != GemKind.Support || !IsUnlocked(g)) return false;
+            }
+            if (slots[slot, 1] == first && slots[slot, 2] == second) return true;
+            slots[slot, 1] = first;
+            slots[slot, 2] = second;
+            if ((first != null || second != null) && ReferenceEquals(this, Game.Session?.Progression)) GuideFlags.Mark(GuideFlags.Gem); // [GUIDE] 스킬 다듬기
+            Changed?.Invoke();
+            return true;
+        }
+
         /// <summary>Candidates for a support socket in cycling order (first = empty); a gem can't be linked twice into one slot.</summary>
         public List<string> OptionsFor(int slot, int socket)
         {

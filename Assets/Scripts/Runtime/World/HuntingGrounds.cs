@@ -94,10 +94,10 @@ namespace DotRPG
         // Floor applies to TOTAL dungeon XP (kills + clear); rank/specialty rewards then add value.
         public static int DungeonClearFloor(DungeonDef dungeon, DifficultyDef diff)
         {
-            int tier = Mathf.Clamp((int)diff.id, 0, dungeon.referenceSeconds.Length - 1); // [CH3] weekday dungeons have a 5th (군주) time
+            int tier = Mathf.Clamp((int)diff.id, 0, dungeon.referenceSeconds.Length - 1); // [CH3][TIERS] weekday dungeons have 8 times (악몽~군주)
             // [NORMAL 2026-10-14] 일반 던전 = hunting at the recommended level for the same time (user: "사냥하는거랑 비슷하게"),
             // the weekday dungeons keep their 1.8x bonus at the higher benchmark levels.
-            int benchmarkLevel = dungeon.isRaid || dungeon.always ? diff.recommendedLevel : new[] { 10, 18, 26, 36, 45 }[tier];
+            int benchmarkLevel = dungeon.isRaid || dungeon.always ? diff.recommendedLevel : DungeonDatabase.ClearFloorBenchmark[Mathf.Min(tier, DungeonDatabase.ClearFloorBenchmark.Length - 1)];
             float seconds = dungeon.referenceSeconds[tier];
             int target = Mathf.CeilToInt(XpAt(benchmarkLevel) * KillsPerMinute * seconds / 60f * (dungeon.always ? 1f : DungeonEfficiency));
             int kills = 0;

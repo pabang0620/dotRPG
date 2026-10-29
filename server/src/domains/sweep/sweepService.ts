@@ -1,6 +1,7 @@
 // 던전 소탕(S1~S3), 클리어권 구매(T1), 주간 활동 보상(T2). 설계: Docs/server/phase10_sweep_mail.md 4~5절.
 // 재화(골드·경험치·아이템·클리어권)가 바뀌는 경로는 모두 runEconomy(캐릭터 행 잠금, request_log 멱등성) 안에서
 // 계정 행을 잠근 뒤 바꾸고 원장을 남긴다. 금액·확률·보상량·횟수·시간은 요청에서 받지 않는다.
+import { rollHidden } from '../../utils/hiddenOption';
 import { randomUUID } from 'node:crypto';
 import { chapter3Open } from '../../gamedata/chapterGate';
 import { getConfig } from '../../config/env';
@@ -210,7 +211,8 @@ async function processSweep(ctx: EconCtx, body: SweepRunBody, all: boolean): Pro
     if (!lot || !(await wallet.consumeOne(ctx.client, actor, lot, id))) throw new AppError(422, '클리어권이 없습니다.', 'NO_TICKET');
     const xp = sweepXp(d, diff, body.difficulty, sweep);
     const g = await ctx.grantXp(xp, 'dungeon_sweep', id);
-    const card = rollSweepCard(eco, d, diff, ctx.char.class, getRng(), sweep);
+    const rolledCard = rollSweepCard(eco, d, diff, ctx.char.class, getRng(), sweep);
+    const card = rolledCard.item_key === 'gold' ? rolledCard : { ...rolledCard, item_key: rollHidden(eco, rolledCard.item_key) }; // 히든 옵션 2%
     if (card.item_key === 'gold') await ctx.changeGold(card.count, 'dungeon_card', id);
     else await ctx.addItem('bag', card.item_key, card.count, 'dungeon_card', id);
     await repo.insertSweep(ctx.client, {

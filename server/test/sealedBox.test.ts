@@ -1,7 +1,7 @@
 // 14단계: 봉인된 상자 캐시샵 뽑기, 부스터 게이지, 확률 표
 import { randomUUID } from 'node:crypto';
 import { getPool } from '../src/db/pool';
-import { getSealedBox, sealedTable } from '../src/gamedata/sealedBox';
+import { getSealedBox, sealedTable, starBoxExpected, validateSealedBox } from '../src/gamedata/sealedBox';
 import { getRateLimitStore } from '../src/middleware/rateLimiter';
 import { setRng } from '../src/utils/rng';
 import * as sealed from '../src/domains/sealedbox/sealedBoxService';
@@ -25,7 +25,7 @@ afterAll(async () => {
 describe('확률 표', () => {
   it('일반 표와 부스터 표 모두 합이 100, 부스터는 희귀 이상 x2·일반 비례 축소·수량 x2', () => {
     const d = getSealedBox();
-    expect(d.rows.length).toBe(13);
+    expect(d.rows.length).toBe(14);
     const sum = (t: { rate: number }[]) => t.reduce((a, r) => a + r.rate, 0);
     const normal = sealedTable(d, false);
     const boosted = sealedTable(d, true);
@@ -38,7 +38,32 @@ describe('확률 표', () => {
       if (n.row.tier === 'rare') expect(b.rate).toBeCloseTo(n.rate * 2, 9);
       else expect(b.rate).toBeLessThan(n.rate);
     }
-    expect(normal.filter((r) => r.row.tier === 'rare').reduce((a, r) => a + r.rate, 0)).toBeCloseTo(14.968, 9);
+    expect(normal.filter((r) => r.row.tier === 'rare').reduce((a, r) => a + r.rate, 0)).toBeCloseTo(10.368, 9);
+  });
+
+  it('sealed-2(2026-10-29): +10 강화권·+10 상자는 1/3, 빠진 4.6%는 별조각 상자, 별조각 기대 회수는 뽑기 값의 10~20%', () => {
+    const d = getSealedBox();
+    const rate = (id: string) => d.rows.find((r) => r.id === id)?.rate;
+    expect(d.ratesVersion).toBe('sealed-2');
+    expect(rate('ticket_enh10')).toBeCloseTo(0.8, 9);
+    expect(rate('box_enh10_30')).toBeCloseTo(1.5, 9);
+    expect(rate('box_stars')).toBeCloseTo(4.6, 9);
+    expect(d.starBox?.amounts.reduce((a, r) => a + r.rate, 0)).toBeCloseTo(100, 9);
+    const ev = starBoxExpected(d);
+    expect(ev).toBeCloseTo(265, 9);
+    // 1회 평균(10회 일반 + 1회 부스터: 별조각 상자는 일반 등급이라 비례 축소, 수량 x2)
+    const n = sealedTable(d, false).find((t) => t.row.id === 'box_stars')!;
+    const b = sealedTable(d, true).find((t) => t.row.id === 'box_stars')!;
+    const perPull = ((n.rate / 100) * ev * 10 + (b.rate / 100) * ev * b.mult) / 11;
+    expect(perPull / d.priceOne).toBeGreaterThan(0.1);
+    expect(perPull / d.priceOne).toBeLessThan(0.2);
+    expect(perPull).toBeCloseTo(13.04, 1);
+  });
+
+  it('starBox 표 합이 100이 아니면 검증 오류', () => {
+    const raw = JSON.parse(JSON.stringify(getSealedBox())) as { starBox: { amounts: { stars: number; rate: number }[] } };
+    raw.starBox.amounts[0]!.rate += 1;
+    expect(validateSealedBox(raw).errors.join(';')).toContain('starBox');
   });
 
   it('GET /starshop/sealed: 가격·게이지·표', async () => {
@@ -46,8 +71,11 @@ describe('확률 표', () => {
     const r = await sealedInfo(app, pl);
     expect(r.status).toBe(200);
     expect(r.body.data).toMatchObject({ price_one: 100, price_eleven: 1000, booster: { gauge: 0, next_boosted: false } });
-    expect(r.body.data.table).toHaveLength(13);
-    expect(r.body.data.boosted_table).toHaveLength(13);
+    expect(r.body.data.table).toHaveLength(14);
+    expect(r.body.data.boosted_table).toHaveLength(14);
+    expect(r.body.data.rates_version).toBe('sealed-2');
+    expect(r.body.data.star_box).toMatchObject({ item_key: 'box_stars', expected: 265 });
+    expect(r.body.data.star_box.amounts[0]).toEqual({ stars: 100, rate: 40 });
     expect(r.body.data.table[0]).toMatchObject({ item_key: 'potion_hp_hi', count: 5, tier: 'common' });
     expect(r.body.data.boosted_table[0].count).toBe(10);
   });

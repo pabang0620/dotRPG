@@ -1,5 +1,6 @@
 // 13단계 레이드 상점: 전용 재료로 내 직업 무기 상자를 산 즉시 연다(Docs/server/phase13_raid_rewards.md 5, 6.4).
 // 가격·확률·단계·직업은 모두 서버 데이터와 캐릭터 행에서 정한다. 요청은 상품 id와 request_id뿐이다.
+import { rollHidden } from '../../utils/hiddenOption';
 import { randomUUID } from 'node:crypto';
 import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
@@ -100,7 +101,8 @@ async function processBuy(ctx: EconCtx, body: BuyBody) {
 
   const rng = getRng();
   const rarity = rollShopRarity(p, rng);
-  const resultKey = resultOf(p, ctx.char.class, rarity, rng);
+  // 히든 옵션 2%: 레이드 상자는 열면서 장비를 새로 만드는 드롭이라 굴린다(별도 난수 흐름, 결과 등급 굴림은 그대로)
+  const resultKey = rollHidden(getGameData().economy, resultOf(p, ctx.char.class, rarity, rng));
   // 재료를 거래 불가로 막았으므로 결과 장비도 캐릭터 귀속(간접 거래 차단)
   await ctx.addItem('bag', resultKey, 1, 'raid_shop_result', logId, 'character');
   await repo.insertPurchase(ctx.client, {

@@ -54,7 +54,7 @@ export function scoreRun(
   return { time, hits, kills: killScore, combo, revive_penalty: revivePenalty, total };
 }
 
-/** 난이도 번호(0 일반 ... 3 영웅). 레이드는 0 */
+/** 난이도 번호(0 일반 1 모험 2 왕 3 영웅 4 악몽 5 지옥 6 심연 7 군주). 레이드는 0 */
 function tierIndex(eco: EconomyData, d: DungeonDef, diff: DiffNumbers): number {
   return d.isRaid ? 0 : Math.max(0, eco.dungeons.difficulties.findIndex((x) => x.monsterLevel === diff.monsterLevel));
 }
@@ -404,19 +404,31 @@ export type DiffNumbers = Pick<
 /** 레이드 난이도: 0 = 레이드, 1 = 영웅 레이드(raidHeroic 배율). 그 밖은 없다 */
 export const RAID_HEROIC = 1;
 
-/** 챕터 3 요일 던전 "군주" 난이도 번호(DungeonDifficulty.Lord). 레이드·일반 던전에는 없다 */
-export const LORD_DIFFICULTY = 4;
+/**
+ * 2026-10-29 요일 던전 전용 난이도의 첫 번호(DungeonDifficulty.Nightmare): 4 악몽(Lv32, Lv30 장비) 5 지옥(Lv37, Lv35 장비)
+ * 6 심연(Lv40, Lv40 장비), 그리고 7 군주. 일반 던전은 0~3, 레이드는 0~1만 있다(Docs/PLAN_WEEKDAY_TIERS_2026-10-29.md)
+ */
+export const FIRST_WEEKDAY_ONLY = 4;
+/** 챕터 3 요일 던전 "군주" 난이도 번호(DungeonDifficulty.Lord). 2026-10-29 전에는 4였다(마이그레이션 0060이 4를 7로 옮겼다) */
+export const LORD_DIFFICULTY = 7;
 /** 군주 난이도 입장 최소 레벨(권장 45 - 여유와 별개로 3장 구간 시작) */
 export const LORD_MIN_LEVEL = 41;
 
-/** 이 던전에 군주 난이도가 있는가(요일 던전, 데이터에 군주 난이도가 있을 때). 열림 여부는 chapter3Open이 따로 본다 */
-export function hasLord(eco: EconomyData, d: DungeonDef): boolean {
-  return !d.isRaid && !d.always && eco.dungeons.difficulties.length > LORD_DIFFICULTY;
+/** 요일 던전 전용 난이도(악몽~군주)가 있는 던전인가: 요일 던전(레이드·일반 던전이 아님) */
+export function hasWeekdayTiers(d: DungeonDef): boolean {
+  return !d.isRaid && !d.always;
 }
 
-/** 목록·소탕 창에 보일 난이도 수: 군주는 3장이 열린 요일 던전만 */
+/** 이 던전에 군주 난이도가 있는가(요일 던전, 데이터에 군주 난이도가 있을 때). 열림 여부는 chapter3Open이 따로 본다 */
+export function hasLord(eco: EconomyData, d: DungeonDef): boolean {
+  return hasWeekdayTiers(d) && eco.dungeons.difficulties.length > LORD_DIFFICULTY;
+}
+
+/** 목록·소탕 창에 보일 난이도 수: 일반 던전은 영웅까지, 요일 던전은 심연까지, 군주는 3장이 열린 요일 던전만 */
 export function shownDifficulties(eco: EconomyData, d: DungeonDef, chapter3IsOpen: boolean): number {
-  return hasLord(eco, d) && chapter3IsOpen ? eco.dungeons.difficulties.length : Math.min(LORD_DIFFICULTY, eco.dungeons.difficulties.length);
+  const n = eco.dungeons.difficulties.length;
+  if (!hasWeekdayTiers(d)) return Math.min(FIRST_WEEKDAY_ONLY, n);
+  return hasLord(eco, d) && chapter3IsOpen ? n : Math.min(LORD_DIFFICULTY, n);
 }
 
 /** 군주 클리어 추가 확정 재료(카드가 아니라 클리어 때 가방에 바로). 군주 판이 아니거나 데이터가 없으면 null */
@@ -434,7 +446,8 @@ export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumb
     if (index !== RAID_HEROIC || !h) return null;
     return { ...base, hpMul: base.hpMul * h.hpMul, rewardMul: base.rewardMul * h.rewardMul };
   }
-  if (index === LORD_DIFFICULTY && !hasLord(eco, d)) return null; // 군주는 요일 던전만
+  if (index >= FIRST_WEEKDAY_ONLY && !hasWeekdayTiers(d)) return null; // 악몽~군주는 요일 던전만
+  if (index === LORD_DIFFICULTY && !hasLord(eco, d)) return null;
   return eco.dungeons.difficulties[index] ?? null;
 }
 

@@ -265,22 +265,23 @@ namespace DotRPG
             string where = e.slot.HasValue ? L.F("{0} 착용 중", L.T(EquipmentDatabase.SlotName(e.slot.Value))) : L.F("가방 {0}개", bag.Count(e.key));
             title.text = $"<b>{EquipmentDatabase.RichName(e.key)}</b>\n<size=19><color=#b8c4d8>[{L.T(EquipmentDatabase.RarityName(gear.rarity))}] {L.T(gear.CategoryName)} · {where}</color></size>\n" +
                          (max ? L.T("<color=#ffe066>최대 강화 달성!</color>") : $"{EquipmentDatabase.LevelTag(level)}  →  {EquipmentDatabase.LevelTag(level + 1)}");
-            var now = gear.StatsAt(level);
+            var hidden = EquipmentDatabase.HiddenOfKey(e.key); // [HIDDEN] enhancing keeps the option
+            var now = gear.StatsAt(level, hidden);
             if (max)
             {
-                statsText.text = L.F("<b>현재 능력치</b>   <color=#b8c4d8>전투력 {0:N0}</color>\n{1}", now.Score, gear.StatLine(level));
+                statsText.text = L.F("<b>현재 능력치</b>   <color=#b8c4d8>전투력 {0:N0}</color>\n{1}", now.Score, gear.StatLine(level, hidden));
                 costTitle.text = chanceText.text = failText.text = "";
                 foreach (var t in costCells) t.text = "";
                 enhanceButton.interactable = false;
                 enhanceLabel.text = L.T("최대 강화");
                 return;
             }
-            var next = gear.StatsAt(level + 1);
+            var next = gear.StatsAt(level + 1, hidden);
             // Low tiers can pay for a level whose bonus still rounds to the same stat: say so instead of "A → A".
             bool flat = next.enhanceAttack == now.enhanceAttack && next.enhanceHealth == now.enhanceHealth;
-            string after = flat ? NoStatChange : L.F("강화 후  <color=#8fe28f>{0}</color>", gear.StatLine(level + 1));
+            string after = flat ? NoStatChange : L.F("강화 후  <color=#8fe28f>{0}</color>", gear.StatLine(level + 1, hidden));
             statsText.text = L.F("<b>능력치 변화</b>   <color=#b8c4d8>전투력 {0:N0} → </color><color=#8fe28f>{1:N0} (+{2:N0})</color>\n", now.Score, next.Score, next.Score - now.Score) +
-                             L.F("현재<color=#00000000> 후</color>  {0}\n{1}", gear.StatLine(level), after);
+                             L.F("현재<color=#00000000> 후</color>  {0}\n{1}", gear.StatLine(level, hidden), after);
 
             var cost = eq.CostFor(e.key);
             costTitle.text = L.T("<b>필요 재료</b>");

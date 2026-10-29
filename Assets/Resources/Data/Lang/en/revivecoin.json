@@ -1,0 +1,15 @@
+{
+ "부활 코인": "Revive Coin",
+ "쓰면 이 캐릭터의 부활 코인이 1개 늘어난다. (최대 100개) 던전·레이드에서 쓰러졌을 때 그 자리에서 일어나는 데 쓴다. (계정 공용)": "Use it to add 1 Revive Coin to this character. (Max 100) Lets you get up where you fell in dungeons and raids. (Account-wide)",
+ "{0}: 부활 코인 {1}/{2}": "{0}: Revive Coins {1}/{2}",
+ "부활 코인은 {0}개까지 가질 수 있습니다.": "You can hold up to {0} Revive Coins.",
+ "<color=#b8c4d8>{0} {1}개를 가방으로 받습니다 · {2}</color>": "<color=#b8c4d8>Get {1} x {0} in your bag · {2}</color>",
+ "<color=#ffd76a>별조각 상품</color> {0}": "<color=#ffd76a>Star Shard Goods</color> {0}",
+ "{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>": "{0}\nBuy for {1:N0} Star Shards.\n<size=18>They go to your bag. Each one used adds 1 Revive Coin to this character. (Max {2})</size>",
+ "구매 완료 · {0}": "Purchased · {0}",
+ "별조각 상품": "Star Shard Goods",
+ "없는 상품입니다.": "No such product.",
+ "부활 코인 1개": "1 Revive Coin",
+ "부활 코인 10개": "10 Revive Coins",
+ "부활 코인 50개": "50 Revive Coins"
+}

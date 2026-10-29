@@ -1,0 +1,14 @@
+{
+ "별조각으로 바꾸지 못했습니다.": "Impossible de convertir en éclats d'étoile.",
+ "<color=#b8c4d8>별의 결정 {0}개 = 별조각 1개. 받은 별조각은 무료 별조각이며, 바꾼 결정은 되돌릴 수 없습니다.</color>": "<color=#b8c4d8>{0} cristaux d'étoile = 1 éclat d'étoile. Les éclats reçus sont des éclats gratuits, et les cristaux convertis ne sont pas rendus.</color>",
+ "<color=#d8b8ff>별의 결정</color> → <color=#ffd76a>별조각 +{0:N0}</color>": "<color=#d8b8ff>Cristaux d'étoile</color> → <color=#ffd76a>Éclats d'étoile +{0:N0}</color>",
+ "{0} 전용 (내 직업)": "{0} uniquement (votre classe)",
+ "바꾸기": "Convertir",
+ "바꾸기 완료 · 별조각 +{0:N0}": "Converti · Éclats d'étoile +{0:N0}",
+ "별의 결정 {0:N0}개 → <color=#ffd76a>별조각 {1:N0}개</color>": "{0:N0} cristaux d'étoile → <color=#ffd76a>{1:N0} éclats d'étoile</color>",
+ "별의 결정 → 별조각": "Cristaux d'étoile → Éclats d'étoile",
+ "별조각으로 바꾸기": "Convertir en éclats d'étoile",
+ "보유 · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>": "Possédé · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>",
+ "{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>": "{0}\nÉchanger contre {1:N0} cristaux d'étoile.\n<size=18>Les cristaux d'étoile ne se convertissent pas en or, et les échanges sont définitifs.</size>",
+ "별의 결정 {0}개부터 바꿀 수 있습니다.": "Conversion possible à partir de {0} cristaux d'étoile."
+}

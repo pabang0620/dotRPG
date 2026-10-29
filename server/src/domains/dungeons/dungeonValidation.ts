@@ -4,7 +4,7 @@ import { requestId } from '../economy/economyValidation';
 export const enterBody = z.strictObject({
   request_id: requestId,
   dungeon_id: z.string().min(1).max(40).regex(/^[a-z][a-z0-9_]*$/),
-  difficulty: z.number().int().min(0).max(4),
+  difficulty: z.number().int().min(0).max(7),
   /** 빈자리 AI 수(4단계). 서버가 판 시작 때 기록하고 던전 안에서 바꾸지 않는다 */
   ai_count: z.number().int().min(0).max(3).default(0),
 });

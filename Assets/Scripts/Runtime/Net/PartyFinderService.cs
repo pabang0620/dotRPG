@@ -56,7 +56,8 @@ namespace DotRPG
         public static readonly string[] PresetMessages = { L.T("빠르게 돌아요"), L.T("초보 환영합니다"), L.T("숙련자만 와 주세요"), L.T("보스 패턴 아시는 분"), L.T("카드 보상 노려요") };
         public static string DifficultyName(DungeonDifficulty d) => DungeonDatabase.Difficulty(d).name;
         public static string DifficultyColor(DungeonDifficulty d) =>
-            d == DungeonDifficulty.Normal ? "#c8d2e0" : d == DungeonDifficulty.Adventure ? "#78dcff" : d == DungeonDifficulty.King ? "#ffd34a" : d == DungeonDifficulty.Lord ? "#ff4a6a" : "#ff7a7a";
+            d == DungeonDifficulty.Normal ? "#c8d2e0" : d == DungeonDifficulty.Adventure ? "#78dcff" : d == DungeonDifficulty.King ? "#ffd34a" : d == DungeonDifficulty.Lord ? "#ff4a6a"
+            : d == DungeonDifficulty.Nightmare ? "#d08cff" : d == DungeonDifficulty.Inferno ? "#ff9a3c" : d == DungeonDifficulty.Abyss ? "#8a9bff" : "#ff7a7a"; // [TIERS] 악몽·지옥·심연
     }
 
     /// <summary>[ONLINE] 파티 찾기 / 자동 매칭 (PLAN_ONLINE §2.1). Server-backed later; <see cref="MockPartyFinderService"/> offline.</summary>

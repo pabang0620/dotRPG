@@ -1,0 +1,15 @@
+{
+ "부활 코인": "Pièce de résurrection",
+ "쓰면 이 캐릭터의 부활 코인이 1개 늘어난다. (최대 100개) 던전·레이드에서 쓰러졌을 때 그 자리에서 일어나는 데 쓴다. (계정 공용)": "Utilisez-la pour ajouter 1 pièce de résurrection à ce personnage. (Max. 100) Permet de se relever sur place dans les donjons et raids. (Partagé sur le compte)",
+ "{0}: 부활 코인 {1}/{2}": "{0} : pièces de résurrection {1}/{2}",
+ "부활 코인은 {0}개까지 가질 수 있습니다.": "Vous pouvez détenir jusqu'à {0} pièces de résurrection.",
+ "<color=#b8c4d8>{0} {1}개를 가방으로 받습니다 · {2}</color>": "<color=#b8c4d8>Recevez {1} x {0} dans le sac · {2}</color>",
+ "<color=#ffd76a>별조각 상품</color> {0}": "<color=#ffd76a>Articles en éclats d'étoile</color> {0}",
+ "{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>": "{0}\nAcheter pour {1:N0} éclats d'étoile.\n<size=18>Ils arrivent dans le sac. Chaque pièce utilisée ajoute 1 pièce de résurrection à ce personnage. (Max. {2})</size>",
+ "구매 완료 · {0}": "Achat effectué · {0}",
+ "별조각 상품": "Articles en éclats d'étoile",
+ "없는 상품입니다.": "Produit introuvable.",
+ "부활 코인 1개": "1 pièce de résurrection",
+ "부활 코인 10개": "10 pièces de résurrection",
+ "부활 코인 50개": "50 pièces de résurrection"
+}

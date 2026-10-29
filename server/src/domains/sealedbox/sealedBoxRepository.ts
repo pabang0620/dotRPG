@@ -26,7 +26,7 @@ export async function saveState(db: Queryable, accountId: number, s: BoosterStat
 
 export interface PullLogRow {
   seq: number;
-  source: 'shop' | 'sealed_item' | 'luck_box' | 'daily_chest' | 'mat_box';
+  source: 'shop' | 'sealed_item' | 'luck_box' | 'daily_chest' | 'mat_box' | 'star_box';
   rowId: string;
   itemKey: string;
   count: number;

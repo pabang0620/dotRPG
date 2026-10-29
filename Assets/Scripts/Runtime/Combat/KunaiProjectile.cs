@@ -14,7 +14,10 @@ namespace DotRPG
         public static readonly List<KunaiProjectile> Grounded = new List<KunaiProjectile>();
 
         /// <summary>World width of the drawn kunai / star.</summary>
-        const float KunaiSize = .7f, StarSize = .55f;
+        // [VFX 2026-10-29] Bigger (were .7 / .55: the steel blades vanished on the ground); hits are judged by CareerCombat's
+        // corridor (KunaiHalfWidth), so the picture size changes nothing in play.
+        const float KunaiSize = 1f, StarSize = .9f;
+        const float TrailGap = .025f, StarSpin = 1080f;
 
         public PlayerController Owner { get; private set; }
         public bool Stuck { get; private set; }
@@ -23,8 +26,9 @@ namespace DotRPG
         /// <summary>When a stuck kunai disappears (0 = flying).</summary>
         public float ExpiresAt { get; private set; }
 
-        SpriteRenderer sr;
+        SpriteRenderer sr, halo;
         Sprite flying, stuck;
+        float trailIn, size = 1f;
         Vector2 dir = Vector2.right;
 
         /// <summary>
@@ -50,6 +54,16 @@ namespace DotRPG
             }
             k.sr.sprite = k.flying;
             k.sr.color = tint ?? Color.white;
+            // [VFX 2026-10-29] A bright additive copy behind the blade (a glow edge that reads on any ground) and a short trail.
+            var haloGo = new GameObject("Halo");
+            haloGo.transform.SetParent(go.transform, false);
+            haloGo.transform.localScale = Vector3.one * 1.35f;
+            k.halo = haloGo.AddComponent<SpriteRenderer>();
+            k.halo.sprite = k.flying;
+            k.halo.sharedMaterial = FxMaterials.Additive;
+            k.halo.color = new Color(1f, 1f, 1f, .5f);
+            k.halo.sortingOrder = k.sr.sortingOrder - 1;
+            k.size = (star ? StarSize : KunaiSize) * scale;
             float width = k.flying != null ? k.flying.bounds.size.x : 1f;
             go.transform.localScale = Vector3.one * ((star ? StarSize : KunaiSize) * scale / Mathf.Max(.001f, width));
             k.Aim(direction);
@@ -76,6 +90,7 @@ namespace DotRPG
             if (stuck != null) sr.sprite = stuck;
             sr.flipX = dir.x < -.01f;
             sr.sortingOrder = SkillFx.At(Position.y, 1);
+            if (halo != null) { halo.sprite = sr.sprite; halo.flipX = sr.flipX; halo.sortingOrder = sr.sortingOrder - 1; halo.color = new Color(1f, 1f, 1f, .3f); }
             if (recallable && !Grounded.Contains(this)) Grounded.Add(this);
         }
 
@@ -88,6 +103,7 @@ namespace DotRPG
             sr.sprite = flying;
             sr.flipX = false;
             sr.sortingOrder = SkillFx.TopOrder + 2;
+            if (halo != null) { halo.sprite = flying; halo.flipX = false; halo.sortingOrder = sr.sortingOrder - 1; halo.color = new Color(1f, 1f, 1f, .5f); }
             Aim(direction);
         }
 
@@ -104,7 +120,16 @@ namespace DotRPG
                 if (Time.time >= ExpiresAt || Owner == null) Vanish();
                 return;
             }
-            if (Star) transform.Rotate(0f, 0f, -900f * Time.deltaTime);
+            if (Star) transform.Rotate(0f, 0f, -StarSpin * Time.deltaTime);
+            trailIn -= Time.deltaTime;
+            if (trailIn <= 0f)
+            {
+                trailIn = TrailGap;
+                var c = sr.color;
+                float s = size * .75f;
+                SkillFx.Spawn("fx_glow", Position, new Color(Mathf.Lerp(c.r, 1f, .4f), Mathf.Lerp(c.g, 1f, .4f), Mathf.Lerp(c.b, 1f, .4f), .6f), .18f, SkillFx.TopOrder + 1)
+                    .Additive().Scale(new Vector2(s, s), new Vector2(s * .25f, s * .25f));
+            }
         }
 
         void OnDestroy() => Grounded.Remove(this);

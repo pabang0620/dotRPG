@@ -1,0 +1,14 @@
+{
+ "별조각으로 바꾸지 못했습니다.": "No se pudo convertir en fragmentos estelares.",
+ "<color=#b8c4d8>별의 결정 {0}개 = 별조각 1개. 받은 별조각은 무료 별조각이며, 바꾼 결정은 되돌릴 수 없습니다.</color>": "<color=#b8c4d8>{0} cristales estelares = 1 fragmento estelar. Los fragmentos que recibes son gratuitos y los cristales convertidos no se devuelven.</color>",
+ "<color=#d8b8ff>별의 결정</color> → <color=#ffd76a>별조각 +{0:N0}</color>": "<color=#d8b8ff>Cristales estelares</color> → <color=#ffd76a>Fragmentos estelares +{0:N0}</color>",
+ "{0} 전용 (내 직업)": "Solo {0} (tu clase)",
+ "바꾸기": "Convertir",
+ "바꾸기 완료 · 별조각 +{0:N0}": "Convertido · Fragmentos estelares +{0:N0}",
+ "별의 결정 {0:N0}개 → <color=#ffd76a>별조각 {1:N0}개</color>": "{0:N0} cristales estelares → <color=#ffd76a>{1:N0} fragmentos estelares</color>",
+ "별의 결정 → 별조각": "Cristales estelares → Fragmentos estelares",
+ "별조각으로 바꾸기": "Convertir en fragmentos estelares",
+ "보유 · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>": "Tienes · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>",
+ "{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>": "{0}\nIntercambiar por {1:N0} cristales estelares.\n<size=18>Los cristales estelares no se convierten en oro, y los intercambios no se pueden deshacer.</size>",
+ "별의 결정 {0}개부터 바꿀 수 있습니다.": "Se puede convertir desde {0} cristales estelares."
+}

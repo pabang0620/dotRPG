@@ -116,8 +116,37 @@ namespace DotRPG
                 case ConsumableKind.LuckBox:
                 case ConsumableKind.SealedBox:
                 case ConsumableKind.MatBox: // [DAILY CHEST]
+                case ConsumableKind.StarBox: // [CASH sealed-2] free Star Shards
                     CashClient.OpenItem(id); // [CASH] the server opens boxes
                     return false;
+                case ConsumableKind.ReviveCoin:
+                {
+                    // [REVIVE COIN 0056] One bag item -> one revive coin (held max 100). Online the server takes the item and
+                    // sends the bag change and the new count; offline the local counter does the same.
+                    if (ReviveCoins.Coins >= ReviveCoins.Max)
+                    {
+                        GameEvents.RaiseToast(L.F("부활 코인은 {0}개까지 가질 수 있습니다.", ReviveCoins.Max));
+                        Game.Audio.PlaySfx("cancel");
+                        return false;
+                    }
+                    if (OnlineEconomy.On)
+                    {
+                        string name = L.T(item.name);
+                        OnlineEconomy.UseItem(id, r =>
+                        {
+                            if (!r.ok) { ReviveCoins.Refresh(); return; }
+                            ReviveCoins.Apply(MiniJson.Obj(r.data, "revive"));
+                            Game.Audio.PlaySfx("confirm");
+                            GameEvents.RaiseToast(L.F("{0}: 부활 코인 {1}/{2}", name, ReviveCoins.Coins, ReviveCoins.Max));
+                        });
+                        return true;
+                    }
+                    if (!ReviveCoins.AddLocal()) return false;
+                    bag.Remove(id, 1);
+                    Game.Audio.PlaySfx("confirm");
+                    GameEvents.RaiseToast(L.F("{0}: 부활 코인 {1}/{2}", L.T(item.name), ReviveCoins.Coins, ReviveCoins.Max));
+                    return true;
+                }
                 case ConsumableKind.DungeonReset:
                 {
                     // [DUNGEON] 요일 던전 초기화권: only when an entry was used today (the server checks the same).

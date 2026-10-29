@@ -1,0 +1,15 @@
+{
+ "부활 코인": "Koin Bangkit",
+ "쓰면 이 캐릭터의 부활 코인이 1개 늘어난다. (최대 100개) 던전·레이드에서 쓰러졌을 때 그 자리에서 일어나는 데 쓴다. (계정 공용)": "Gunakan untuk menambah 1 Koin Bangkit ke karakter ini. (Maks. 100) Untuk bangkit di tempat saat tumbang di dungeon dan raid. (Satu akun)",
+ "{0}: 부활 코인 {1}/{2}": "{0}: Koin Bangkit {1}/{2}",
+ "부활 코인은 {0}개까지 가질 수 있습니다.": "Kamu bisa menyimpan hingga {0} Koin Bangkit.",
+ "<color=#b8c4d8>{0} {1}개를 가방으로 받습니다 · {2}</color>": "<color=#b8c4d8>Terima {1} {0} di tas · {2}</color>",
+ "<color=#ffd76a>별조각 상품</color> {0}": "<color=#ffd76a>Barang Pecahan Bintang</color> {0}",
+ "{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>": "{0}\nBeli dengan {1:N0} Pecahan Bintang.\n<size=18>Masuk ke tas. Setiap yang dipakai menambah 1 Koin Bangkit ke karakter ini. (Maks. {2})</size>",
+ "구매 완료 · {0}": "Pembelian selesai · {0}",
+ "별조각 상품": "Barang Pecahan Bintang",
+ "없는 상품입니다.": "Produk tidak ada.",
+ "부활 코인 1개": "1 Koin Bangkit",
+ "부활 코인 10개": "10 Koin Bangkit",
+ "부활 코인 50개": "50 Koin Bangkit"
+}

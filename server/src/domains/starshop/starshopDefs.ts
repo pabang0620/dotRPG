@@ -145,13 +145,15 @@ export const GEAR_BANNERS: Record<Exclude<Banner, CosmeticBanner>, { name: strin
  * 그 뽑기에 없는 등급의 몫은 있는 등급 중 가장 낮은 등급으로 간다
  */
 export const GEAR_RARITY_PERMILLE: [string, number][] = [
-  ['Uncommon', 6200], ['Rare', 3000], ['Epic', 750], ['Unique', 45], ['Legendary', 5],
+  // [2026-10-29 사용자 요청] 유니크 0.45% -> 0.9%, 늘어난 몫은 언커먼에서 뺐다
+  ['Uncommon', 6155], ['Rare', 3000], ['Epic', 750], ['Unique', 90], ['Legendary', 5],
 ];
 export const GEAR_RATE_SCALE = 10000;
 /**
  * 장비 뽑기 천장(0033, Docs/PLAN_SIM_IMPROVEMENTS_2026-10-12.md A). 장비 뽑기(세 종류 합산) 1회마다 +1, max가 차면
  * 고른 뽑기·단계의 유니크 장비 하나와 교환한다(그 단계에 유니크가 없으면 가장 높은 등급).
- * max = 유니크 이상 확률(45 + 5 = 50/10000, 기대 200회)의 약 1.5배 = 300회(별조각 30,000).
+ * max = 300회(별조각 30,000). 처음에는 유니크 이상 확률(45 + 5 = 50/10000, 기대 200회)의 약 1.5배로 정했고,
+ * 2026-10-29 유니크를 90으로 올린 뒤(유니크 이상 95/10000, 기대 약 105회)에도 천장 값은 그대로 둔다.
  */
 export const GEAR_CEILING = { max: 300, rarity: 'unique' } as const;
 export const GEAR_RARITY_NAME: Record<string, string> = {
@@ -247,6 +249,27 @@ export const EXCHANGE_GOODS: readonly ExchangeGood[] = [
   { id: 'ex_skin_starshade', name: '별빛 그림자(교환소 전용)', price: 900, weekly: 0, kind: 'cosmetic', itemId: 'skin_r_starshade' },
 ];
 export const EXCHANGE_GOOD_BY_ID = new Map(EXCHANGE_GOODS.map((g) => [g.id, g] as const));
+
+/**
+ * 별조각 상품(0056): 별조각으로 바로 사는 가방 아이템(계정 귀속). 구매 한도 없음(결제 제한 금지 원칙).
+ * 부활 코인 가격 근거: 무료로 하루 1개가 오므로 1개 = 하루치 편의. 뽑기 1회(100)보다 훨씬 싸게 30 별조각(약 110원),
+ * 묶음은 10개 10%·50개 20% 할인. 요일 던전 초기화권(결정 60, 입장 3회 = 결정 1개 2 별조각 가치로 1회당 약 40)과 비슷한 선.
+ * 산 코인은 가방 아이템으로 오고, 쓰면 캐릭터 부활 코인 +1(보유 상한 100, 넘는 몫은 가방에 남는다)
+ */
+export interface StarItemGood {
+  id: string;
+  name: string;
+  price: number;
+  itemId: string;
+  count: number;
+}
+export const REVIVE_COIN_ITEM = 'item_revive_coin';
+export const STAR_ITEM_GOODS: readonly StarItemGood[] = [
+  { id: 'revive_coin_1', name: '부활 코인 1개', price: 30, itemId: REVIVE_COIN_ITEM, count: 1 },
+  { id: 'revive_coin_10', name: '부활 코인 10개', price: 270, itemId: REVIVE_COIN_ITEM, count: 10 },
+  { id: 'revive_coin_50', name: '부활 코인 50개', price: 1200, itemId: REVIVE_COIN_ITEM, count: 50 },
+];
+export const STAR_ITEM_GOOD_BY_ID = new Map(STAR_ITEM_GOODS.map((g) => [g.id, g] as const));
 
 /** 장비 도감: 처음 얻은 유니크·레전더리 기본 id 하나마다 계정 체력 +0.5%, 상한 +10% */
 export const CODEX_RARITIES = ['Unique', 'Legendary'] as const;

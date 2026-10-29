@@ -1,15 +1,17 @@
 // 시험 서버 전용: 캐릭터의 오늘 던전 입장 횟수를 되돌린다(오늘 판의 counts_entry를 false로).
 // 사용: node scripts/test-reset-entries.mjs <캐릭터 이름> [<캐릭터 이름> ...]   (서버 .env의 DATABASE_URL 사용)
 // 판 기록과 보상은 그대로 두고 횟수 계산에서만 뺀다. DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import pg from 'pg';
 import { assertTestStage } from './_stageGuard.mjs';
 
 // 시험 서버 전용 가드: DEPLOY_STAGE=test 가 명시된 환경에서만 실행한다(맨 앞에서 확인)
 assertTestStage();
 
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env', import.meta.url), 'utf8')
+// server/.env가 없으면(시험 서버는 /opt/dotrpg/.env를 환경변수로 읽어 실행) 환경변수만 쓴다
+const ENV_FILE = new URL('../.env', import.meta.url);
+const env = !existsSync(ENV_FILE) ? {} : Object.fromEntries(
+  readFileSync(ENV_FILE, 'utf8')
     .split(/\r?\n/)
     .filter((l) => /^[A-Z0-9_]+=/.test(l))
     .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),

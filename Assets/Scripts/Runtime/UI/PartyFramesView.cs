@@ -106,24 +106,26 @@ namespace DotRPG
             frame.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(classColor)}>{v.name}</color>";
             frame.info.text = $"Lv.{v.level} {L.T(CharacterClassInfo.Get(v.cls).displayName)}";
             frame.shownDowned = -2;
-            // [PARTY 12] Same map as me but no party body here (a town: people are drawn by presence only): no location
-            // text. Presence carries no HP, so the bars are hidden rather than faked. With a body (field, dungeon,
-            // raid) the frame is drawn from that body's real HP in Update instead.
-            bool sameMap = v.online && Game.Session != null && !string.IsNullOrEmpty(v.mapId) && v.mapId == Game.Session.MapId;
+            // [PARTY 12/43] Drawn on my screen without a party body (a town: presence only): no location text, and the bars are
+            // hidden (presence carries no HP). With a body (field, dungeon, raid) Update draws its real HP instead. Same map
+            // id alone is not enough (another field instance, another dungeon run, a dead link): then the location shows.
+            bool sameMap = v.online && TownPeers.IsShown(v.characterId);
             SetFill(frame.hpFill, 0f);
             SetFill(frame.mpFill, 0f);
             SetBarsVisible(frame, !sameMap);
             if (frame.downed.gameObject.activeSelf == sameMap) frame.downed.gameObject.SetActive(!sameMap);
             if (sameMap) return;
-            frame.downedText.text = WhereText(v);
+            frame.downedText.text = WhereText(v, false);
         }
 
         /// <summary>Where a party member without a body here is, from the server's presence (map they last reported).</summary>
-        public static string WhereText(PartyMemberView v)
+        /// <param name="sameMapIsHere">[PARTY 43] False for the party frame: it only calls this for someone not on my screen, so
+        /// the same map id names the map instead of "같은 곳에 있음".</param>
+        public static string WhereText(PartyMemberView v, bool sameMapIsHere = true)
         {
             if (!v.online) return L.T("<color=#8c96a8>접속 안 함</color>");
             if (string.IsNullOrEmpty(v.mapId)) return L.T("<color=#b8c4d8>위치 확인 중</color>");
-            if (Game.Session != null && v.mapId == Game.Session.MapId) return L.T("<color=#8fe28f>같은 곳에 있음</color>");
+            if (sameMapIsHere && Game.Session != null && v.mapId == Game.Session.MapId) return L.T("<color=#8fe28f>같은 곳에 있음</color>");
             var map = MapRegistry.Get(v.mapId);
             return L.F("<color=#b8c4d8>{0}에 있음</color>", (map != null ? L.T(map.displayName) : L.T("다른 곳")));
         }

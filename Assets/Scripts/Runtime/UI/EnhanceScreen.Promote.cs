@@ -50,7 +50,7 @@ namespace DotRPG
                 return;
             }
             string from = EquipmentDatabase.RichName(e.key);
-            string to = EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(next.id, level, EquipmentDatabase.InheritOfKey(e.key)));
+            string to = EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(next.id, level, EquipmentDatabase.InheritOfKey(e.key), EquipmentDatabase.HiddenOfKey(e.key)));
             Game.Audio.PlaySfx("select");
             Game.UI.Confirm(L.F("<b>장비 승급</b>\n{0}  →  {1}\n<color=#b8c4d8>강화 수치 +{2} 그대로 · 고대의 핵 {3}개 · 골드 {4:N0}</color>\n승급할까요?", from, to, level, cores, gold), () =>
             {

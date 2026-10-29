@@ -1,0 +1,11 @@
+{
+ "별조각 상자": "Caja de fragmentos estelares",
+ "열면 무료 별조각이 나온다. 수량과 확률은 캐시샵의 확률 보기에 있다. (계정 공용)": "Al abrirla da fragmentos estelares gratuitos. Las cantidades y probabilidades están en la vista de probabilidades de la Tienda Estelar. (Toda la cuenta)",
+ "<color=#ffd76a>별조각 +{0:N0}</color>": "<color=#ffd76a>Fragmentos estelares +{0:N0}</color>",
+ "{0} 열기 (무료 별조각)": "Abrir {0} (fragmentos estelares gratuitos)",
+ "## 별조각 상자 (확률표 버전 {0})": "## Caja de fragmentos estelares (versión de la tabla de probabilidades {0})",
+ "| 별조각 | 확률 |": "| Fragmentos estelares | Probabilidad |",
+ "봉인된 상자에서 나오는 {0}를 가방에서 열면 아래 확률로 별조각이 나옵니다. 나온 별조각은 무료 별조각이며 환불 대상이 아닙니다. 상자 1개의 기대값은 별조각 {1}개입니다.": "Al abrir una {0} (del Cofre sellado) en la bolsa obtienes fragmentos estelares según las probabilidades de abajo. Son fragmentos estelares gratuitos y no son reembolsables. Valor esperado por caja: {1} fragmentos estelares.",
+ "별조각 상자 {0} 의 표가 sealed_box.json starBox에 없습니다": "La Caja de fragmentos estelares {0} no tiene tabla en sealed_box.json starBox",
+ "starBox 확률 합이 100이 아닙니다: {0}": "Las probabilidades de starBox no suman 100: {0}"
+}

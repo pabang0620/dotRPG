@@ -5,15 +5,20 @@ using UnityEngine;
 
 namespace DotRPG
 {
-    /// <summary>Difficulty names: 일반 / 모험 / 왕 / 영웅.</summary>
+    /// <summary>Difficulty names: 일반 / 모험 / 왕 / 영웅 / 악몽 / 지옥 / 심연 / 군주.</summary>
     public enum DungeonDifficulty
     {
         Normal = 0,
         Adventure = 1,
         King = 2,
         Hero = 3,
-        /// <summary>[CH3] 군주: weekday dungeons only, chapter 3 open and Lv41+ (DungeonDatabase.Lord.cs).</summary>
-        Lord = 4,
+        /// <summary>[TIERS 2026-10-29] 악몽 / 지옥 / 심연: weekday dungeons only, Lv30 / 35 / 40 gear (DungeonDatabase.Tiers.cs).</summary>
+        Nightmare = 4,
+        Inferno = 5,
+        Abyss = 6,
+        /// <summary>[CH3] 군주: weekday dungeons only, chapter 3 open and Lv41+ (DungeonDatabase.Lord.cs). Was 4 before the
+        /// 2026-10-29 tiers (server migration 0060 moved stored 4 to 7).</summary>
+        Lord = 7,
     }
 
     /// <summary>Numbers of one difficulty (monster multipliers, rewards, revives).</summary>
@@ -211,6 +216,7 @@ namespace DotRPG
             new DifficultyDef { id = DungeonDifficulty.Adventure, name = L.T("모험"), recommendedLevel = 12, recommendedPower = 2600, hpMul = 1.9f, damageMul = 1.05f, rewardMul = 1.6f, monsterLevel = 7, revives = 4, minGearRarity = ItemRarity.Uncommon, ticketWeight = 0, jackpotPerMille = 4 },
             new DifficultyDef { id = DungeonDifficulty.King, name = L.T("왕"), recommendedLevel = 20, recommendedPower = 4200, hpMul = 7.7f, /* [2026-10-16] was 4.8: measured 84~105 s with 3 AI, target 120~300 (Docs/BALANCE_MEASURE_2026-10-16.md) */ damageMul = 2.0f, /* [2026-10-14] was 1.25: healers/potions must matter */ rewardMul = 2.4f, monsterLevel = 15, revives = 3, minGearRarity = ItemRarity.Rare, ticketWeight = 0, jackpotPerMille = 5 },
             new DifficultyDef { id = DungeonDifficulty.Hero, name = L.T("영웅"), recommendedLevel = 27, recommendedPower = 6000, hpMul = 12f, /* [2026-10-16] was 6.7: measured 82~134 s with 3 AI, target 120~300 */ damageMul = 2.6f, /* [2026-10-14] was 1.6 */ rewardMul = 3.4f, monsterLevel = 22, revives = 2, minGearRarity = ItemRarity.Epic, ticketWeight = 6, jackpotPerMille = 6 },
+            NightmareNumbers, InfernoNumbers, AbyssNumbers, // [TIERS 2026-10-29] Docs/PLAN_WEEKDAY_TIERS_2026-10-29.md
             LordNumbers, // [CH3] Docs/ch3/WORLD_AND_STORY.md 8절
         };
 

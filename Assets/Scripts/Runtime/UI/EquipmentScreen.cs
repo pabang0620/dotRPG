@@ -42,6 +42,7 @@ namespace DotRPG
         readonly Dictionary<string, Text> currencies = new Dictionary<string, Text>();
         Image character, cursor, weaponPreview;
         Text className, power, stats, capacity, hint;
+        Text setLine; // [SET] worn set summary above the stat box
         readonly Text[] statCells = new Text[6];
         Button sortButton, autoButton;
         Text sortLabel, autoLabel;
@@ -223,6 +224,7 @@ namespace DotRPG
             statCells[3].text = L.F("막기 {0}%", CharacterStats.Block);
             statCells[4].text = L.F("이동 {0}{1}%", CharacterStats.SpeedBonus >= 0 ? "+" : "", CharacterStats.SpeedBonus);
             statCells[5].text = L.F("장비 {0}/{1}", WornCount(eq), Equipment.SlotCount);
+            setLine.text = SetSummary(eq);
             // Real count (the grid pages, so nothing is hidden): this tab / whole bag.
             capacity.text = tab == Tab.All ? L.F("{0}종", all.Count) : L.F("{0} / {1}종", shown.Count, all.Count);
             foreach (var pair in currencies) pair.Value.text = bag.Count(pair.Key).ToString("N0");
@@ -242,6 +244,17 @@ namespace DotRPG
         }
 
         static string Bonus(int v) => v > 0 ? $"<color=#8fe28f>(+{v})</color>" : "";
+
+        /// <summary>[SET] "세트 Lv.40 (5/5): 장비 공격력 +10%, 장비 체력 +10%" per active set, or a dim "세트 효과 없음".</summary>
+        static string SetSummary(Equipment eq)
+        {
+            var sets = eq.ActiveSets;
+            if (sets.Count == 0) return "<color=#8a94a6>" + L.T("세트 효과 없음") + "</color>";
+            var parts = new List<string>();
+            foreach (var s in sets)
+                parts.Add(L.F("세트 Lv.{0} ({1}/{2})", GearCatalog.TierLevels[s.levelTier], s.count, GearSets.Parts) + ": <color=#8fe28f>" + GearSets.BonusText(s.attackPct, s.healthPct) + "</color>");
+            return string.Join("   ", parts);
+        }
 
         void FillIcon(Slot s, string id, EquipmentItem gear)
         {

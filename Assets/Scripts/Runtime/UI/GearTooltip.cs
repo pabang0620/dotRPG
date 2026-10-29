@@ -42,6 +42,9 @@ namespace DotRPG
             StatRow(sb, L.T("이동 속도"), st.speed, ws?.speed, "%");
             StatRow(sb, L.T("경험치 획득"), gear.xpBonus, wornGear?.xpBonus, "%");
             StatRow(sb, L.T("범위 피해"), gear.aoeBonus, wornGear?.aoeBonus, "%");
+            string hiddenTag = HiddenOptions.TagOf(key); // [HIDDEN] its own line in the hidden colour
+            if (hiddenTag.Length > 0) sb.Append(hiddenTag).Append('\n');
+            AppendSet(sb, gear, eq);
             int score = eq.ScoreOf(key);
             sb.Append(L.F("<color=#ffe066>전투력 +{0}</color>", score));
             if (wornKey != null)
@@ -54,6 +57,24 @@ namespace DotRPG
             sb.Append($"<i>{L.T(gear.description)}</i>\n");
             if (!gear.UsableBy(cls)) sb.Append("\n" + L.T("<color=#ff8080>이 캐릭터는 장착할 수 없습니다.</color>") + "\n");
             else if (wornKey != null) sb.Append("\n" + L.F("<color=#b8c4d8>비교: 착용 중인 {0}</color>", L.T(EquipmentDatabase.NameOfKey(wornKey))) + "\n");
+        }
+
+        /// <summary>[SET] "세트 효과 (3/5)" of the piece's level tier with each step lit (worn) or dim (Docs/PLAN_GEAR_SETS_2026-10-29.md).</summary>
+        static void AppendSet(StringBuilder sb, EquipmentItem gear, Equipment eq)
+        {
+            if (!GearSets.HasSet(gear.levelTier)) return;
+            var s = GearSets.StateOf(eq.ToList(), gear.levelTier);
+            var group = s.count > 0 ? s.Group : GearSets.GroupOf(gear.rarity);
+            var grade = s.count > 0 ? s.lowest : gear.rarity;
+            sb.Append("<color=#9fd8ff>").Append(L.F("세트 효과 ({0}/{1})", s.count, GearSets.Parts)).Append("</color>");
+            sb.Append(L.F(" <size=16><color=#b8c4d8>Lv.{0} · {1} 기준</color></size>", GearCatalog.TierLevels[gear.levelTier], L.T(EquipmentDatabase.RarityName(grade)))).Append('\n');
+            for (int i = 0; i < GearSets.Steps.Length; i++)
+            {
+                bool on = s.count >= GearSets.Steps[i];
+                sb.Append(on ? "<color=#8fe28f>" : "<color=#6c7686>");
+                sb.Append(L.F("{0}세트: {1}", GearSets.Steps[i], GearSets.BonusText(GearSets.StepAttack(group, i), GearSets.StepHealth(group, i))));
+                sb.Append("</color>\n");
+            }
         }
 
         public static void AppendBind(StringBuilder sb, string key)

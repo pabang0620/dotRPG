@@ -1,7 +1,7 @@
 // 별의 결정 지갑·원장의 유일한 쓰기 경로(0044, Docs/PLAN_CASH_ITEM_VALUE.md 3-1, 4).
 // 호출 쪽은 이미 트랜잭션 안이어야 하고, 이 모듈이 결정 지갑 행을 FOR UPDATE로 잠근다(락 순서: 별조각 지갑 -> 결정 지갑 -> 결정 로트).
 // 불변식: balance >= 0, 0 <= paid_balance <= balance, paid_balance = SUM(crystal_paid_lots.remaining), debt >= 0.
-// 결정은 별조각·골드로 되돌릴 수 없고 거래할 수 없다(환전 금지). 유료 별조각에서 나온 몫은 결제 주문별 로트로 나눠 둔다.
+// 결정은 골드로 되돌릴 수 없고 거래할 수 없다(환전 금지). 별조각으로는 무료분으로만 바꾼다(crystalConvert.ts, 2026-10-29). 유료 별조각에서 나온 몫은 결제 주문별 로트로 나눠 둔다.
 import type { Queryable } from '../../db/pool';
 import { AppError } from '../../utils/AppError';
 import { logger } from '../../utils/logger';
@@ -132,10 +132,10 @@ export function assertNoCrystalDebt(w: CrystalWallet): void {
   if (w.debt > 0) throw new AppError(403, '환불된 결제분에서 나온 별의 결정이 남아 있어 교환소를 사용할 수 없습니다.', 'CRYSTAL_DEBT', { debt: w.debt });
 }
 
-/** 교환소 소비: 무료 몫 먼저, 유료 몫은 오래된 주문 로트부터. 모자라거나 부채가 있으면 던진다 */
+/** 교환소 소비·별조각 바꾸기(reason convert_stars): 무료 몫 먼저, 유료 몫은 오래된 주문 로트부터. 모자라거나 부채가 있으면 던진다 */
 export async function debitCrystals(
   db: Queryable,
-  o: { accountId: number; price: number; ref: string | null; requestId: string | null },
+  o: { accountId: number; price: number; ref: string | null; requestId: string | null; reason?: 'exchange_buy' | 'convert_stars' },
 ): Promise<CrystalWallet> {
   const w = await lockCrystals(db, o.accountId);
   assertNoCrystalDebt(w);
@@ -161,7 +161,7 @@ export async function debitCrystals(
     }
   }
   const paidTaken = takes.reduce((a, t) => a + t.n, 0);
-  const a = await apply(db, { accountId: o.accountId, delta: -o.price, paidDelta: -paidTaken, debtDelta: 0, reason: 'exchange_buy', ref: o.ref, requestId: o.requestId });
+  const a = await apply(db, { accountId: o.accountId, delta: -o.price, paidDelta: -paidTaken, debtDelta: 0, reason: o.reason ?? 'exchange_buy', ref: o.ref, requestId: o.requestId });
   for (const t of takes) {
     await db.query('UPDATE crystal_paid_lots SET remaining = remaining - $2 WHERE order_id = $1', [t.orderId, t.n]);
     await db.query('INSERT INTO crystal_spend_allocs (ledger_id, order_id, crystals) VALUES ($1, $2, $3)', [a.ledgerId, t.orderId, t.n]);

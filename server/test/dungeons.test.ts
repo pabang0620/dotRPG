@@ -100,7 +100,7 @@ describe('POST /characters/:id/dungeon-runs', () => {
 
   it('입력 오류와 규칙 오류: 모르는 던전, 레이드, 닫힌 요일, 잠긴 난이도', async () => {
     const h = await newHero(app);
-    expect((await enter(h, { difficulty: 5 })).status).toBe(400);
+    expect((await enter(h, { difficulty: 8 })).status).toBe(400); // 2026-10-29: 0~7(악몽·지옥·심연·군주)까지 형식이 맞다
     expect((await enter(h, { party_size: 4 })).status).toBe(400);
     expect((await enter(h, { dungeon_id: 'nope' })).body.errors.code).toBe('DUNGEON_UNKNOWN');
     // 4단계: 레이드 입장이 열렸다. 월요일에는 최종 레이드(일요일만)가 닫혀 있다

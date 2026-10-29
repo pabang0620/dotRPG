@@ -5,7 +5,7 @@ import { getConfig, initConfig } from '../src/config/env';
 import { buildRatesMarkdown } from '../src/domains/policies/ratesDisclosure';
 import { BANNER_WEIGHT, GEAR_RARITY_NAME, RARITIES, slotName, type CosmeticBanner } from '../src/domains/starshop/starshopDefs';
 import { gearTable, pickGearTier, rollSlot } from '../src/domains/starshop/starshopService';
-import { luckBoxHit, pickRow } from '../src/domains/sealedbox/sealedBoxService';
+import { luckBoxHit, pickRow, pickStarAmount } from '../src/domains/sealedbox/sealedBoxService';
 import { rollEnhance } from '../src/domains/enhance/enhanceService';
 import { rollShopRarity } from '../src/domains/raidshop/raidShopService';
 import { getGameData, initGameData } from '../src/gamedata/loader';
@@ -240,6 +240,16 @@ describe('공개 확률 문서 vs 실제 추첨 빈도', () => {
       setRng(seeded(boosted ? 401 : 400));
       expectFits(`봉인된 상자 ${boosted ? '부스터' : '일반'}`, tally(N, () => pickRow(table).row.id), expected, N);
     }
+  });
+
+  it('별조각 상자(sealed-2): 문서의 수량별 확률과 pickStarAmount', () => {
+    const rows = tableRows(section(md, '별조각 상자'));
+    const sb = getSealedBox().starBox;
+    expect(sb).toBeDefined();
+    expect(rows.length).toBe(sb!.amounts.length);
+    const expected = new Map<string, number>(rows.map((r) => [r[0] as string, pctNum(r[1] as string)]));
+    setRng(seeded(450));
+    expectFits('별조각 상자', tally(N, () => String(pickStarAmount(sb!.amounts).stars)), expected, N);
   });
 
   it('강화 성공 판정: 문서의 모든 단계 성공 확률 (roll < successPercent, rng.int(0, rollRange))', () => {

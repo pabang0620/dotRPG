@@ -1,0 +1,14 @@
+{
+ "별조각으로 바꾸지 못했습니다.": "Không đổi được thành Mảnh Sao.",
+ "<color=#b8c4d8>별의 결정 {0}개 = 별조각 1개. 받은 별조각은 무료 별조각이며, 바꾼 결정은 되돌릴 수 없습니다.</color>": "<color=#b8c4d8>{0} Tinh Thể Sao = 1 Mảnh Sao. Mảnh Sao nhận được là Mảnh Sao miễn phí, và tinh thể đã đổi không thể lấy lại.</color>",
+ "<color=#d8b8ff>별의 결정</color> → <color=#ffd76a>별조각 +{0:N0}</color>": "<color=#d8b8ff>Tinh Thể Sao</color> → <color=#ffd76a>Mảnh Sao +{0:N0}</color>",
+ "{0} 전용 (내 직업)": "Chỉ dành cho {0} (lớp của bạn)",
+ "바꾸기": "Đổi",
+ "바꾸기 완료 · 별조각 +{0:N0}": "Đã đổi · Mảnh Sao +{0:N0}",
+ "별의 결정 {0:N0}개 → <color=#ffd76a>별조각 {1:N0}개</color>": "{0:N0} Tinh Thể Sao → <color=#ffd76a>{1:N0} Mảnh Sao</color>",
+ "별의 결정 → 별조각": "Tinh Thể Sao → Mảnh Sao",
+ "별조각으로 바꾸기": "Đổi thành Mảnh Sao",
+ "보유 · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>": "Đang có · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>",
+ "{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>": "{0}\nĐổi bằng {1:N0} Tinh Thể Sao.\n<size=18>Tinh Thể Sao không đổi được thành vàng, và không thể hoàn tác giao dịch đổi.</size>",
+ "별의 결정 {0}개부터 바꿀 수 있습니다.": "Có thể đổi từ {0} Tinh Thể Sao."
+}

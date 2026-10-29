@@ -92,6 +92,13 @@ namespace DotRPG
         }
 
         /// <summary>Host: true while any connected person's body in the run is up (AI seats and dropped members do not count).</summary>
+        /// <summary>[REVIVE 24] Host: the wipe countdown started (seconds) or ended (0).</summary>
+        public void HostSendWipe(float seconds)
+        {
+            if (!host) return;
+            Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.Wipe); w.Write(seconds); }));
+        }
+
         public bool AnyHumanUp
         {
             get

@@ -1,0 +1,11 @@
+{
+ "별조각 상자": "Star Shard Box",
+ "열면 무료 별조각이 나온다. 수량과 확률은 캐시샵의 확률 보기에 있다. (계정 공용)": "Opens into free Star Shards. Amounts and rates are in the Star Shop's rate view. (Account-wide)",
+ "<color=#ffd76a>별조각 +{0:N0}</color>": "<color=#ffd76a>Star Shards +{0:N0}</color>",
+ "{0} 열기 (무료 별조각)": "Open {0} (free Star Shards)",
+ "## 별조각 상자 (확률표 버전 {0})": "## Star Shard Box (rate table version {0})",
+ "| 별조각 | 확률 |": "| Star Shards | Rate |",
+ "봉인된 상자에서 나오는 {0}를 가방에서 열면 아래 확률로 별조각이 나옵니다. 나온 별조각은 무료 별조각이며 환불 대상이 아닙니다. 상자 1개의 기대값은 별조각 {1}개입니다.": "Opening a {0} (from the Sealed Chest) in the bag gives Star Shards by the rates below. They are free Star Shards and are not refundable. Expected value per box: {1} Star Shards.",
+ "별조각 상자 {0} 의 표가 sealed_box.json starBox에 없습니다": "Star Shard Box {0} has no table in sealed_box.json starBox",
+ "starBox 확률 합이 100이 아닙니다: {0}": "starBox probabilities don't sum to 100: {0}"
+}

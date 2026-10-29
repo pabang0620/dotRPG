@@ -14,6 +14,7 @@ import * as repo from './inventoryRepository';
 import type { EquipBody, StorageBody, UnequipBody, UseBody } from './inventoryValidation';
 import { usableBy } from '../../utils/characterClass';
 import { isMatBox } from '../dailies/dailyChest';
+import { addCoinFromItem } from '../revive/reviveService';
 
 // EquipSlot: Weapon 0, Necklace 1, Ring1 2, Ring2 3, Top 4, Bottom 5
 const SLOT_OF: Record<string, number> = { Weapon: 0, Necklace: 1, Top: 4, Bottom: 5 };
@@ -33,7 +34,7 @@ export function useItem(accountId: number, characterUuid: string, body: UseBody)
       if (!usable) throw new AppError(422, '사용할 수 없는 아이템입니다.', 'NOT_USABLE');
       // 14단계: 확률 상자·봉인된 상자는 서버가 결과를 정하는 열기 API로만 연다(여기서 소모만 하면 보상 없이 사라진다)
       const use = getGameData().economy.items.get(body.item_id)?.use;
-      if (use === 'LuckBox' || use === 'SealedBox' || isMatBox(body.item_id)) throw new AppError(422, '이 아이템은 열기로 사용합니다.', 'USE_OPEN_INSTEAD');
+      if (use === 'LuckBox' || use === 'SealedBox' || use === 'StarBox' || isMatBox(body.item_id)) throw new AppError(422, '이 아이템은 열기로 사용합니다.', 'USE_OPEN_INSTEAD');
       const have = await ctx.stackCount('bag', body.item_id);
       if (have < 1) throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have });
 
@@ -51,13 +52,18 @@ export function useItem(accountId: number, characterUuid: string, body: UseBody)
         const used = await dungeonRepo.countEntries(ctx.client, ctx.char.id, resetDay);
         if (used < 1) throw new AppError(422, '오늘 요일 던전 입장 횟수가 그대로 남아 있습니다.', 'NOTHING_TO_RESET');
       }
+      // 부활 코인(0056): 캐릭터 부활 코인 +1. 상한(100)이면 409로 아이템을 쓰지 않는다
+      const revive = use === 'ReviveCoin' ? await addCoinFromItem(ctx.client, accountId, characterUuid, requestId, ctx.now) : undefined;
       await ctx.removeItem('bag', body.item_id, 1, 'use_item', body.item_id);
       if (use === 'DungeonReset') {
         await dungeonRepo.insertEntryReset(ctx.client, ctx.char.id, ctx.now);
         entriesLeft = getGameData().economy.dungeons.dailyEntries;
       }
       if (gap > 0) store.add(gapKey, gap);
-      return { status: 200, data: { item_id: body.item_id, ...(entriesLeft !== undefined ? { entries_left: entriesLeft } : {}), delta: ctx.delta() } };
+      return {
+        status: 200,
+        data: { item_id: body.item_id, ...(entriesLeft !== undefined ? { entries_left: entriesLeft } : {}), ...(revive ? { revive } : {}), delta: ctx.delta() },
+      };
     },
   });
 }

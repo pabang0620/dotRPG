@@ -116,11 +116,14 @@ namespace DotRPG
             }
             var qbg = UIFactory.Panel(questPanel, "Bg", true);
             UIFactory.Stretch(qbg.rectTransform);
-            questTitle = UIFactory.Text(questPanel, "Title", "", 22, UIColors.Highlight, TextAnchor.UpperLeft, true);
-            UIFactory.Stretch(questTitle.rectTransform, 18, 0, 14, 12);
-            questBody = UIFactory.Text(questPanel, "Body", "", 18, UIColors.Cream, TextAnchor.UpperLeft, true);
-            questBody.lineSpacing = 1.15f;
-            UIFactory.Stretch(questBody.rectTransform, 18, 10, 14, 44);
+            qbg.color = new Color(qbg.color.r, qbg.color.g, qbg.color.b, qbg.color.a * .6f); // [UI 2026-10-29] translucent: the field shows through
+            // [UI 2026-10-29] Compact tracker: smaller type, and by default only the title and one objective line.
+            questTitle = UIFactory.Text(questPanel, "Title", "", 19, UIColors.Highlight, TextAnchor.UpperLeft, true);
+            UIFactory.Stretch(questTitle.rectTransform, 14, 0, 12, 10);
+            questBody = UIFactory.Text(questPanel, "Body", "", 15, UIColors.Cream, TextAnchor.UpperLeft, true);
+            questBody.lineSpacing = 1.1f;
+            UIFactory.Stretch(questBody.rectTransform, 14, 8, 12, 40);
+            if (!TouchUi.Enabled) BuildQuestFold(); // [UI 2026-10-29] PC: small ▼ / ▲ to show every objective (phones have their own)
             // [QUEST] Auto-progress: walks to the next objective, any key takes control back.
             var autoImg = UIFactory.Image(questPanel, "Auto", Game.Art.Get("ui_btn"), Color.white);
             autoImg.raycastTarget = true;
@@ -308,7 +311,7 @@ namespace DotRPG
                 lines++;
                 foreach (var o in Game.Quest.ObjectivesOf(sub)) { AppendObjective(sb, o); lines++; }
             }
-            questBody.text = sb.ToString().TrimEnd('\n');
+            questBody.text = QuestOpen ? sb.ToString().TrimEnd('\n') : CompactLine(main, sb); // [UI 2026-10-29] folded: one line
             questTitle.GetComponent<UIWordWrap>().RefreshNow();
             // [UI] Height from the laid-out text (long titles and objectives wrap) instead of a line count.
             // [UI] At most two title lines (a very long title in the narrow panel is cut rather than pushing the buttons down).
@@ -332,7 +335,7 @@ namespace DotRPG
         /// <summary>Top of the quest tracker under the minimap (TipView uses the same column on narrow canvases).</summary>
         public const float QuestTop = 16f + MinimapView.Diameter + 42f;
         /// <summary>[UI] Quest tracker width; narrowed to the auto buttons' column while a boss bar shows on a narrow canvas.</summary>
-        const float QuestWidth = 360f, QuestNarrowWidth = 272f;
+        const float QuestWidth = 300f, QuestNarrowWidth = 272f; // [UI 2026-10-29] was 360 (compact tracker)
         /// <summary>[TOUCH] Tracker position on a phone: below the side menu button, left of the menu / pause buttons.</summary>
         const float MobileQuestRight = 360f, MobileQuestTop = 72f;
         float questFitHeight, questFitWidth;

@@ -200,6 +200,18 @@ namespace DotRPG
                 if (IsHuntingMap(here) && MayShare() && PartnerHere(here)) Enter(here);
             }
             if (sessionId == null || !OnlineSession.Playing) return;
+            // [PARTY 43] The relay closed this room for good (room over, seat removed, transport moved) while the server's
+            // session goes on. Nothing else reacts to that, so the partner stayed invisible for hours on the same map:
+            // leave and enter again (a version mismatch or a closed account would only loop, those stay).
+            if (PartyNet.Active && PartyNet.Current.FieldMode && PartyNet.Current.Transport is RelayTransport relay
+                && relay.ClosedReason != null && relay.ClosedReason != "wire" && relay.ClosedReason != "account")
+            {
+                Debug.LogWarning("[FIELD] relay closed (" + relay.ClosedReason + "): entering the field session again");
+                Leave();
+                GoSolo();
+                joinRetryAt = 0f;
+                return;
+            }
             heartbeatTimer -= Time.unscaledDeltaTime;
             if (heartbeatTimer <= 0f && Time.unscaledTime - lastHeartbeatAt >= HeartbeatMinGap) { heartbeatTimer = HeartbeatSeconds; Heartbeat(); }
             if (amHost)

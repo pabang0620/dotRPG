@@ -1,0 +1,14 @@
+{
+ "별조각으로 바꾸지 못했습니다.": "Gagal mengubah menjadi Pecahan Bintang.",
+ "<color=#b8c4d8>별의 결정 {0}개 = 별조각 1개. 받은 별조각은 무료 별조각이며, 바꾼 결정은 되돌릴 수 없습니다.</color>": "<color=#b8c4d8>{0} Kristal Bintang = 1 Pecahan Bintang. Pecahan Bintang yang didapat adalah Pecahan Bintang gratis, dan kristal yang diubah tidak bisa dikembalikan.</color>",
+ "<color=#d8b8ff>별의 결정</color> → <color=#ffd76a>별조각 +{0:N0}</color>": "<color=#d8b8ff>Kristal Bintang</color> → <color=#ffd76a>Pecahan Bintang +{0:N0}</color>",
+ "{0} 전용 (내 직업)": "Khusus {0} (kelasmu)",
+ "바꾸기": "Ubah",
+ "바꾸기 완료 · 별조각 +{0:N0}": "Berhasil diubah · Pecahan Bintang +{0:N0}",
+ "별의 결정 {0:N0}개 → <color=#ffd76a>별조각 {1:N0}개</color>": "{0:N0} Kristal Bintang → <color=#ffd76a>{1:N0} Pecahan Bintang</color>",
+ "별의 결정 → 별조각": "Kristal Bintang → Pecahan Bintang",
+ "별조각으로 바꾸기": "Ubah ke Pecahan Bintang",
+ "보유 · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>": "Dimiliki · <color=#d8b8ff>{0}</color> · <color=#ffd76a>{1}</color>",
+ "{0}\n별의 결정 {1:N0}개로 교환합니다.\n<size=18>별의 결정은 골드로 바꿀 수 없고, 교환한 물건은 되돌릴 수 없습니다.</size>": "{0}\nTukar dengan {1:N0} Kristal Bintang.\n<size=18>Kristal Bintang tidak bisa diubah menjadi emas, dan penukaran tidak bisa dibatalkan.</size>",
+ "별의 결정 {0}개부터 바꿀 수 있습니다.": "Bisa diubah mulai dari {0} Kristal Bintang."
+}

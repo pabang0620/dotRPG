@@ -3,6 +3,7 @@
 // 대상: 그 주문의 별조각이 배분된 소비 원장 줄(gacha, exchange)의 결과. 뽑기는 그 요청의 결과 전체를 본다(한 요청이 여러 주문 로트에 걸쳐도 같다).
 // 외형 최초 획득은 외형 행 삭제, 중복 획득은 여분 -1, 장비는 가방·창고에 남은 수량만 item_ledger(admin_clawback), 게이지는 뽑은 칸 수만큼.
 // 14단계: sealed_pull(상자 결과물: item_ledger sealed_box + 클리어권 지갑)과 pass_buy(패스 보유·수령 기록 삭제 + pass_reward 아이템)도 같은 방식이다.
+// 0056: item_buy(별조각 상품)는 item_ledger star_item_buy 아이템을 장비와 같은 방식으로(가방·창고에 남은 수량만) 회수한다.
 // 합성 결과(star_synth_log)와 착용 해제는 이 도구의 범위 밖이다(TODO: 착용 중인 외형을 서버가 저장하는지 확인, 구현 기록 20절).
 import type { PoolClient } from 'pg';
 import { hashRequest } from '../../db/idempotency';
@@ -67,6 +68,16 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
       items.rows.forEach(addGear);
       const sw = await db.query<{ n: string }>("SELECT coalesce(sum(delta), 0) AS n FROM sweep_ticket_ledger WHERE account_id = $1 AND request_id = $2 AND reason = 'sealed_box'", [order.account_id, l.request_id]);
       sweepTickets += Number(sw.rows[0]?.n ?? 0);
+      continue;
+    }
+    if (l.reason === 'item_buy' && l.request_id) {
+      // 0056 별조각 상품(부활 코인 묶음): 지급 줄(item_ledger star_item_buy, 같은 request_id)을 가방에 남은 만큼 회수한다
+      const items = await db.query<{ uuid: string; character_id: string; item_key: string; delta: number }>(
+        `SELECT c.uuid, i.character_id, i.item_key, i.delta FROM item_ledger i JOIN characters c ON c.id = i.character_id
+          WHERE i.request_id = $1 AND i.reason = 'star_item_buy' AND i.delta > 0 AND c.account_id = $2 ORDER BY i.id`,
+        [l.request_id, order.account_id],
+      );
+      items.rows.forEach(addGear);
       continue;
     }
     if (l.reason === 'skill_style_buy') {

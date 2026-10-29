@@ -22,7 +22,7 @@ namespace DotRPG
     /// [CH3] The weekday dungeons' third hard difficulty, 군주 (Docs/ch3/WORLD_AND_STORY.md 8절): the same five dungeons at
     /// Lv45, each boss with one raid pattern of its own from phase 2, and an extra sure 침식 결정 (Mon, Wed, Fri) or
     /// 잿빛 인장 (Tue, Thu) that feeds the raid shop and 계승. Open only on a chapter 3 server and from Lv41; on a
-    /// closed server the button, the party lists and the sweep window do not show it (the server refuses difficulty 4).
+    /// closed server the button, the party lists and the sweep window do not show it (the server refuses difficulty 7, 군주).
     /// </summary>
     public static partial class DungeonDatabase
     {
@@ -42,8 +42,12 @@ namespace DotRPG
         /// <summary>군주 can be picked here right now (chapter 3 open). The level is checked on entry.</summary>
         public static bool LordOpen(DungeonDef d) => HasLord(d) && Chapter3.Enabled;
 
-        /// <summary>Difficulties shown for this dungeon: the four old ones, plus 군주 while chapter 3 is open.</summary>
-        public static int ShownDifficultyCount(DungeonDef d) => LordOpen(d) ? DifficultyCount : (int)DungeonDifficulty.Lord;
+        /// <summary>
+        /// Difficulties shown for this dungeon: 일반 던전 the four old ones, weekday dungeons up to 심연 plus 군주 while
+        /// chapter 3 is open. Raids are handled by the callers (레이드 / 심화).
+        /// </summary>
+        public static int ShownDifficultyCount(DungeonDef d) =>
+            d != null && d.always ? (int)FirstWeekdayOnly : LordOpen(d) ? DifficultyCount : (int)DungeonDifficulty.Lord;
 
         /// <summary>Difficulties shown when no dungeon is picked yet (party lists): 군주 only while chapter 3 is open.</summary>
         public static int ShownDifficultyCountAny => Chapter3.Enabled ? DifficultyCount : (int)DungeonDifficulty.Lord;
@@ -60,8 +64,8 @@ namespace DotRPG
         };
 
         /// <summary>
-        /// Adds the 군주 data to the weekday dungeon table: the pattern, the bonus, and a fifth reference time
-        /// (the 영웅 one: 군주 is tuned to the same 120~300 s window with Lv45 heroes).
+        /// Adds the 군주 data to the weekday dungeon table: the pattern, the bonus, and the reference times of 악몽, 지옥,
+        /// 심연 and 군주 (all the 영웅 one: they are tuned to the same 120~300 s window at their recommended levels).
         /// </summary>
         static DungeonDef[] WithLord(DungeonDef[] defs)
         {
@@ -71,11 +75,11 @@ namespace DotRPG
                 if (d == null || !table.TryGetValue(d.id, out var lord)) continue;
                 d.lordPatterns = new List<BossPattern> { lord.pattern };
                 d.lordSure = lord.bonus;
-                if (d.referenceSeconds != null && d.referenceSeconds.Length == (int)DungeonDifficulty.Lord)
+                if (d.referenceSeconds != null && d.referenceSeconds.Length == (int)FirstWeekdayOnly)
                 {
-                    var times = new float[d.referenceSeconds.Length + 1];
+                    var times = new float[(int)DungeonDifficulty.Lord + 1];
                     Array.Copy(d.referenceSeconds, times, d.referenceSeconds.Length);
-                    times[(int)DungeonDifficulty.Lord] = d.referenceSeconds[(int)DungeonDifficulty.Hero];
+                    for (int i = (int)FirstWeekdayOnly; i < times.Length; i++) times[i] = d.referenceSeconds[(int)DungeonDifficulty.Hero];
                     d.referenceSeconds = times;
                 }
             }

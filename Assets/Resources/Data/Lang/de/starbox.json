@@ -1,0 +1,11 @@
+{
+ "별조각 상자": "Sternsplitter-Box",
+ "열면 무료 별조각이 나온다. 수량과 확률은 캐시샵의 확률 보기에 있다. (계정 공용)": "Enthält kostenlose Sternsplitter. Mengen und Wahrscheinlichkeiten stehen in der Wahrscheinlichkeitsansicht des Sternenshops. (Kontoweit)",
+ "<color=#ffd76a>별조각 +{0:N0}</color>": "<color=#ffd76a>Sternsplitter +{0:N0}</color>",
+ "{0} 열기 (무료 별조각)": "{0} öffnen (kostenlose Sternsplitter)",
+ "## 별조각 상자 (확률표 버전 {0})": "## Sternsplitter-Box (Version der Wahrscheinlichkeitstabelle {0})",
+ "| 별조각 | 확률 |": "| Sternsplitter | Wahrscheinlichkeit |",
+ "봉인된 상자에서 나오는 {0}를 가방에서 열면 아래 확률로 별조각이 나옵니다. 나온 별조각은 무료 별조각이며 환불 대상이 아닙니다. 상자 1개의 기대값은 별조각 {1}개입니다.": "Wenn du eine {0} (aus der Versiegelten Truhe) im Inventar öffnest, erhältst du Sternsplitter mit den folgenden Wahrscheinlichkeiten. Es sind kostenlose Sternsplitter, sie werden nicht erstattet. Erwartungswert pro Box: {1} Sternsplitter.",
+ "별조각 상자 {0} 의 표가 sealed_box.json starBox에 없습니다": "Sternsplitter-Box {0} hat keine Tabelle in sealed_box.json starBox",
+ "starBox 확률 합이 100이 아닙니다: {0}": "Die starBox-Wahrscheinlichkeiten ergeben nicht 100: {0}"
+}

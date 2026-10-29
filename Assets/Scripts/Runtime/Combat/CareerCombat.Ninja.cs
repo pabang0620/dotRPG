@@ -393,12 +393,25 @@ namespace DotRPG
             }
             if (k != null) k.Vanish();
             if (!Live(c)) yield break;
-            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2f, 0f, 14f, VfxLayer.Top, false, SmokeGray);
+            CareerFx.Gen("a_smoke", null, spot, Vector2.zero, c.n.radius * 2.3f, 0f, 14f, VfxLayer.Top, false, SmokeGray); // [VFX 2026-10-29] was x2
             SkillFx.Spawn("fx_ring", spot - new Vector2(0f, .45f), new Color(.6f, .6f, .62f, .6f), .5f, SkillFx.GroundOrder + 14)
                 .Scale(new Vector2(c.n.radius * .3f, c.n.radius * .2f), new Vector2(c.n.radius, c.n.radius * .7f)).Fade(FxFade.Late);
             ImpactSound("c_heavy", .5f);
             foreach (var e in Enemies(spot, c.n.radius))
                 if (Strike(c, e, damage, spot, 3f, 1, "hit")) Stun(c, e, c.s.duration);
+            StartCoroutine(SmokeLinger(spot, c.n.radius, c.s.duration)); // [2026-10-29] the cloud stays as long as the enemies can't attack (user: smoke too short)
+        }
+
+        /// <summary>연막 도약: keeps the smoke cloud on the spot for the whole no-attack time (the skill itself ends at once).</summary>
+        IEnumerator SmokeLinger(Vector2 spot, float radius, float seconds)
+        {
+            float end = Time.time + seconds;
+            while (Time.time < end - .3f)
+            {
+                yield return new WaitForSeconds(.45f);
+                if (!this) yield break;
+                CareerFx.Gen("a_smoke", null, spot, Vector2.zero, radius * 2.3f, 0f, 14f, VfxLayer.Top, false, SmokeGray); // [VFX 2026-10-29] was x2
+            }
         }
 
         // ---------- Casts ----------
@@ -448,6 +461,9 @@ namespace DotRPG
             float gap = stormFor / throws;
             int damage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * c.s.hits / (float)throws));
             float range = c.n.range > 0f ? c.n.range : c.s.range;
+            // [VFX 2026-10-29] A bright burst on the cast so the storm reads at once.
+            SkillVisuals.Flash(owner.Center, new Color(1f, 1f, 1f, .6f), 3f, .22f);
+            SkillFx.Spawn("fx_ring", owner.Center, new Color(.9f, .95f, 1f, .9f), .35f, SkillFx.TopOrder + 3).Additive().Scale(.4f, 3.2f).Fade(FxFade.Quick);
             for (int i = 0; i < throws; i++)
             {
                 if (!Live(c)) yield break;
@@ -462,7 +478,7 @@ namespace DotRPG
         /// <summary>One star of 표창 난사: straight on, through every monster on the way (each once), stopped by walls.</summary>
         IEnumerator StarFlight(Run c, Vector2 from, Vector2 dir, float range, int damage)
         {
-            var k = KunaiProjectile.Spawn(owner, from, dir, true, SpecTint(c));
+            var k = KunaiProjectile.Spawn(owner, from, dir, true, SpecTint(c), 1.7f); // [VFX 2026-10-29] big stars (hits unchanged: the line check)
             var hit = new HashSet<EnemyController>();
             Vector2 at = from;
             float travelled = 0f;

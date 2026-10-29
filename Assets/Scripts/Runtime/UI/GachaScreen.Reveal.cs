@@ -82,6 +82,7 @@ namespace DotRPG
             base.Update();
             if (!gameObject.activeSelf) return;
             Animate();
+            UpdateAuto(); // [GACHA 2026-10-29] 자동 뽑기: the next draw once this reveal is over
             if (!Revealing || Time.unscaledTime < revealAt) return;
             var r = shown[revealed];
             if (Special(r) && waiting != revealed)

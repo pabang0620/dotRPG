@@ -1,4 +1,5 @@
 import { getConfig } from '../../config/env';
+import { rollHidden } from '../../utils/hiddenOption';
 import { getPool } from '../../db/pool';
 import { assertNoHold } from '../antiabuse/holds';
 import { CHAPTER2_TIER_COUNT, TIER_LEVELS, tierOfLevel } from '../../utils/gearTier';
@@ -339,6 +340,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       }
       let balance = (await wallets.debit(db, { accountId, reason: 'gacha', price, ref: `${banner}_${body.count}`, requestId })).balance;
       const rows: repo.PullRow[] = [];
+      const hiddenKeys = new Map<number, string>(); // 뽑기 순번 -> 히든 옵션이 붙은 장비 키
       let gearCeiling: number | null = null;
       let pity = banner === 'skin' ? wallet.skinPity : wallet.pity;
       let hiddenPity: number | null = null;
@@ -355,7 +357,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
       } else {
         // 내 레벨 위 단계도 뽑을 수 있다. 장비는 가방에 두고 착용 레벨이 되면 낀다
         const tier = body.tier ?? tierOfLevel(ctx.char.level);
-        await rollGear(ctx, banner, times, rows, body.count, tier);
+        await rollGear(ctx, banner, times, rows, body.count, tier, hiddenKeys);
         // 천장 게이지(장비 뽑기 세 종류 합산). 락 순서상 마지막
         gearCeiling = await ceilings.addGauge(db, accountId, 'gear', times);
       }
@@ -366,6 +368,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
           banner,
           results: rows.map((r) => ({
             item_id: r.itemId,
+            ...(hiddenKeys.has(r.seq) ? { item_key: hiddenKeys.get(r.seq) } : {}),
             rarity: r.rarity,
             hidden: r.kind === 'cosmetic' && STAR_COSMETIC_BY_ID.get(r.itemId)?.hidden === true,
             by_pity: r.byPity,
@@ -425,7 +428,7 @@ export function pickGearTier<T extends { permille: number }>(pool: T[]): T {
   return pool[pool.length - 1]!;
 }
 
-async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: repo.PullRow[], count: number, tier: number) {
+async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: repo.PullRow[], count: number, tier: number, keys: Map<number, string>) {
   const table = gearTable(banner, ctx.char.class, tier);
   if (table.length === 0) throw new AppError(422, '뽑을 수 있는 장비가 없습니다.', 'NO_GEAR');
   for (let i = 0; i < times; i++) {
@@ -433,7 +436,10 @@ async function rollGear(ctx: EconCtx, banner: GearBanner, times: number, rows: r
     // 장신구는 유니크, 방어구는 에픽이 확정되어 버린다(외형 뽑기의 보너스만 희귀 이상)
     const tier = pickGearTier(table);
     const item = tier.items[getRng().int(0, tier.items.length)]!;
-    await ctx.addItem('bag', item.id, 1, 'gacha', `${banner}_${count}`);
+    // 히든 옵션 2%(유니크·레전더리 무기·방어구만, 별도 난수 흐름이라 뽑기 확률 굴림 순서는 그대로)
+    const key = rollHidden(getGameData().economy, item.id);
+    if (key !== item.id) keys.set(i, key);
+    await ctx.addItem('bag', key, 1, 'gacha', `${banner}_${count}`);
     await noteGachaGear(ctx.client, ctx.char.id, ctx.char.accountId, item.id, 1); // 0044: 상점 판매 금지·분해 몫, 도감
     rows.push({ seq: i, rarity: tier.rarity, itemId: item.id, pityBefore: 0, pityAfter: 0, byPity: false, duplicate: false, refund: 0, kind: 'gear' });
   }

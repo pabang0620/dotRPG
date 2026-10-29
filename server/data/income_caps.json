@@ -185,7 +185,7 @@
       "zone": "winter_lake",
       "monsterLevel": 31,
       "fieldBoss": "canyon_ridge",
-      "dungeonDifficulty": 3,
+      "dungeonDifficulty": 4,
       "perHour": {
         "xp": 96600,
         "goldEq": 72323,
@@ -210,7 +210,7 @@
       "zone": "hollow_descent",
       "monsterLevel": 42,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 3,
+      "dungeonDifficulty": 5,
       "perHour": {
         "xp": 202900,
         "goldEq": 76858,
@@ -220,7 +220,7 @@
       },
       "perDay": {
         "dungeonXp": 90011,
-        "dungeonGoldEq": 12240,
+        "dungeonGoldEq": 12600,
         "raidMidXp": 10092,
         "raidMidGoldEq": 4500
       },
@@ -235,7 +235,7 @@
       "zone": "hollow_descent",
       "monsterLevel": 42,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 4,
+      "dungeonDifficulty": 7,
       "perHour": {
         "xp": 202900,
         "goldEq": 76858,
@@ -260,7 +260,7 @@
       "zone": "hollow_roots",
       "monsterLevel": 47,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 4,
+      "dungeonDifficulty": 7,
       "perHour": {
         "xp": 246100,
         "goldEq": 79068,
@@ -285,7 +285,7 @@
       "zone": "hollow_roots",
       "monsterLevel": 47,
       "fieldBoss": "winter_peak",
-      "dungeonDifficulty": 4,
+      "dungeonDifficulty": 7,
       "perHour": {
         "xp": 246100,
         "goldEq": 79068,

@@ -11,6 +11,13 @@ namespace DotRPG
         public readonly List<(string id, string name, string rarity, string skin)> choices = new List<(string, string, string, string)>();
     }
 
+    /// <summary>[0056] One Star Shard good (server STAR_ITEM_GOODS): a bag item bought with Star Shards, no purchase limit.</summary>
+    public sealed class StarItemGood
+    {
+        public string id, name, itemId;
+        public int price, count;
+    }
+
     /// <summary>Gacha gear in the bag that can be dismantled into Star Crystals (the gacha share of each base id).</summary>
     public sealed class DismantlableGear
     {
@@ -20,8 +27,8 @@ namespace DotRPG
 
     /// <summary>
     /// 별의 결정 and 별빛 교환소 (Docs/PLAN_CASH_ITEM_VALUE.md). Spare cosmetics and gacha gear are dismantled into Star
-    /// Crystals, which buy chosen cosmetics, gauge fills and materials at the exchange. Crystals never turn back into Star
-    /// Shards or gold and cannot be traded; the gear codex (first Unique / Legendary of each kind) adds account max HP.
+    /// Crystals, which buy chosen cosmetics, gauge fills and materials at the exchange. Crystals never turn into gold and cannot be
+    /// traded (they become free Star Shards only through StarShopClient.Convert.cs); the gear codex (first Unique / Legendary of each kind) adds account max HP.
     /// The server decides everything; this keeps what it said.
     /// </summary>
     public static partial class StarShopClient
@@ -36,6 +43,8 @@ namespace DotRPG
         public static readonly Dictionary<string, int> DismantleCrystals = new Dictionary<string, int>();
 
         public static readonly List<ExchangeGood> Goods = new List<ExchangeGood>();
+        /// <summary>[0056] Star Shard goods (revive coin packs), listed with the exchange.</summary>
+        public static readonly List<StarItemGood> StarGoods = new List<StarItemGood>();
         public static readonly List<DismantlableGear> GearSpares = new List<DismantlableGear>();
         public static readonly List<string> CodexEntries = new List<string>();
         public static float CodexHealthPer { get; private set; } = 0.5f;
@@ -84,6 +93,14 @@ namespace DotRPG
                         g.choices.Add((MiniJson.Str(c, "id", ""), MiniJson.Str(c, "name", ""), MiniJson.Str(c, "rarity", ""), MiniJson.Str(c, "skin", "")));
                     Goods.Add(g);
                 }
+                StarGoods.Clear();
+                foreach (var o in MiniJson.Arr(d, "star_goods") ?? new List<object>())
+                    StarGoods.Add(new StarItemGood
+                    {
+                        id = MiniJson.Str(o, "id", ""), name = MiniJson.Str(o, "name", ""), itemId = MiniJson.Str(o, "item_id", ""),
+                        price = MiniJson.Int(o, "price"), count = MiniJson.Int(o, "count"),
+                    });
+                if (MiniJson.Has(d, "star_balance")) Balance = (long)MiniJson.Num(d, "star_balance", Balance);
                 GearSpares.Clear();
                 foreach (var o in MiniJson.Arr(d, "dismantlable") ?? new List<object>())
                     GearSpares.Add(new DismantlableGear
@@ -101,6 +118,7 @@ namespace DotRPG
                     CodexHealthPer = (float)MiniJson.Num(codex, "per", CodexHealthPer);
                     CodexHealthMax = (float)MiniJson.Num(codex, "max", CodexHealthMax);
                 }
+                ReadConvert(d); // StarShopClient.Convert.cs
                 ExchangeLoaded = true;
                 Changed?.Invoke();
                 done?.Invoke(true, "");
@@ -119,6 +137,25 @@ namespace DotRPG
                 Crystals = (long)MiniJson.Num(r.data, "crystal_balance", Crystals);
                 OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
                 _ = RefreshAfter(() => LoadExchange((_, __) => done?.Invoke(true, "")));
+            });
+        }
+
+        /// <summary>[0056] Buys one Star Shard good (revive coin pack): the items arrive in the bag (account-bound).</summary>
+        public static void BuyStarItem(string goodId, Action<bool, string> done)
+        {
+            if (!Available) { done?.Invoke(false, L.T("온라인 캐릭터로 접속해야 합니다.")); return; }
+            var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["good_id"] = goodId };
+            Api.PostIdempotent(Base + "/item-buy", body, r =>
+            {
+                if (!r.ok)
+                {
+                    done?.Invoke(false, r.code == "NOT_ENOUGH_STARS" ? L.T("별조각이 모자랍니다.") : string.IsNullOrEmpty(r.message) ? L.T("구매하지 못했습니다.") : r.message);
+                    return;
+                }
+                Balance = (long)MiniJson.Num(r.data, "balance", Balance);
+                OnlineEconomy.ApplyDelta(MiniJson.Obj(r.data, "delta"));
+                Changed?.Invoke();
+                done?.Invoke(true, "");
             });
         }
 

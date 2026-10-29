@@ -1,0 +1,9 @@
+{
+ " <size=16><color=#b8c4d8>Lv.{0} · {1} 기준</color></size>": " <size=16><color=#b8c4d8>Lv.{0} · by {1}</color></size>",
+ "{0}세트: {1}": "{0} pieces: {1}",
+ "세트 Lv.{0} ({1}/{2})": "Set Lv.{0} ({1}/{2})",
+ "세트 효과 ({0}/{1})": "Set bonus ({0}/{1})",
+ "세트 효과 없음": "No set bonus",
+ "장비 공격력 +{0}%": "Gear attack +{0}%",
+ "장비 체력 +{0}%": "Gear HP +{0}%"
+}

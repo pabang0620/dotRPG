@@ -63,8 +63,14 @@ namespace DotRPG
 
         // ---------- Stat totals ----------
 
-        public int AttackBonus => Sum(s => s.attack);
-        public int MaxHealthBonus => Sum(s => s.maxHealth);
+        /// <summary>Worn attack / HP totals with the active set bonuses (GearSets) on top.</summary>
+        public int AttackBonus => GearSets.Apply(Sum(s => s.attack), SetAttackPct);
+        public int MaxHealthBonus => GearSets.Apply(Sum(s => s.maxHealth), SetHealthPct);
+        /// <summary>[SET] Summed attack % / HP % of the worn gear sets (Docs/PLAN_GEAR_SETS_2026-10-29.md).</summary>
+        public int SetAttackPct { get { GearSets.Totals(slots, out int a, out _); return a; } }
+        public int SetHealthPct { get { GearSets.Totals(slots, out _, out int h); return h; } }
+        /// <summary>[SET] Sets with at least one active step, lowest tier first.</summary>
+        public List<GearSets.State> ActiveSets => GearSets.Active(slots);
         public int BlockChance => Mathf.Clamp(Sum(s => s.block), 0, MaxBlock);
         public int SpeedBonus => Sum(s => s.speed);
         public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
@@ -74,6 +80,30 @@ namespace DotRPG
         /// <summary>[LEGEND] % more damage and % more damage to bosses from the worn gear (legendary weapons).</summary>
         public int DamageBonus => SumItem(e => e.damageBonus);
         public int BossBonus => SumItem(e => e.bossBonus);
+        /// <summary>[HIDDEN] Character-stat hidden options of the worn gear (attack, HP and move speed are already in the gear stats).</summary>
+        public int HiddenAoe => SumHidden(HiddenOption.Range, HiddenOptions.RangePct);
+        public int HiddenAttackSpeed => SumHidden(HiddenOption.AttackSpeed, HiddenOptions.AttackSpeedPct);
+        /// <summary>[HIDDEN] Critical hit chance in % (x<see cref="HiddenOptions.CritMul"/> damage).</summary>
+        public int HiddenCrit => SumHidden(HiddenOption.Crit, HiddenOptions.CritPct);
+        /// <summary>[HIDDEN] Damage taken multiplier (top and bottom with 받는 피해 -15% each multiply).</summary>
+        public float HiddenDamageTakenMul
+        {
+            get
+            {
+                float mul = 1f;
+                foreach (var key in slots)
+                    if (EquipmentDatabase.HiddenOfKey(key) == HiddenOption.DamageTaken) mul *= 1f - HiddenOptions.DamageTakenPct / 100f;
+                return mul;
+            }
+        }
+
+        int SumHidden(HiddenOption option, int value)
+        {
+            int total = 0;
+            foreach (var key in slots)
+                if (EquipmentDatabase.HiddenOfKey(key) == option) total += value;
+            return total;
+        }
 
         int SumItem(Func<EquipmentItem, int> pick)
         {
@@ -398,7 +428,7 @@ namespace DotRPG
             if (r.seals > 0) bag.Remove(InheritRules.SealItem, r.seals);
             r.kept = InheritRules.Keeps(roll, r.oldLevel);
             r.newLevel = r.kept ? r.keptLevel : r.failLevel;
-            r.newKey = EquipmentDatabase.KeyFor(r.to.id, r.newLevel, r.newCount);
+            r.newKey = EquipmentDatabase.KeyFor(r.to.id, r.newLevel, r.newCount, EquipmentDatabase.HiddenOfKey(key)); // [HIDDEN] the option moves along
             r.kind = InheritOutcome.Done;
             Replace(target, key, r.newKey);
             // Pity follows the piece (kept on the old key while other copies of it remain), same as the server.

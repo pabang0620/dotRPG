@@ -14,6 +14,8 @@ namespace DotRPG
         public sealed class Rate { public string itemKey, tier; public int count; public float rate; }
 
         public static readonly List<Rate> Table = new List<Rate>(), BoostedTable = new List<Rate>();
+        /// <summary>[CASH sealed-2] 별조각 상자 open table from the server: count = Star Shards, rate = %.</summary>
+        public static readonly List<Rate> StarBoxTable = new List<Rate>();
         public static int PriceOne { get; private set; } = 100;
         public static int PriceEleven { get; private set; } = 1000;
         /// <summary>Opens done since the last boosted one (0..9); the 11th open is boosted.</summary>
@@ -48,6 +50,7 @@ namespace DotRPG
                     ReadCeiling(MiniJson.Obj(r.data, "ceiling"));
                     ReadTable(MiniJson.Arr(r.data, "table"), Table);
                     ReadTable(MiniJson.Arr(r.data, "boosted_table"), BoostedTable);
+                    ReadStarBox(MiniJson.Obj(r.data, "star_box"));
                     Loaded = true;
                 }
                 Changed?.Invoke();
@@ -60,6 +63,15 @@ namespace DotRPG
             into.Clear();
             foreach (var o in list)
                 into.Add(new Rate { itemKey = MiniJson.Str(o, "item_key"), count = MiniJson.Int(o, "count", 1), rate = (float)MiniJson.Num(o, "rate"), tier = MiniJson.Str(o, "tier") });
+        }
+
+        static void ReadStarBox(Dictionary<string, object> sb)
+        {
+            StarBoxTable.Clear();
+            if (sb == null) return;
+            string key = MiniJson.Str(sb, "item_key");
+            foreach (var o in MiniJson.Arr(sb, "amounts") ?? new List<object>())
+                StarBoxTable.Add(new Rate { itemKey = key, count = MiniJson.Int(o, "stars", 0), rate = (float)MiniJson.Num(o, "rate"), tier = "common" });
         }
 
         static void ReadBooster(Dictionary<string, object> b)
@@ -148,6 +160,13 @@ namespace DotRPG
                 var parts = new List<string>();
                 foreach (var g in got)
                 {
+                    if (g.itemKey == "stars") // [CASH sealed-2] 별조각 상자: free Star Shards straight into the wallet
+                    {
+                        _ = StarShopClient.RefreshAsync();
+                        if (g.count >= 1000) big = true;
+                        parts.Add(L.F("<color=#ffd76a>별조각 +{0:N0}</color>", g.count));
+                        continue;
+                    }
                     var item = ConsumableDatabase.Get(g.itemKey);
                     if (item != null && item.kind == ConsumableKind.EnhanceTicket) big = true;
                     if (matBox && g.tier == "rare") big = true;

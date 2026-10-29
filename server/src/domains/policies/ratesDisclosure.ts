@@ -1,10 +1,10 @@
 // 확률형 아이템 정보 공개(게임산업법 제33조 제2항). 서버가 실제로 쓰는 확률표에서 바로 만든다:
-// 외형 뽑기·장비 뽑기·외형 합성(starshopDefs.ts), 봉인된 상자·부스터·천장(sealed_box.json), 강화권 상자(items.json box_enh*),
+// 외형 뽑기·장비 뽑기·외형 합성(starshopDefs.ts), 봉인된 상자·부스터·천장·별조각 상자(sealed_box.json), 강화권 상자(items.json box_enh*),
 // 장비 강화(enhance.json), 레이드 상점(raid_shop.json), 일일·주간 완료 상자(daily_quests.json chests). 웹 페이지(GET /policies/:lang/probability)와 scripts/export-rates.ts가 같은 함수를 쓴다.
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { sealedTable, type SealedData } from '../../gamedata/sealedBox';
+import { sealedTable, starBoxExpected, type SealedData } from '../../gamedata/sealedBox';
 import { UNIQUE_BONUS } from '../dungeons/dungeonRules';
 import { translate } from '../../utils/i18n';
 import {
@@ -184,6 +184,22 @@ export function buildRatesMarkdown(dataDir: string, lang: PolicyLang, now: Date 
         ? `천장: ${sealed.ceiling.every}회 열 때마다 ${itemName(sealed.ceiling.reward.item_key)} ${sealed.ceiling.reward.count}개와 교환할 수 있습니다.`
         : `Pity: every ${sealed.ceiling.every} opens you can claim ${itemName(sealed.ceiling.reward.item_key)} x${sealed.ceiling.reward.count}.`,
     );
+  }
+
+  // ---- 별조각 상자(sealed-2): 봉인된 상자 안의 상자도 열었을 때의 확률을 따로 공개한다 ----
+  const starBox = sealed?.starBox;
+  if (sealed && starBox) {
+    const box = itemName(starBox.item_key);
+    const ev = starBoxExpected(sealed).toFixed(1);
+    out.push(ko ? `## 별조각 상자 (확률표 버전 ${sealed.ratesVersion})` : `## Star Shard Box (rate table version ${sealed.ratesVersion})`);
+    out.push(
+      ko
+        ? `봉인된 상자에서 나오는 ${box}를 가방에서 열면 아래 확률로 별조각이 나옵니다. 나온 별조각은 무료 별조각이며 환불 대상이 아닙니다. 상자 1개의 기대값은 별조각 ${ev}개입니다.`
+        : `Opening a ${box} (from the Sealed Chest) in the bag gives Star Shards by the rates below. They are free Star Shards and are not refundable. Expected value per box: ${ev} Star Shards.`,
+    );
+    out.push(ko ? '| 별조각 | 확률 |' : '| Star Shards | Rate |');
+    out.push('|---|---|');
+    for (const a of starBox.amounts) out.push(`| ${a.stars} | ${pct(a.rate)} |`);
   }
 
   // ---- 강화권 상자 ----

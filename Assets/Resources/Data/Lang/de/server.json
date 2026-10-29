@@ -90,5 +90,6 @@
  "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Spieldaten-Prüfung fehlgeschlagen: enhance.inheritTiers {0}",
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} unterscheiden sich in Seltenheit oder Platz",
  "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Zeilen verlangen Material, aber coreItem, shardItem oder sealItem fehlt",
- "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Nimm 6 Sek. lang Schattengestalt an: aller Angriffsschaden +18%, Angriffstempo +20%. Endet die Gestalt, explodiert sie im Radius von 7m (480%)."
+ "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Nimm 6 Sek. lang Schattengestalt an: aller Angriffsschaden +18%, Angriffstempo +20%. Endet die Gestalt, explodiert sie im Radius von 7m (480%).",
+ "난이도는 4개(옛 형식) 또는 8개여야 합니다": "Es muss 4 Schwierigkeitsgrade (altes Format) oder 8 geben"
 }

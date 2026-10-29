@@ -1,5 +1,5 @@
 // 캐시 아이템 가치 보존(0044, Docs/PLAN_CASH_ITEM_VALUE.md): 뽑기 장비 분해, 별빛 교환소, 장비 도감.
-// 락 순서: 캐릭터(runEconomy) -> 별조각 지갑 -> 결정 지갑 -> 천장 행. 결정은 별조각·골드로 되돌릴 수 없고 거래할 수 없다.
+// 락 순서: 캐릭터(runEconomy) -> 별조각 지갑 -> 결정 지갑 -> 천장 행. 결정은 골드로 되돌릴 수 없고 거래할 수 없다(별조각 바꾸기는 crystalConvert.ts).
 import type { Queryable } from '../../db/pool';
 import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
@@ -35,6 +35,8 @@ import {
 } from './starshopDefs';
 import * as repo from './starshopRepository';
 import * as wallets from './starWallet';
+import { starItemGoodsView } from './starItemShop';
+import { CRYSTALS_PER_STAR } from './crystalConvert';
 
 // ---------------- 뽑기 장비 몫·도감 (다른 경로가 부른다) ----------------
 
@@ -265,12 +267,13 @@ export async function exchangeShopView(accountId: number, characterUuid: string)
   if (!ch) throw new AppError(404, '캐릭터를 찾을 수 없습니다.', 'CHARACTER_NOT_FOUND');
   const now = getNow();
   const week = weekStartOf(now);
-  const [w, bought, owned, codex, dismantlable] = await Promise.all([
+  const [w, bought, owned, codex, dismantlable, stars] = await Promise.all([
     crystals.readCrystals(db, accountId),
     boughtThisWeek(db, accountId, week),
     repo.ownedOf(db, accountId),
     codexOf(db, accountId),
     dismantlableOf(db, ch.id),
+    wallets.readWallet(db, accountId),
   ]);
   return {
     crystals: w.balance,
@@ -290,6 +293,11 @@ export async function exchangeShopView(accountId: number, characterUuid: string)
     })),
     dismantle: { cosmetic: DISMANTLE_CRYSTALS, skin: SKIN_DISMANTLE.crystals, hidden_mult: HIDDEN_DISMANTLE_MULT, collection_bonus: COLLECTION_DUP_BONUS, gear: GEAR_DISMANTLE, enhance_bonus: GEAR_DISMANTLE_ENHANCE_BONUS },
     dismantlable,
+    // 0056 별조각 상품(부활 코인 묶음): 별조각으로 산다(결정 아님). 구매 한도 없음
+    star_goods: starItemGoodsView(),
+    star_balance: stars.balance,
+    // 별의 결정 -> 무료 별조각 바꾸기 비율(결정 per_star개 = 별조각 1개), 제한 없음
+    convert: { per_star: CRYSTALS_PER_STAR },
     codex: { entries: codex, health: codexHealth(codex.length), per: CODEX_HEALTH_PER, max: CODEX_HEALTH_MAX },
   };
 }

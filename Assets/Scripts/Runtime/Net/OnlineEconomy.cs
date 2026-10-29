@@ -240,6 +240,9 @@ namespace DotRPG
         /// <summary>Consumes one usable item on the server (the effect itself is local; the server only counts).</summary>
         public static void UseItem(string itemId) => Post("/items/use", Body(("item_id", itemId)), null, quiet: true);
 
+        /// <summary>[0056] Item use whose answer matters (부활 코인): done(result), the server's message shown on failure.</summary>
+        public static void UseItem(string itemId, Action<ApiResult> done) => Post("/items/use", Body(("item_id", itemId)), done);
+
         public static void StorageMove(IEnumerable<(string key, bool toStorage, int count)> moves, Action<bool> done)
         {
             var list = moves.Select(m => (object)Body(("item_key", m.key), ("to", m.toStorage ? "storage" : "bag"), ("count", m.count))).ToList();

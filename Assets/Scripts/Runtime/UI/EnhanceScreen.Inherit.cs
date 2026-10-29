@@ -86,13 +86,14 @@ namespace DotRPG
                 enhanceLabel.text = L.T("계승 불가");
                 return;
             }
-            title.text = head + "\n" + L.F("<size=19>→ Lv.{0} {1}</size>", p.to.reqLevel, EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(p.to.id, 0)));
-            var now = gear.StatsAt(p.oldLevel);
-            var kept = p.to.StatsAt(p.keptLevel);
-            var failed = p.to.StatsAt(p.failLevel);
+            var hidden = EquipmentDatabase.HiddenOfKey(e.key); // [HIDDEN] the option moves to the new piece
+            title.text = head + "\n" + L.F("<size=19>→ Lv.{0} {1}</size>", p.to.reqLevel, EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(p.to.id, 0, 0, hidden)));
+            var now = gear.StatsAt(p.oldLevel, hidden);
+            var kept = p.to.StatsAt(p.keptLevel, hidden);
+            var failed = p.to.StatsAt(p.failLevel, hidden);
             statsText.text = L.F("<b>계승 후 능력치</b>   <color=#b8c4d8>전투력 {0:N0} → </color><color=#8fe28f>{1:N0}</color>", now.Score, kept.Score) +
                              (p.keptLevel != p.failLevel ? L.F("<color=#b8c4d8> (실패 시 {0:N0})</color>", failed.Score) : "") + "\n" +
-                             L.F("현재  {0}\n계승 후  <color=#8fe28f>{1}</color>", gear.StatLine(p.oldLevel), p.to.StatLine(p.keptLevel));
+                             L.F("현재  {0}\n계승 후  <color=#8fe28f>{1}</color>", gear.StatLine(p.oldLevel, hidden), p.to.StatLine(p.keptLevel, hidden));
             costTitle.text = L.T("<b>계승 비용</b>");
             costCells[0].text = Need(L.T("골드"), Game.Session.Gold, p.gold);
             string countLine = L.F("계승 횟수  {0}회 → <color=#ffe066>{1}회</color>", p.oldCount, p.newCount);
@@ -162,7 +163,7 @@ namespace DotRPG
                 ? L.F("골드 {0:N0} · {1} {2} · {3} {4} · {5} {6}", p.gold, ItemName(InheritRules.CoreItem), p.cores, ItemName(InheritRules.ShardItem), p.shards, ItemName(InheritRules.SealItem), p.seals)
                 : L.F("골드 {0:N0}", p.gold);
             Game.UI.Confirm(L.F("<b>장비 계승</b>\n{0}  →  {1}\n<color=#b8c4d8>{2} · {3} · 계승 {4}회째</color>\n원래 장비는 새 장비로 바뀝니다. 계승할까요?",
-                EquipmentDatabase.RichName(e.key), EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(p.to.id, 0)), odds, cost, p.newCount), () => StartInherit(e, p), true);
+                EquipmentDatabase.RichName(e.key), EquipmentDatabase.RichName(EquipmentDatabase.KeyFor(p.to.id, 0, 0, EquipmentDatabase.HiddenOfKey(e.key))), odds, cost, p.newCount), () => StartInherit(e, p), true);
         }
 
         void StartInherit(Entry e, InheritResult preview)

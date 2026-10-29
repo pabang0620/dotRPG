@@ -98,11 +98,13 @@ namespace DotRPG
         /// <summary>Expected XP per minute in a zone at the plan's pace (<see cref="HuntingGrounds.KillsPerMinute"/>).</summary>
         public static int XpPerMinute(HuntingZone z) => z == null ? 0 : z.KillXp * HuntingGrounds.KillsPerMinute;
 
-        /// <summary>The hardest dungeon difficulty whose recommended level the hero has reached (null below 일반's).</summary>
-        static DifficultyDef DifficultyFor(int level)
+        /// <summary>The hardest dungeon difficulty whose recommended level the hero has reached (null below 일반's).
+        /// [TIERS 2026-10-29] 일반 던전 stop at 영웅; weekday dungeons go on to 심연.</summary>
+        static DifficultyDef DifficultyFor(int level, bool weekday)
         {
             DifficultyDef best = null;
-            for (int i = 0; i < (int)DungeonDifficulty.Lord; i++) // [CH3] 군주 is weekday-only (recommended separately)
+            int top = weekday ? (int)DungeonDifficulty.Lord : (int)DungeonDatabase.FirstWeekdayOnly;
+            for (int i = 0; i < top; i++) // [CH3] 군주 is weekday-only (recommended separately)
             {
                 var d = DungeonDatabase.Difficulty((DungeonDifficulty)i);
                 if (d.recommendedLevel <= level) best = d;
@@ -128,7 +130,8 @@ namespace DotRPG
             int level = Level;
             var now = ResetClock.Now;
             var theme = RegionTheme(level);
-            var diff = DifficultyFor(level);
+            var diff = DifficultyFor(level, true);
+            var normalDiff = DifficultyFor(level, false);
 
             // 1. Weekday dungeons open today with entries left (the region's own first).
             int left = Game.Session.Dungeons.EntriesLeft(now);
@@ -176,19 +179,19 @@ namespace DotRPG
             }
 
             // 2. The region's normal dungeon (every day, no entry count).
-            if (diff != null && ContentUnlocks.IsOpen(ContentUnlocks.Feature.NormalDungeon))
+            if (normalDiff != null && ContentUnlocks.IsOpen(ContentUnlocks.Feature.NormalDungeon))
             {
                 DungeonDef normal = null;
                 foreach (var d in DungeonDatabase.Normal)
                     if (normal == null || (d.theme == theme && normal.theme != theme)) normal = d;
                 if (normal != null)
                 {
-                    var def = normal; var id = diff.id;
+                    var def = normal; var id = normalDiff.id;
                     list.Add(new Entry
                     {
                         order = OrderNormal,
-                        shortText = DungeonLabel(def, diff),
-                        text = L.F("일반 던전 <color=#8fe28f>{0}</color> · 매일, 횟수 제한 없음", DungeonLabel(def, diff)),
+                        shortText = DungeonLabel(def, normalDiff),
+                        text = L.F("일반 던전 <color=#8fe28f>{0}</color> · 매일, 횟수 제한 없음", DungeonLabel(def, normalDiff)),
                         button = L.T("던전 창 열기"),
                         action = () => OpenDungeon(def.id, id),
                     });

@@ -495,6 +495,8 @@ namespace DotRPG
             if(health.IsInvulnerable) return false;
             var careerActor=info.AttackerMember!=null?CareerCombat.For(info.AttackerMember):null;
             if(careerActor!=null) info.amount=careerActor.ModifyDamage(this,info.amount);
+            // [HIDDEN] 치명타 확률 (hidden weapon option): a direct hit may land x1.5. Damage over time never crits.
+            if(info.AttackerMember!=null && !info.dot) info.amount=HiddenCrit.Roll(info.AttackerMember, info.amount);
             // [BOSS 2026-10-21] The arena boss takes the hero's career multiplier (BossRushCatalog): the damage ranking compares careers.
             if(info.AttackerMember!=null && info.AttackerMember==Game.Player && Def!=null && Def.boss && BossRushDirector.InArena)
                 info.amount=Mathf.Max(1,Mathf.RoundToInt(info.amount*BossRushCatalog.CareerDamageMul(info.AttackerMember.Data.Progression.Career)));

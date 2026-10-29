@@ -58,6 +58,7 @@ namespace DotRPG
             w.BuildCareer();
             w.BuildGems();
             w.BuildGemGuide();
+            w.BuildAutoGem(); // [GEM AUTO] 간편 젬 세팅 (shares the guide column)
             w.BuildSpecs(); // [CH3 SPEC]
             w.BuildTooltip();
             return w;
@@ -250,6 +251,7 @@ namespace DotRPG
             foreach (var g in SkillGems.All) if (g.kind == GemKind.Support) { total++; if (prog.IsUnlocked(g)) unlocked++; }
             gemListText.text = L.F("<b>보조 젬 {0}/{1} 해금</b>   <color=#8c96a8>보조 칸 클릭: 다음 젬 · 우클릭: 이전 젬 · 칸에 마우스를 올리면 자세한 설명</color>", unlocked, total);
             RefreshGemGuide();
+            RefreshAutoGem();
         }
 
         // ================= Common =================

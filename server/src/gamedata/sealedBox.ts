@@ -26,6 +26,13 @@ const fileSchema = z.looseObject({
   luckBoxFallback: reward,
   /** 천장(0033): 상점 뽑기·가방 상자로 every번 열 때마다 reward 하나와 교환할 수 있다(자동 지급 아님) */
   ceiling: z.strictObject({ every: z.number().int().positive(), reward }),
+  /** 별조각 상자(sealed-2, 2026-10-29): 열면 amounts 확률(%)로 무료 별조각 stars개. 표 합 100 */
+  starBox: z
+    .strictObject({
+      item_key: z.string().min(1),
+      amounts: z.array(z.strictObject({ stars: z.number().int().positive(), rate: z.number().positive() })).min(1),
+    })
+    .optional(),
 });
 
 export type SealedRow = z.infer<typeof row>;
@@ -42,6 +49,11 @@ export function validateSealedBox(raw: unknown, itemIds?: Set<string>): { data: 
   if (new Set(d.rows.map((r) => r.id)).size !== d.rows.length) errors.push('rows id 중복');
   const rare = d.rows.filter((r) => r.tier === 'rare').reduce((a, r) => a + r.rate, 0);
   if (rare * 2 >= 100) errors.push('희귀 이상 확률을 2배 하면 100%를 넘습니다');
+  if (d.starBox) {
+    const s = d.starBox.amounts.reduce((a, r) => a + r.rate, 0);
+    if (Math.abs(s - 100) > 1e-6) errors.push(`starBox 확률 합이 100이 아닙니다: ${s}`);
+    if (itemIds && !itemIds.has(d.starBox.item_key)) errors.push(`items.json에 없는 아이템: ${d.starBox.item_key}`);
+  }
   if (itemIds) {
     const keys = [d.luckBoxFallback.item_key, d.ceiling.reward.item_key, ...d.rows.flatMap((r) => r.rewards.map((x) => x.item_key))];
     for (const k of keys) if (!itemIds.has(k)) errors.push(`items.json에 없는 아이템: ${k}`);
@@ -67,6 +79,13 @@ export function loadSealedBox(dir: string = getConfig().gameDataDir, itemIds: Se
 
 export function getSealedBox(): SealedData {
   return current ?? loadSealedBox();
+}
+
+export type StarBoxAmount = NonNullable<SealedData['starBox']>['amounts'][number];
+
+/** 별조각 상자 1개의 기대 별조각 수 */
+export function starBoxExpected(d: SealedData): number {
+  return (d.starBox?.amounts ?? []).reduce((a, r) => a + (r.stars * r.rate) / 100, 0);
 }
 
 export interface RatedRow {

@@ -1,6 +1,8 @@
 // 장비 뽑기 천장 교환(0033, Docs/PLAN_SIM_IMPROVEMENTS_2026-10-12.md A).
 // 게이지가 GEAR_CEILING.max 이상이면 이용자가 뽑기(무기·방어구·장신구)와 열린 레벨 단계를 골라 그 표의 유니크 장비
 // 하나를 받는다(그 단계에 유니크가 없으면 가장 높은 등급). 게이지는 max만큼 줄고 넘친 만큼은 남는다.
+import { rollHidden } from '../../utils/hiddenOption';
+import { getGameData } from '../../gamedata/loader';
 import { tierOfLevel, TIER_LEVELS } from '../../utils/gearTier';
 import { AppError } from '../../utils/AppError';
 import { assertNoHold } from '../antiabuse/holds';
@@ -45,12 +47,13 @@ export function claimGearCeiling(accountId: number, characterUuid: string, body:
       const after = before - GEAR_CEILING.max;
       await ceilings.setGauge(ctx.client, accountId, 'gear', after);
       // 원장: item_ledger reason gacha(뽑기와 같은 귀속), ref ceiling_<뽑기>
-      await ctx.addItem('bag', body.item_id, 1, 'gacha', `ceiling_${body.banner}`);
+      const itemKey = rollHidden(getGameData().economy, body.item_id); // 히든 옵션 2%(뽑기와 같다)
+      await ctx.addItem('bag', itemKey, 1, 'gacha', `ceiling_${body.banner}`);
       await noteGachaGear(ctx.client, ctx.char.id, accountId, body.item_id, 1); // 0044
       await ceilings.insertClaim(ctx.client, {
         accountId, characterId: ctx.char.id, requestId, kind: 'gear', itemKey: body.item_id, count: 1, before, after,
       });
-      return { status: 200, data: { item_id: body.item_id, banner: body.banner, tier, gear_ceiling: gearCeilingView(after), delta: ctx.delta() } };
+      return { status: 200, data: { item_id: body.item_id, ...(itemKey !== body.item_id ? { item_key: itemKey } : {}), banner: body.banner, tier, gear_ceiling: gearCeilingView(after), delta: ctx.delta() } };
     },
   });
 }

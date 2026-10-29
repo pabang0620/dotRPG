@@ -276,9 +276,9 @@ const dungeonsSchema = z.looseObject({
         jackpotPerMille: nonNegInt.default(0),
       }),
     )
-    // 0 일반 1 모험 2 왕 3 영웅 + 4 군주(챕터 3, 2026-10-22). 옛 데이터(4개)도 받는다
-    .min(4)
-    .max(5),
+    // 0 일반 1 모험 2 왕 3 영웅 + 요일 던전 전용 4 악몽 5 지옥 6 심연(2026-10-29) 7 군주(챕터 3). 옛 데이터(4개)도 받는다.
+    // 5개(군주가 4번이던 2026-10-22 형식)는 번호가 달라 받지 않는다
+    .refine((a) => a.length === 4 || a.length === 8, '난이도는 4개(옛 형식) 또는 8개여야 합니다'),
   partyHpScale: z.array(z.number().positive()).min(1),
   aiHpWeight: z.number().min(0).max(1).default(1),
   raidAiHpWeight: z.number().min(0).max(1).default(1),
@@ -297,7 +297,7 @@ const dungeonsSchema = z.looseObject({
     thresholds: z.array(int).min(1),
     xpBonus: z.array(int).min(1),
   }),
-  minClearSeconds: z.array(z.number().min(0)).min(4).max(5),
+  minClearSeconds: z.array(z.number().min(0)).min(4).max(8),
   raidMinClearSeconds: z.record(z.string(), z.number().min(0)).default({}),
   /** 영웅 레이드(레이드 난이도 1): 그 레이드의 raidNumbers에 곱하는 배율. 없으면 영웅 레이드가 없다 */
   raidHeroic: z
@@ -330,7 +330,7 @@ const dungeonsSchema = z.looseObject({
         .optional(),
       raidReward: raidRewardSchema.optional(),
       clearXp: nonNegInt,
-      clearXpFloor: z.array(nonNegInt).min(4).max(5).default([0, 0, 0, 0]),
+      clearXpFloor: z.array(nonNegInt).min(4).max(8).default([0, 0, 0, 0]),
       xpMul: z.number().positive(),
       bossRoom: nonNegInt,
       openDays: z.array(z.string()),
@@ -350,7 +350,7 @@ const dungeonsSchema = z.looseObject({
       lordSure: z
         .looseObject({ material: z.string().min(1), min: z.number().int().positive(), max: z.number().int().positive() })
         .optional(),
-      referenceSeconds: z.array(z.number().positive()).min(4).max(5),
+      referenceSeconds: z.array(z.number().positive()).min(4).max(8),
       rewards: z.array(
         z.looseObject({ itemId: z.string().min(1), min: z.number().int().positive(), max: z.number().int().positive(), weight: nonNegInt }),
       ),

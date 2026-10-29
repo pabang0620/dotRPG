@@ -115,6 +115,7 @@ namespace DotRPG
         {
             if (run == null) return;
             if (run.State == DungeonRunState.Playing && Game.IsWorldRunning && !busy) run.Elapsed += Time.deltaTime;
+            UpdateWipe(); // [REVIVE 24]
             if (ReviveOpen) UpdateRevive();
             if (!roomReady || busy || run.State != DungeonRunState.Playing) return;
             if (Follower) return; // [PARTY NET] the host says when a room or the run is cleared

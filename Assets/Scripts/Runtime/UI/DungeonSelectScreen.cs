@@ -18,6 +18,7 @@ namespace DotRPG
     {
         const float ListW = 380f, RowH = 96f, RowGap = 8f, DetailX = 392f, DetailW = 828f, PanelTop = -52f, PanelH = 540f;
         const float DiffW = 150f, DiffH = 46f, DiffGap = 12f;
+        const float DiffRowW = 780f, DiffGapTight = 8f; // [TIERS 2026-10-29] row width when more than 5 difficulties show
         const float TabW = 200f;
         const float RaidDiffX = 520f, RaidDiffW = 110f; // [RAID] 레이드 / 영웅 buttons on the schedule line
 
@@ -55,8 +56,8 @@ namespace DotRPG
         }
 
         readonly List<Row> rows = new List<Row>();
-        readonly Button[] diffButtons = new Button[5]; // [CH3] + 군주
-        readonly Text[] diffLabels = new Text[5];
+        readonly Button[] diffButtons = new Button[(int)DungeonDifficulty.Lord + 1]; // [CH3][TIERS] 일반~심연 + 군주
+        readonly Text[] diffLabels = new Text[(int)DungeonDifficulty.Lord + 1];
         Button tabWeekday, tabNormal, tabRaid, tabMini, enterButton, partyButton, resetButton;
         Image banner;
         GameObject trailerBadge;
@@ -171,6 +172,10 @@ namespace DotRPG
                 new Vector2(24f + index * (DiffW + DiffGap), -188f), new Vector2(DiffW, DiffH), () => w.PickDifficulty((DungeonDifficulty)index), 20);
             w.diffButtons[index] = b;
             w.diffLabels[index] = b.GetComponentInChildren<Text>();
+            // [TIERS 2026-10-29] Up to 8 buttons share the 780 px row: the label shrinks instead of spilling over.
+            w.diffLabels[index].resizeTextForBestFit = true;
+            w.diffLabels[index].resizeTextMinSize = 12;
+            w.diffLabels[index].resizeTextMaxSize = 20;
         }
 
         /// <summary>Opens the window on the weekday tab or the raid tab.</summary>
@@ -307,7 +312,7 @@ namespace DotRPG
                 string nameColor = open ? "#ffffff" : "#8c96a8";
                 // [UI] Weekday dungeons show their level span too (normal to the hardest difficulty), like the raids.
                 string lv = r.def.isRaid ? $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel} · "
-                    : $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel}~{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Hero).recommendedLevel} · ";
+                    : $"Lv.{DungeonDatabase.DifficultyFor(r.def, DungeonDifficulty.Normal).recommendedLevel}~{DungeonDatabase.DifficultyFor(r.def, (DungeonDifficulty)(DungeonDatabase.ShownDifficultyCount(r.def) - 1)).recommendedLevel} · "; // [TIERS] hardest shown
                 r.text.text = $"<size=24><b><color={nameColor}>{L.T(r.def.name)}</color></b></size>\n<color=#b8c4d8>{lv}{L.T(r.def.themeName)} · {L.T(DungeonDatabase.OpenDaysLabel(r.def))}</color>\n<size=15><color=#ffe066>{L.T(r.def.specialty)}</color></size>";
                 r.tag.text = KindBadge(r.def) + "\n" + (r.def.always ? L.T("<color=#8fe28f><b>매일</b></color>") : open ? L.T("<color=#8fe28f><b>오늘 개방</b></color>") : L.T("<color=#8c96a8>닫힘</color>"));
                 // Open today: a warm glow on the row so it reads as the one to play.
@@ -333,16 +338,20 @@ namespace DotRPG
             info.text = L.F("<color=#ffe066>보스</color> {0}    <color=#ffe066>특징 몬스터</color> {1}", L.T(def.bossName), L.T(def.featureMonster)) + "\n" +
                         L.F("<color=#b8c4d8>방 {0}개 (보스 포함) · 최대 {1}인 · 부활 1인 {2}회 (파티 {3}회)</color>", def.RoomCount, def.maxParty, numbers.revives, numbers.revives + DungeonDatabase.PartyReviveBonus);
 
+            int shownCount = def.isRaid ? (int)DungeonDatabase.RaidHeroic + 1 : DungeonDatabase.ShownDifficultyCount(def);
+            // [TIERS 2026-10-29] Weekday dungeons show 7 or 8 buttons: they share the row (old 5-button size up to 5).
+            float diffW = shownCount <= 5 ? DiffW : (DiffRowW - (shownCount - 1) * DiffGapTight) / shownCount;
+            float diffGap = shownCount <= 5 ? DiffGap : DiffGapTight;
             for (int i = 0; i < diffButtons.Length; i++)
             {
                 var d = (DungeonDifficulty)i;
-                bool show = def.isRaid ? i <= (int)DungeonDatabase.RaidHeroic : i < DungeonDatabase.ShownDifficultyCount(def); // [CH3] 군주: chapter 3 open, weekday only
+                bool show = i < shownCount; // [CH3] 군주: chapter 3 open, weekday only; [TIERS] 악몽~심연 weekday only
                 diffButtons[i].gameObject.SetActive(show);
                 if (!show) continue;
                 // Raid: two small buttons on the schedule line (the reward lines keep their place below).
                 var rt = diffButtons[i].GetComponent<RectTransform>();
-                rt.anchoredPosition = def.isRaid ? new Vector2(RaidDiffX + i * (RaidDiffW + DiffGap), -154f) : new Vector2(24f + i * (DiffW + DiffGap), -188f);
-                rt.sizeDelta = def.isRaid ? new Vector2(RaidDiffW, 32f) : new Vector2(DiffW, DiffH);
+                rt.anchoredPosition = def.isRaid ? new Vector2(RaidDiffX + i * (RaidDiffW + DiffGap), -154f) : new Vector2(24f + i * (diffW + diffGap), -188f);
+                rt.sizeDelta = def.isRaid ? new Vector2(RaidDiffW, 32f) : new Vector2(diffW, DiffH);
                 bool unlocked = progress.IsUnlocked(def, d);
                 bool sel = d == difficulty;
                 var best = progress.BestRank(def.id, d);

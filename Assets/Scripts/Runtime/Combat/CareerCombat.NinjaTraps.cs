@@ -67,7 +67,7 @@ namespace DotRPG
         {
             Vector2 Origin() => clone != null ? clone.Center : owner.Center;
             Vector2 at = Origin() + c.dir * .4f;
-            float size = c.n.radius * 2.2f;
+            float size = c.n.radius * 2.6f; // [VFX 2026-10-29] was 2.2 (the hits use c.n.radius, not the picture)
             var star = CareerFx.Gen("n_fuma", "f_wave", at, Vector2.zero, size, size, 20f, VfxLayer.Top, false,
                 clone != null ? CloneTint : SpecTint(c), 30f, true);
             float hoverFor = c.n.spec == 'b' && !float.IsNaN(c.n.duration) ? c.n.duration : FumaHover; // [ROGUE SPEC] 회전 풍마
@@ -120,7 +120,7 @@ namespace DotRPG
             {
                 float a = i * Mathf.PI * 2f / count + Mathf.PI * .5f;
                 Vector2 spot = point + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * ring;
-                var view = CareerFx.Gen("n_tag", "f_spark", spot, Vector2.zero, .7f, .6f, 10f, VfxLayer.AtFeet, false, null, BombFuse + 1.5f, true);
+                var view = CareerFx.Gen("n_tag", "f_spark", spot, Vector2.zero, 1.05f, .9f, 10f, VfxLayer.AtFeet, false, null, BombFuse + 1.5f, true); // [VFX 2026-10-29] was .7 / .6
                 tags.Add((spot, view));
             }
             float fuse = Time.time + BombFuse;
@@ -152,7 +152,8 @@ namespace DotRPG
 
         void BombBlast(Run c, Vector2 at)
         {
-            CareerFx.Gen("m2_fire_explosion", "impact", at, Vector2.zero, c.n.radius * 2f, c.n.radius / 1.7f, 26f, VfxLayer.Top, false, Tint(c, NinjaOrange));
+            CareerFx.Gen("m2_fire_explosion", "impact", at, Vector2.zero, c.n.radius * 2.4f, c.n.radius / 1.4f, 26f, VfxLayer.Top, false, Tint(c, NinjaOrange)); // [VFX 2026-10-29] was x2 / 1.7
+            SkillVisuals.Flash(at, new Color(1f, .85f, .55f, .6f), c.n.radius * 1.6f, .14f);
             ImpactSound("c_heavy", .7f);
             int damage = Mathf.Max(1, Mathf.RoundToInt(c.n.damage * (c.n.spec == 'a' ? BombOneMul : c.n.spec == 'b' ? BombFieldMul : 1f))); // [ROGUE SPEC]
             float root = c.n.spec == 'a' && !float.IsNaN(c.n.duration) ? c.n.duration : BombRoot;

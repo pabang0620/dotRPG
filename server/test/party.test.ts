@@ -385,9 +385,10 @@ describe('자동 매칭', () => {
     const b = await newHero(app);
     await createParty(app, b);
     expect((await queue(b)).body.errors.code).toBe('ALREADY_IN_PARTY');
-    // 챕터 3: 4는 군주 난이도라 형식은 맞고(422, 입장 규칙에서 거부), 범위를 벗어난 5가 입력 오류다
-    expect((await queue(a, { difficulty: 5 })).status).toBe(400);
+    // 2026-10-29: 4~6(악몽·지옥·심연)과 7(군주)은 형식은 맞고(422, 입장 규칙에서 거부), 범위를 벗어난 8이 입력 오류다
+    expect((await queue(a, { difficulty: 8 })).status).toBe(400);
     expect((await queue(a, { difficulty: 4 })).status).toBe(422);
+    expect((await queue(a, { difficulty: 7 })).status).toBe(422);
     expect((await queue(a, { dungeon_id: 'smelter' })).body.errors.code).toBe('DUNGEON_CLOSED_TODAY');
     expect((await queue(a)).status).toBe(200);
     expect((await createParty(app, a)).body.errors.code).toBe('IN_QUEUE');

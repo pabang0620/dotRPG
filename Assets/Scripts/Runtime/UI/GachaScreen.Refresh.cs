@@ -74,6 +74,7 @@ namespace DotRPG
             one.interactable = ten.interactable = online && StarShopClient.Loaded && !busy;
             RefreshTierPicker(!hasPity && !Sealed && online && StarShopClient.Loaded);
             RefreshCeiling(online);
+            RefreshAuto(online); // [GACHA 2026-10-29]
             if (rateModal.gameObject.activeSelf)
             {
                 rateText.text = RateText();

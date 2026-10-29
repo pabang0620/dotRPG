@@ -234,7 +234,7 @@ namespace DotRPG
                 // 투척술 is now a plain upgrade: throw damage +10% (+5% a rank) and +1 m reach.
                 S(n,0,"n_throw","투척술","닌자의 기본 공격은 쿠나이 투척이다(0.3초, 6m, 첫 적에게 꽂힘, 빗나가거나 꽂힌 쿠나이는 4초 남는다). 투척 피해 +10%(랭크당 +5%), 사거리 +1m.","throw",10,0,0,0,0,0,4),
                 // [NINJA 2026-10-23] User: the ninja fights at range. The smoke bomb is thrown at the pack in front (up to 6 m) while I leap back.
-                S(n,1,"n_veil","연막 도약","뒤로 4m 물러나며 앞쪽 6m 안의 적 무리에 연막탄을 던진다(반경 2.5m). 연막 안 적은 피해를 받고 2초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,2),
+                S(n,1,"n_veil","연막 도약","뒤로 4m 물러나며 앞쪽 6m 안의 적 무리에 연막탄을 던진다(반경 2.5m). 연막 안 적은 피해를 받고 4초 동안 공격하지 못한다(보스는 짧게).","veil",1.7f,14,12,4,2.5f,.05f,4), // [2026-10-29] 2s -> 4s (user: smoke too short)
                 // [NINJA 2026-10-23] User: "분신 버프, 분신은 데미지의 60%, 캐릭터와 동일한 스킬 사용". The clones copy every attack of mine
                 // (basic attack included, same skill, same direction) at 60% each; moving and setting skills are not copied.
                 // Cooldown 57 -> 40 s, 8 s (rank-scaled): 2 x 60% x 8/40 = +24% on average, the old 25% clones' 1.235 (plan 2.4, 3.2).
@@ -246,7 +246,7 @@ namespace DotRPG
                 S(n,7,"n_bomb","기폭 쿠나이","목표 지점 둘레에 부적 붙은 쿠나이 5개를 박는다. 적이 가까이 오거나 2초가 지나면 하나씩 터진다(반경 1.2m, 1초 속박, 보스 0.3초).","bomb",1.4f,26,12,7,1.2f,.25f,0,5),
                 // [NINJA 2026-10-23] User: "닌자는 표창 와다다다 던지는 걸로 ... 쳐다보는 방향으로". 24 stars in 3 s along the way I look
                 // (raw 16 hits / 2 s, x1.5), 9 m through every monster: 0.6667 x 24 = 16.0, 분신 난무's one-cast total.
-                S(n,8,"n_awake","표창 난사","바라보는 방향으로 3초 동안 표창 24개를 연달아 던진다. 표창은 9m를 날아가며 길 위의 적을 모두 꿰뚫는다.","starstorm",.6667f,60,48,9,.3f,0,2,16),
+                S(n,8,"n_awake","표창 난사","바라보는 방향으로 3초 동안 표창 72개를 연달아 던진다. 표창은 9m를 날아가며 길 위의 적을 모두 꿰뚫는다.","starstorm",.6667f,60,48,9,.3f,0,2,48), // [2026-10-29] stars x3 (user: awakening too weak), total x3
             };
             // i18n-names-end
         }

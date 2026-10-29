@@ -148,7 +148,8 @@ describe('상한 식 (12.2) 순수 함수', () => {
     expect(cap.xp).toBe((16_200 + 55_200) * PARTY_XP_CAP_MUL + 2 * 43_477 + 2 * 10_092);
     // 활동 시간 0이면 덩어리만 허용된다(HTTP 봇)
     expect(capsFor(caps(), '24h', [bucket({ activeSeconds: 0 })], 18).xp).toBe(2 * 43_477 + 2 * 10_092);
-    expect(capsFor(caps(), '7d', [], CHAPTER2_LEVEL_CAP).goldEq).toBe(8 * 12_240 + 3 * 4_500 + 2 * 18_000);
+    // 2026-10-29: Lv34~40 대역은 지옥(rewardMul 3.5)까지 들어가 요일 던전 하루 골드가 12,240에서 12,600이 됐다
+    expect(capsFor(caps(), '7d', [], CHAPTER2_LEVEL_CAP).goldEq).toBe(8 * 12_600 + 3 * 4_500 + 2 * 18_000);
   });
 
   it('절대 하한: 광석 150은 임계를 넘어도 무시, 250은 위반. 경매 순유입은 비율 + 하한', () => {

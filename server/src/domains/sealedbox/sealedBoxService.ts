@@ -4,7 +4,7 @@
 import { getConfig } from '../../config/env';
 import { getPool } from '../../db/pool';
 import { getGameData } from '../../gamedata/loader';
-import { getSealedBox, sealedTable, type RatedRow, type SealedData } from '../../gamedata/sealedBox';
+import { getSealedBox, sealedTable, starBoxExpected, type RatedRow, type SealedData, type StarBoxAmount } from '../../gamedata/sealedBox';
 import { AppError } from '../../utils/AppError';
 import { getRng } from '../../utils/rng';
 import { assertNoHold } from '../antiabuse/holds';
@@ -57,6 +57,23 @@ export function pickRow(table: RatedRow[]): RatedRow {
   return table[table.length - 1] as RatedRow;
 }
 
+/** 별조각 상자 수량 하나를 고른다(누적 확률, 같은 난수 해상도). 마지막 줄은 부동소수 오차를 받는다 */
+export function pickStarAmount(amounts: StarBoxAmount[]): StarBoxAmount {
+  const roll = (getRng().int(0, ROLL_SCALE) / ROLL_SCALE) * 100;
+  let acc = 0;
+  for (const a of amounts) {
+    acc += a.rate;
+    if (roll < acc) return a;
+  }
+  return amounts[amounts.length - 1] as StarBoxAmount;
+}
+
+/** 확률 보기 창용 별조각 상자 표(sealed-2). 없으면 null */
+export function starBoxView(d: SealedData = getSealedBox()) {
+  if (!d.starBox) return null;
+  return { item_key: d.starBox.item_key, amounts: d.starBox.amounts.map((a) => ({ stars: a.stars, rate: a.rate })), expected: starBoxExpected(d) };
+}
+
 function tableView(table: RatedRow[]) {
   return table.map(({ row, rate, mult }) => ({
     item_key: (row.rewards[0] as ItemCount).item_key,
@@ -84,6 +101,7 @@ export async function summary(accountId: number) {
     booster: boosterView(s.gauge, d),
     table: tableView(sealedTable(d, false)),
     boosted_table: tableView(sealedTable(d, true)),
+    star_box: starBoxView(d),
   };
 }
 
@@ -156,7 +174,7 @@ export function pull(accountId: number, characterUuid: string, body: PullBody): 
   });
 }
 
-/** POST /characters/:uuid/items/open: 확률 상자(+N 강화권 또는 마력 정수), 봉인된 상자 아이템, 강화 재료 상자 */
+/** POST /characters/:uuid/items/open: 확률 상자(+N 강화권 또는 마력 정수), 봉인된 상자 아이템, 별조각 상자(무료 별조각), 강화 재료 상자 */
 export function openItem(accountId: number, characterUuid: string, body: OpenBody): Promise<StoredResult> {
   const { request_id: requestId, ...payload } = body;
   return runEconomy({
@@ -171,13 +189,30 @@ export function openItem(accountId: number, characterUuid: string, body: OpenBod
       const info = items.get(body.item_key);
       // 일일 완료 상자에서 나오는 강화 재료 상자(daily_quests.json chests.matBox)
       if (info && isMatBox(body.item_key)) return openMatBoxIn(ctx, body.item_key);
-      if (!info || (info.use !== 'LuckBox' && info.use !== 'SealedBox')) throw new AppError(422, '열 수 없는 아이템입니다.', 'NOT_OPENABLE');
+      if (!info || (info.use !== 'LuckBox' && info.use !== 'SealedBox' && info.use !== 'StarBox')) throw new AppError(422, '열 수 없는 아이템입니다.', 'NOT_OPENABLE');
       await assertNoHold(ctx.client, accountId, ctx.char.id);
       const have = await ctx.stackCount('bag', body.item_key);
       if (have < 1) throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have });
       await tickets.lockAccount(ctx.client, accountId);
       const consumed = await ctx.removeItem('bag', body.item_key, 1, 'box_open', body.item_key);
       if (consumed === null) throw new AppError(422, '수량이 모자랍니다.', 'NOT_ENOUGH_ITEMS', { need: 1, have });
+
+      // 별조각 상자(sealed-2): 무료 별조각만 준다(원장 star_box, paid_delta 0). 락 순서: 캐릭터 -> 계정 -> 별조각 지갑
+      if (info.use === 'StarBox') {
+        const sb = d.starBox;
+        if (!sb || sb.item_key !== body.item_key) throw new Error(`별조각 상자 ${body.item_key} 의 표가 sealed_box.json starBox에 없습니다`);
+        const picked = pickStarAmount(sb.amounts);
+        const credit = await wallets.creditFree(ctx.client, { accountId, reason: 'star_box', amount: picked.stars, ref: body.item_key, requestId });
+        const result: OpenResult = { item_key: 'stars', count: picked.stars, boosted: false, tier: 'common', rewards: [{ item_key: 'stars', count: picked.stars }], row_id: `stars_${picked.stars}`, grade: 'normal' };
+        await repo.insertPulls(ctx.client, {
+          accountId,
+          characterId: ctx.char.id,
+          requestId,
+          version: d.ratesVersion,
+          rows: [{ seq: 0, source: 'star_box', rowId: result.row_id, itemKey: 'stars', count: picked.stars, tier: 'common', boosted: false, rate: picked.rate, gaugeBefore: null, gaugeAfter: null }],
+        });
+        return { status: 200, data: { item_key: body.item_key, results: [result], stars: { balance: credit.balance, paid_balance: credit.paidBalance }, delta: ctx.delta() } };
+      }
 
       if (info.use === 'LuckBox') {
         const ticketKey = `ticket_enh${info.power}`;

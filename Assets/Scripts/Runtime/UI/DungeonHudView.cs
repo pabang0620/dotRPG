@@ -260,9 +260,16 @@ namespace DotRPG
                 bannerBg.color = new Color(0f, 0f, 0f, 0.45f * Mathf.Clamp01(age / 0.2f));
             }
 
-            bool reviveShown = director.ReviveOpen;
+            float wipe = director.WipeRemaining; // [REVIVE 24]
+            bool reviveShown = director.ReviveOpen || wipe > 0f;
             if (revive.gameObject.activeSelf != reviveShown) revive.gameObject.SetActive(reviveShown);
-            if (reviveShown)
+            if (reviveShown && !director.ReviveOpen)
+            {
+                // [REVIVE 24] Everyone is down and this PC has no revive window: the countdown to leaving.
+                reviveTitle.text = L.F("파티 전멸  <color=#ff8a7a>{0}</color>", Mathf.CeilToInt(wipe));
+                reviveBody.text = L.T("아무도 부활하지 않으면 던전에서 나갑니다.");
+            }
+            else if (reviveShown)
             {
                 int left = Mathf.CeilToInt(director.ReviveRemaining);
                 reviveTitle.text = L.F("부활하시겠습니까?  <color=#ffe066>{0}</color>", left);
@@ -270,7 +277,8 @@ namespace DotRPG
                 string coin = ReviveCoins.Free ? L.F("Lv.{0}까지 무료", ReviveCoins.FreeUntilLevel) : ReviveCoins.Coins > 0 ? L.F("부활 코인 1 사용 (보유 {0})", ReviveCoins.Coins) : L.T("<color=#ff8a7a>부활 코인 없음</color>");
                 string pool = run.Humans > 1 ? L.F(" (파티 {0}회)", run.PartyRevivesLeft) : "";
                 reviveBody.text = L.F("남은 부활 <color=#ffe066>{0}</color>회{1} · {2} · 완전 회복 + 3초 무적", run.RevivesLeft, pool, coin) + "\n" +
-                                  L.F("<color=#b8c4d8>[Enter / {0}] 부활    [ESC] 포기</color>", input.GetBindingLabel(GameAction.Attack));
+                                  L.F("<color=#b8c4d8>[{0}] 부활    [ESC] 포기</color>", input.GetBindingLabel(GameAction.Submit)); // [REVIVE 24] attack no longer revives
+                if (wipe > 0f) reviveTitle.text = L.F("파티 전멸 · 부활하시겠습니까?  <color=#ff8a7a>{0}</color>", Mathf.CeilToInt(wipe));
             }
         }
 

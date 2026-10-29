@@ -16,7 +16,8 @@ namespace DotRPG
         const int Rows = 8;
 
         Text header, pageText;
-        Button buyPass, pagePrev, pageNext;
+        Button buyPass, pagePrev, pageNext, claimAll;
+        bool batchRunning; // [UI 2026-10-29] 모두 받기 in progress
         int page;
         sealed class Row { public Image bg; public Text level, free, pass; public Button freeBtn, passBtn; }
         readonly List<Row> rows = new List<Row>();
@@ -52,6 +53,8 @@ namespace DotRPG
             w.pagePrev = Button(w.content, "Prev", "◀", "ui_btngray", br, br, new Vector2(-140f, 0f), UiSizes.PageButton, () => w.Turn(-1), UiSizes.PageFont);
             w.pageText = Label(w.content, "Page", "", 18, br, br, new Vector2(-54f, 0f), new Vector2(80f, 34f), TextAnchor.MiddleCenter);
             w.pageNext = Button(w.content, "Next", "▶", "ui_btngray", br, br, new Vector2(0f, 0f), UiSizes.PageButton, () => w.Turn(1), UiSizes.PageFont);
+            // [UI 2026-10-29] 모두 받기 (bottom left): every free reward reached, and every pass reward when the pass is owned.
+            w.claimAll = Button(w.content, "ClaimAll", L.T("모두 받기"), "ui_btn", new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(200f, 44f), w.ClaimAll, 18);
             LevelRewardClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             return w;
         }
@@ -104,6 +107,49 @@ namespace DotRPG
                 () => LevelRewardClient.BuyPass(Answer), true);
         }
 
+        // ---------- [UI 2026-10-29] 모두 받기 ----------
+
+        static bool NextClaim(out int level, out bool pass)
+        {
+            level = 0; pass = false;
+            foreach (var t in LevelRewardClient.Tiers) if (LevelRewardClient.CanClaim(t)) { level = t.level; return true; }
+            foreach (var t in LevelRewardClient.PassTiers) if (LevelRewardClient.CanClaim(t)) { level = t.level; pass = true; return true; }
+            return false;
+        }
+
+        void ClaimAll()
+        {
+            if (batchRunning || LevelRewardClient.Busy || !NextClaim(out _, out _)) return;
+            StartCoroutine(ClaimAllRoutine());
+        }
+
+        /// <summary>One claim at a time (each with its own request_id), waiting for each answer and the reload; stops at the first error.</summary>
+        System.Collections.IEnumerator ClaimAllRoutine()
+        {
+            batchRunning = true;
+            Refresh();
+            var done = new List<string>();
+            string error = null;
+            for (int guard = 0; guard < 120; guard++)
+            {
+                float until = Time.unscaledTime + 15f;
+                while ((LevelRewardClient.Busy || !LevelRewardClient.Loaded) && Time.unscaledTime < until) yield return null; // the list reloads after each claim
+                if (!NextClaim(out int level, out bool pass)) break;
+                bool? result = null; string message = null;
+                System.Action<bool, string> answer = (ok, msg) => { result = ok; message = msg; };
+                if (pass) LevelRewardClient.ClaimPass(level, answer); else LevelRewardClient.Claim(level, answer);
+                while (result == null && Time.unscaledTime < until) yield return null;
+                if (result != true) { error = message ?? L.T("서버에 연결할 수 없습니다."); break; }
+                done.Add(message);
+            }
+            batchRunning = false;
+            Game.Audio.PlaySfx(done.Count > 0 && error == null ? "quest" : "cancel");
+            string text = done.Count > 0 ? L.F("모두 받기: {0}건", done.Count) + "\n" + string.Join("\n", done) : "";
+            if (error != null) text += (text.Length > 0 ? "\n" : "") + L.F("<color=#ff9f7a>멈춤: {0}</color>", error);
+            if (text.Length > 0) GameEvents.RaiseToast(text);
+            if (gameObject.activeInHierarchy) Refresh();
+        }
+
         void Answer(bool ok, string msg)
         {
             Game.Audio.PlaySfx(ok ? "quest" : "cancel");
@@ -126,6 +172,8 @@ namespace DotRPG
             buyPass.gameObject.SetActive(online && LevelRewardClient.Loaded);
             TextOf(buyPass).text = LevelRewardClient.PassOwned ? L.T("<color=#8fe28f>성장 패스 보유 중</color>") : L.F("성장 패스 구매 · 별조각 {0:N0}", LevelRewardClient.PassPrice);
             buyPass.interactable = !LevelRewardClient.PassOwned && !LevelRewardClient.Busy;
+            claimAll.gameObject.SetActive(online);
+            claimAll.interactable = !batchRunning && NextClaim(out _, out _);
 
             levels.Clear();
             foreach (var t in LevelRewardClient.Tiers) if (!levels.Contains(t.level)) levels.Add(t.level);

@@ -38,7 +38,13 @@ describe('지문과 upsert', () => {
     const x = buildRatesMarkdown(dir, 'ko', new Date('2026-01-01T00:00:00Z')).replace(/생성 시각: [^ ]+ /, '');
     const y = buildRatesMarkdown(dir, 'ko', new Date('2030-06-01T00:00:00Z')).replace(/생성 시각: [^ ]+ /, '');
     expect(x).toBe(y);
-    expect(a.versions).toMatchObject({ cosmetic: expect.any(String), sealed: expect.any(String), raid: expect.any(String) });
+    expect(a.versions).toMatchObject({ cosmetic: expect.any(String), sealed: 'sealed-2', raid: expect.any(String) });
+    // sealed-2: 봉인된 상자 안의 별조각 상자도 열었을 때의 확률을 따로 공개한다(강화권 상자와 같은 방식)
+    expect(a.content).toContain('## 별조각 상자 (확률표 버전 sealed-2)');
+    expect(a.content).toContain('| 3000 | 1.000% |');
+    expect(a.content).toContain('| 별조각 상자 x1 | 4.600% |');
+    expect(a.content).toContain('| +10 강화권 x1 | 0.800% |');
+    expect(buildRatesMarkdown(dir, 'en')).toContain('## Star Shard Box (rate table version sealed-2)');
   });
 
   it('같은 지문이면 한 줄만 두고 last_seen_at 만 갱신한다', async () => {

@@ -12,6 +12,7 @@ import * as econRepo from '../economy/economyRepository';
 import { AnomalyError, runEconomy, type StoredResult } from '../economy/economyService';
 import * as repo from './killRepository';
 import { parseItemKey } from '../../utils/itemKey';
+import { rollHidden } from '../../utils/hiddenOption';
 import { aoeCapFor, attackCap, effectiveHp, monsterXp, powerAllows, rollKillDrops, rollMapDrops } from './killRules';
 import { hasSpreadSpec, type CareerState } from '../characters/careerRules';
 import { rejected, resolveFieldTarget, type KillTarget } from './killTarget';
@@ -175,7 +176,9 @@ async function processKill(ctx: EconCtx, body: KillBody) {
       ...rollMapDrops(eco, target.mapId, def.id, getRng(), target.field?.dropMul ?? 1), // [CH3] 사냥터 퀘스트 수집품
     ];
     for (const spec of rolled) {
-      const row = await repo.insertDrop(ctx.client, ctx.char.id, killId, spec.itemKey, spec.count, expiresAt, ctx.now);
+      // 히든 옵션: 유니크·레전더리 무기·상의·하의 드롭은 2%로 옵션이 붙는다(별도 난수 흐름, 드롭 굴림 순서는 그대로)
+      const itemKey = spec.itemKey === 'gold' ? spec.itemKey : rollHidden(eco, spec.itemKey);
+      const row = await repo.insertDrop(ctx.client, ctx.char.id, killId, itemKey, spec.count, expiresAt, ctx.now);
       drops.push({ id: row.uuid, item_key: row.item_key, count: row.count, expires_at: row.expires_at.toISOString() });
     }
   }

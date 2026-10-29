@@ -1,0 +1,9 @@
+{
+ " <size=16><color=#b8c4d8>Lv.{0} · {1} 기준</color></size>": " <size=16><color=#b8c4d8>Niv.{0} · selon {1}</color></size>",
+ "{0}세트: {1}": "{0} pièces : {1}",
+ "세트 Lv.{0} ({1}/{2})": "Ensemble Niv.{0} ({1}/{2})",
+ "세트 효과 ({0}/{1})": "Bonus d'ensemble ({0}/{1})",
+ "세트 효과 없음": "Aucun bonus d'ensemble",
+ "장비 공격력 +{0}%": "Attaque de l'équipement +{0}%",
+ "장비 체력 +{0}%": "PV de l'équipement +{0}%"
+}

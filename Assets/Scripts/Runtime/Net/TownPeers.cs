@@ -166,6 +166,10 @@ namespace DotRPG
 
         public static void Gone(string id) => instance?.Remove(id);
 
+        /// <summary>[PARTY 43] This character is drawn on my screen right now (same town and channel).</summary>
+        public static bool IsShown(string characterId) =>
+            instance != null && !string.IsNullOrEmpty(characterId) && instance.peers.TryGetValue(characterId, out var p) && p.body != null;
+
         Peer Make(string id, string name, int level, CharacterClass cls, int career, string skin, string weapon, Vector2 at, Facing facing)
         {
             if (!System.Enum.IsDefined(typeof(CharacterClass), cls)) return null;

@@ -90,5 +90,6 @@
  "게임 데이터 검증 실패: enhance.inheritTiers {0}": "Kiểm tra dữ liệu game thất bại: enhance.inheritTiers {0}",
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} khác cấp hoặc vị trí",
  "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Có dòng yêu cầu nguyên liệu nhưng thiếu coreItem, shardItem hoặc sealItem",
- "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Hóa thành hình bóng tối trong 6 giây: mọi sát thương tấn công +18%, tốc độ đánh +20%. Khi biến hình kết thúc, phát nổ trong bán kính 7m (480%)."
+ "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Hóa thành hình bóng tối trong 6 giây: mọi sát thương tấn công +18%, tốc độ đánh +20%. Khi biến hình kết thúc, phát nổ trong bán kính 7m (480%).",
+ "난이도는 4개(옛 형식) 또는 8개여야 합니다": "Phải có 4 độ khó (định dạng cũ) hoặc 8"
 }

@@ -183,6 +183,10 @@ namespace DotRPG
                 var diff = (DungeonDifficulty)i;
                 var b = Button(picker, "Diff_" + i, PartyFinderRules.DifficultyName(diff), "ui_btngray", tl, tl,
                     new Vector2(Pad + i * (diffW + 6f), diffTop - 32f), new Vector2(diffW, BtnH), () => PickDifficulty(diff), 17);
+                var label = TextOf(b); // [TIERS 2026-10-29] 7~8 buttons on one row: long names shrink instead of spilling
+                label.resizeTextForBestFit = true;
+                label.resizeTextMinSize = 10;
+                label.resizeTextMaxSize = 17;
                 pickDiffs.Add((b, diff));
             }
             picker.gameObject.SetActive(false);
@@ -210,7 +214,7 @@ namespace DotRPG
             bool raid = cur != null && cur.isRaid;
             foreach (var (btn, diff) in pickDiffs)
             {
-                btn.interactable = !raid && (diff != DungeonDifficulty.Lord || DungeonDatabase.LordOpen(cur)); // [CH3] weekday dungeons only
+                btn.interactable = !raid && (cur == null || DungeonDatabase.Offers(cur, diff)); // [CH3][TIERS] 악몽~군주: weekday dungeons only
                 string name = PartyFinderRules.DifficultyName(diff);
                 TextOf(btn).text = !raid && diff == Client.Difficulty ? $"<color=#ffd34a>▶ {name}</color>" : name;
             }
@@ -230,6 +234,7 @@ namespace DotRPG
             var d = DungeonDatabase.Get(Client.DungeonId);
             if (d != null && d.isRaid) { SetStatus(L.T("레이드는 난이도가 하나입니다."), false); return; }
             if (next == DungeonDifficulty.Lord && !DungeonDatabase.LordOpen(d)) { SetStatus(L.T("군주 난이도는 요일 던전에만 있습니다."), false); return; }
+            if (d != null && !DungeonDatabase.Offers(d, next)) { SetStatus(L.F("{0} 난이도는 요일 던전에만 있습니다.", L.T(PartyFinderRules.DifficultyName(next))), false); return; } // [TIERS]
             if (next == Client.Difficulty) return;
             Client.SetTarget(Client.DungeonId, next, (ok, msg) => { Done(ok, msg, L.F("난이도를 {0}{1} 바꿨습니다.", L.T(PartyFinderRules.DifficultyName(next)), Ro(PartyFinderRules.DifficultyName(next)))); RefreshPicker(); });
         }

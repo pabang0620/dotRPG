@@ -595,7 +595,7 @@ CREATE TABLE dungeon_runs (
   uuid          UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   character_id  BIGINT NOT NULL REFERENCES characters(id),
   dungeon_id    TEXT NOT NULL,
-  difficulty    SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
+  difficulty    SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 7),
   party_size    SMALLINT NOT NULL DEFAULT 1 CHECK (party_size BETWEEN 1 AND 4),
   state         TEXT NOT NULL DEFAULT 'playing'
                 CHECK (state IN ('playing', 'cleared', 'failed', 'abandoned', 'held')),
@@ -670,7 +670,7 @@ CREATE TABLE parties (
   uuid                UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   leader_character_id BIGINT NOT NULL REFERENCES characters(id),
   dungeon_id          TEXT NOT NULL,
-  difficulty          SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
+  difficulty          SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 7),
   max_members         SMALLINT NOT NULL CHECK (max_members BETWEEN 2 AND 4),
   min_power           INT NOT NULL DEFAULT 0 CHECK (min_power >= 0),
   message             TEXT NOT NULL DEFAULT '' CHECK (char_length(message) <= 30),
@@ -749,7 +749,7 @@ CREATE TABLE party_runs (
   uuid               UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   party_id           BIGINT NOT NULL REFERENCES parties(id),
   dungeon_id         TEXT NOT NULL,
-  difficulty         SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
+  difficulty         SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 7),
   state              TEXT NOT NULL DEFAULT 'gathering' CHECK (state IN ('gathering', 'playing', 'ended', 'cancelled')),
   host_character_id  BIGINT NOT NULL REFERENCES characters(id),
   host_epoch         INT NOT NULL DEFAULT 1 CHECK (host_epoch >= 1),
@@ -2108,7 +2108,7 @@ CREATE TABLE dungeon_sweeps (
   uuid         UUID NOT NULL UNIQUE DEFAULT gen_random_uuid(),
   character_id BIGINT NOT NULL REFERENCES characters(id),
   dungeon_id   TEXT NOT NULL,
-  difficulty   SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 4),
+  difficulty   SMALLINT NOT NULL CHECK (difficulty BETWEEN 0 AND 7),
   reset_day    TIMESTAMPTZ NOT NULL,
   lot_id       BIGINT NOT NULL REFERENCES sweep_ticket_lots(id),
   xp_granted   INT NOT NULL CHECK (xp_granted >= 0),
@@ -3376,6 +3376,7 @@ ALTER TABLE account_week_counters ADD CONSTRAINT account_week_counters_kind_chec
 COMMENT ON COLUMN account_week_counters.kind IS 'sweep_buy, direct_clear, activity_claim + seal_exchange(아카브 교환 횟수, 주 2회)';
 
 -- 0052_lord_difficulty: 요일 던전 군주 난이도(4). dungeon_runs·parties·party_runs·dungeon_sweeps의 difficulty CHECK를 0..4로(위 CREATE TABLE에 반영) (2026-10-22)
+-- 0060_weekday_tiers: 요일 던전 악몽(4)·지옥(5)·심연(6) 추가, 군주 4 -> 7. difficulty CHECK 0..7(위 CREATE TABLE에 반영), 저장된 4를 7로 (2026-10-29)
 
 -- 0053_boss_level: 월드·길드보스 시즌 보스 레벨(시즌 생성 때의 levelCap, 50이면 월드보스 체력 x2.0), 미니 던전 티어 40(Lv40~49) CHECK (2026-10-23)
 ALTER TABLE boss_seasons ADD COLUMN boss_level INT NOT NULL DEFAULT 40 CHECK (boss_level BETWEEN 1 AND 100);
@@ -3384,3 +3385,14 @@ ALTER TABLE mini_dungeon_runs DROP CONSTRAINT mini_dungeon_runs_tier_check;
 ALTER TABLE mini_dungeon_runs DROP CONSTRAINT mini_dungeon_runs_entry_level_check;
 ALTER TABLE mini_dungeon_runs ADD CONSTRAINT mini_dungeon_runs_tier_check CHECK (tier IN (10, 20, 30, 40));
 ALTER TABLE mini_dungeon_runs ADD CONSTRAINT mini_dungeon_runs_entry_level_check CHECK (entry_level BETWEEN 10 AND 49);
+
+-- 0057_gear_hidden_option: 장비 히든 옵션 키("id+강화(^계승)~옵션 글자")를 경매 등록 키 형식에 더한다 (2026-10-29)
+DO $$
+DECLARE c TEXT;
+BEGIN
+  SELECT conname INTO c FROM pg_constraint
+   WHERE conrelid = 'auction_listings'::regclass AND contype = 'c' AND pg_get_constraintdef(oid) LIKE '%item_key ~%';
+  IF c IS NOT NULL THEN EXECUTE format('ALTER TABLE auction_listings DROP CONSTRAINT %I', c); END IF;
+END $$;
+ALTER TABLE auction_listings ADD CONSTRAINT auction_listings_item_key_check
+  CHECK (item_key ~ '^[a-z][a-z0-9_]{0,39}(\+[1-9][0-9]?|\+(0|[1-9][0-9]?)\^[1-9]|\+(0|[1-9][0-9]?)(\^[1-9])?~[a-z])?$' AND item_key <> 'gold');

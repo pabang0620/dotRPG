@@ -1,6 +1,6 @@
-// 챕터 3 요일 던전 "군주" 난이도(4): 3장 잠금, Lv41 입장, 요일 던전만, 목록 노출, 추가 확정 재료(Docs/ch3/WORLD_AND_STORY.md 8절)
+// 챕터 3 요일 던전 "군주" 난이도(7, 2026-10-29 전에는 4): 3장 잠금, Lv41 입장, 요일 던전만, 목록 노출, 추가 확정 재료(Docs/ch3/WORLD_AND_STORY.md 8절)
 import { getPool } from '../src/db/pool';
-import { diffOf, hasLord, LORD_DIFFICULTY, LORD_MIN_LEVEL, rollLordBonus, shownDifficulties } from '../src/domains/dungeons/dungeonRules';
+import { diffOf, FIRST_WEEKDAY_ONLY, hasLord, LORD_DIFFICULTY, LORD_MIN_LEVEL, rollLordBonus, shownDifficulties } from '../src/domains/dungeons/dungeonRules';
 import { getGameData } from '../src/gamedata/loader';
 import { setClockOverride } from '../src/utils/clock';
 import { setRng } from '../src/utils/rng';
@@ -32,8 +32,8 @@ describe('군주 데이터', () => {
     expect(lord.map((d) => d.id).sort()).toEqual(['armory', 'gold_vein', 'mana_graveyard', 'smelter', 'training_forest']);
     for (const d of lord) {
       expect(d.lordSure).toBeDefined();
-      expect(d.referenceSeconds.length).toBe(5);
-      expect(d.clearXpFloor.length).toBe(5);
+      expect(d.referenceSeconds.length).toBe(LORD_DIFFICULTY + 1);
+      expect(d.clearXpFloor.length).toBe(LORD_DIFFICULTY + 1);
     }
     const material = (id: string) => eco.dungeons.byId.get(id)?.lordSure?.material;
     expect(['gold_vein', 'mana_graveyard', 'armory'].map(material)).toEqual(['mat_raid_xibak', 'mat_raid_xibak', 'mat_raid_xibak']);
@@ -55,7 +55,7 @@ describe('군주 데이터', () => {
 });
 
 describe('군주 입장과 목록', () => {
-  it('3장이 닫혀 있으면 422 CHAPTER_LOCKED, 목록에는 난이도 4개만', async () => {
+  it('3장이 닫혀 있으면 422 CHAPTER_LOCKED, 목록에는 심연까지 7개만', async () => {
     const app = buildApp();
     const h = await newHero(app);
     await seedLevel(h, 45);
@@ -65,7 +65,7 @@ describe('군주 입장과 목록', () => {
     const list = await get(app, h, '/dungeons');
     const gold = list.body.data.dungeons.find((d: { id: string }) => d.id === 'gold_vein');
     expect(gold.difficulties).toHaveLength(LORD_DIFFICULTY);
-    expect(shownDifficulties(getGameData().economy, getGameData().economy.dungeons.byId.get('gold_vein') as never, false)).toBe(4);
+    expect(shownDifficulties(getGameData().economy, getGameData().economy.dungeons.byId.get('gold_vein') as never, false)).toBe(LORD_DIFFICULTY);
   });
 
   it('3장이 열리면 요일 던전 목록에 군주가 보이고, Lv41부터 들어간다', async () => {
@@ -75,7 +75,7 @@ describe('군주 입장과 목록', () => {
     const gold = list.body.data.dungeons.find((d: { id: string }) => d.id === 'gold_vein');
     expect(gold.difficulties).toHaveLength(LORD_DIFFICULTY + 1);
     const normal = list.body.data.dungeons.find((d: { id: string }) => d.id === 'normal_canyon');
-    expect(normal.difficulties).toHaveLength(LORD_DIFFICULTY);
+    expect(normal.difficulties).toHaveLength(FIRST_WEEKDAY_ONLY); // 일반 던전은 영웅까지
 
     await seedLevel(h, LORD_MIN_LEVEL - 1);
     const low = await enter(app, h, 'gold_vein', LORD_DIFFICULTY);
@@ -98,7 +98,7 @@ describe('군주 입장과 목록', () => {
     expect(normal.body.errors.code).toBe('DUNGEON_UNKNOWN');
   });
 
-  it('난이도 5 이상은 입력 검증에서 거절된다', async () => {
+  it('난이도 8 이상은 입력 검증에서 거절된다', async () => {
     const app = buildApp({ CHAPTER3_OPEN: 'true' });
     const h = await newHero(app);
     const res = await enter(app, h, 'gold_vein', LORD_DIFFICULTY + 1);

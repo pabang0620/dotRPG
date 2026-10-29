@@ -11,7 +11,7 @@ namespace DotRPG
         // Docs/PLAN_CLASS_ROGUE.md 7절 8단계). Not in a release build: DevCapture only starts without DOTRPG_RELEASE.
         // -measureChapter3 1: opens chapter 3 offline for the whole run (level cap 50, 메마른 협곡, 군주, Lv50 boss room), put back at the end.
         // -measureCareers a,b: careers for every part; hunting also takes the base classes warrior, mage, rogue (Lv1-14 rows).
-        // -measureDiffs 0,4: dungeons: only these difficulties (4 = 군주); raids: 0 normal, 1 heroic.
+        // -measureDiffs 0,7: dungeons: only these difficulties (4 악몽, 5 지옥, 6 심연, 7 군주); raids: 0 normal, 1 heroic.
         // =====================================================================================================
 
         static readonly Career[] MeasureAllCareers = { Career.Fighter, Career.Guardian, Career.Arcanist, Career.Bishop, Career.Assassin, Career.Ninja };

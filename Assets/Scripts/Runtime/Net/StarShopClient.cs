@@ -201,7 +201,7 @@ namespace DotRPG
 
         static StarPullResult ReadPull(Dictionary<string, object> o) => new StarPullResult
         {
-            itemId = MiniJson.Str(o, "item_id", ""),
+            itemId = MiniJson.Str(o, "item_key", MiniJson.Str(o, "item_id", "")), // [HIDDEN] a gear pull with a hidden option sends its full key
             rarity = MiniJson.Str(o, "rarity", "common"),
             byPity = Flag(o, "by_pity"),
             hidden = Flag(o, "hidden"),

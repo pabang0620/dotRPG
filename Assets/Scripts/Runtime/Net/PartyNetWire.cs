@@ -26,7 +26,8 @@ namespace DotRPG
             ReviveRequest = 22, // [REVIVE] member -> host: seat byte (the coin is already paid)
             ReviveState = 23, // [REVIVE] host -> members: party revives used, seat byte, that seat's revives used
             VillageVote = 24, // [LEAVE] host -> members: seconds to answer "다 함께 마을로"
-            VillageAnswer = 25; // [LEAVE] member -> host: seat byte, agrees
+            VillageAnswer = 25, // [LEAVE] member -> host: seat byte, agrees
+            Wipe = 26; // [REVIVE 24] host -> members: seconds until the wiped party fails (float, 0 = someone got up)
     }
 
     /// <summary>

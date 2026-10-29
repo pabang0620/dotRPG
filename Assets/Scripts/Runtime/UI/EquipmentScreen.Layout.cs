@@ -78,6 +78,10 @@ namespace DotRPG
                 statCells[i] = t;
             }
             stats = statCells[0];
+            // [SET] One line of worn set bonuses right above the stat box.
+            setLine = UIFactory.Text(root, "SetLine", "", 18, Color.white, TextAnchor.MiddleLeft, true);
+            setLine.horizontalOverflow = HorizontalWrapMode.Overflow;
+            UIFactory.Place(setLine.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(124f, 118f), new Vector2(460f, 30f));
 
             // ----- Right: tabs + grid -----
             float gridW = Columns * Cell + (Columns - 1) * Gap;

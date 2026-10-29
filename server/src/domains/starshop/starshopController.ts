@@ -7,7 +7,10 @@ import * as service from './starshopService';
 import { claimGearCeiling } from './gearCeiling';
 import * as synthService from './starshopSynth';
 import * as cashValue from './cashValueService';
-import type { ClaimBody, CodexBodyT, CollectionBody, DismantleBody, ExchangeBody, ExchangeBuyBodyT, GearCeilingBody, GearDismantleBodyT, PullBody, SynthBody } from './starshopValidation';
+import { buyStarItem } from './starItemShop';
+import { convertCrystals } from './crystalConvert';
+import type { CrystalConvertBodyT } from './starshopValidation';
+import type { ClaimBody, CodexBodyT, CollectionBody, DismantleBody, ExchangeBody, ExchangeBuyBodyT, GearCeilingBody, GearDismantleBodyT, PullBody, StarItemBuyBodyT, SynthBody } from './starshopValidation';
 
 type P = { uuid: string };
 const acc = (res: Response) => getAccount(res.locals).id;
@@ -116,6 +119,24 @@ export async function codex(_req: Request, res: Response, next: NextFunction): P
   try {
     const { body, params } = getValidated<CodexBodyT, P>(res);
     sendStored(res, await cashValue.registerCodex(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function itemBuy(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<StarItemBuyBodyT, P>(res);
+    sendStored(res, await buyStarItem(acc(res), params.uuid, body));
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function crystalConvert(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { body, params } = getValidated<CrystalConvertBodyT, P>(res);
+    sendStored(res, await convertCrystals(acc(res), params.uuid, body));
   } catch (err) {
     next(err);
   }

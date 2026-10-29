@@ -292,9 +292,13 @@ namespace DotRPG
         public int Block => Mathf.Clamp(Eq.BlockChance + Sum(PassiveStat.Block) + (Has(Keystone.Unwavering) ? 15 : 0), 0, 75);
         public int SpeedBonus => Eq.SpeedBonus + Sum(PassiveStat.Speed) + (Has(Keystone.Unwavering) ? -10 : 0) + (data.Class == CharacterClass.Rogue ? CharacterData.RogueSpeedPassive : 0);
         public float SpeedMultiplier => Mathf.Max(0.5f, 1f + SpeedBonus / 100f);
-        public int AttackSpeed => Sum(PassiveStat.AttackSpeed) + CareerCombat.SpeedFor(data);
+        public int AttackSpeed => Sum(PassiveStat.AttackSpeed) + CareerCombat.SpeedFor(data) + Eq.HiddenAttackSpeed; // [HIDDEN] 공격 속도
         public float CooldownMultiplier => 1f / (1f + AttackSpeed / 100f);
-        public int Aoe => Sum(PassiveStat.Aoe) + Eq.AoeBonus;
+        public int Aoe => Sum(PassiveStat.Aoe) + Eq.AoeBonus + Eq.HiddenAoe; // [HIDDEN] 공격 범위
+        /// <summary>[HIDDEN] % chance per hit to deal x<see cref="HiddenOptions.CritMul"/> (hidden weapon option only).</summary>
+        public int CritChance => Eq.HiddenCrit;
+        /// <summary>[HIDDEN] Multiplier on damage taken from the hidden armour option (1 = none).</summary>
+        public float DamageTakenMul => Eq.HiddenDamageTakenMul;
         public int ManaCostReduction => Mathf.Min(80, Sum(PassiveStat.ManaCost));
         public int LifeOnKill => Sum(PassiveStat.LifeOnKill);
         public int ManaOnKill => Sum(PassiveStat.ManaOnKill);

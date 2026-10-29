@@ -49,7 +49,7 @@ namespace DotRPG
         public static string Description(string id)
         {
             var gear = EquipmentDatabase.Get(id);
-            if (gear != null) return $"{gear.StatLine(EquipmentDatabase.LevelOfKey(id))}\n{L.T(gear.description)}";
+            if (gear != null) return $"{gear.StatLine(EquipmentDatabase.LevelOfKey(id), EquipmentDatabase.HiddenOfKey(id))}\n{L.T(gear.description)}";
             var mat = EquipmentDatabase.GetMaterial(id);
             if (mat != null) return L.T(mat.description);
             var use = ConsumableDatabase.Get(id);

@@ -135,10 +135,16 @@ namespace DotRPG
         /// <summary>"철검 +3" (no suffix at +0).</summary>
         public string NameAt(int level) => level > 0 ? $"{name} +{level}" : name;
 
+        /// <summary>[HIDDEN] Stats at a level with a hidden option applied (attack / HP x1.3, move +10).</summary>
+        public GearStats StatsAt(int level, HiddenOption hidden) => EquipmentDatabase.ApplyHidden(StatsAt(level), hidden);
+
         /// <summary>"공격 +10  체력 +♥1" style one-liner (attack shown ×10 like damage numbers).</summary>
-        public string StatLine(int level = 0)
+        public string StatLine(int level = 0) => StatLine(level, HiddenOption.None);
+
+        /// <summary>[HIDDEN] Same with a hidden option: its stats applied and "히든: ..." at the end.</summary>
+        public string StatLine(int level, HiddenOption hidden)
         {
-            var s = StatsAt(level);
+            var s = StatsAt(level, hidden);
             var parts = new List<string>();
             if (s.attack != 0) parts.Add(L.F("공격 +{0}", s.attack * DamageNumber.DisplayScale));
             if (s.maxHealth != 0) parts.Add(L.F("체력 +{0}", EquipmentDatabase.Hearts(s.maxHealth)));
@@ -148,6 +154,7 @@ namespace DotRPG
             if (aoeBonus != 0) parts.Add(L.F("<color=#8fe28f>스킬 범위 +{0}%</color>", aoeBonus));
             if (damageBonus != 0) parts.Add(L.F("<color=#8fe28f>피해 +{0}%</color>", damageBonus));
             if (bossBonus != 0) parts.Add(L.F("<color=#8fe28f>보스 피해 +{0}%</color>", bossBonus));
+            if (hidden != HiddenOption.None) parts.Add(HiddenOptions.Tag(hidden));
             return parts.Count > 0 ? string.Join("  ", parts) : L.T("능력치 없음");
         }
     }

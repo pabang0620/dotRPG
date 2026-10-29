@@ -11,7 +11,7 @@ namespace DotRPG
         public static string Status => Running!=null?Running.status:"";
         PlayerController player,companion; EnemyController dummy; GameObject root;
         string map,status;float started,nextHazard,opening,lastHit;int hits,chain,taunts,absorbed,healed,cleansed,sequence;
-        int behindChain,assassinations,ports,roots;bool behindDone; // [ROGUE] 어쌔신: back hits in a row, 암살 with 5 marks / 닌자: smoke leaps with clones out (ports), bomb roots
+        int behindChain,assassinations,ports,roots;bool behindDone,passed; // [ROGUE] 어쌔신: back hits in a row, 암살 with 5 marks / 닌자: smoke leaps with clones out (ports), bomb roots
         readonly HashSet<string> elements=new HashSet<string>();
         int hp; float mana;
         public static string Title(Career c)=>c==Career.Fighter?L.T("흩어진 검, 하나의 의지"):c==Career.Guardian?L.T("방패 뒤의 이름"):c==Career.Arcanist?L.T("세 원소의 침묵"):c==Career.Assassin?L.T("누구의 등을 노리는가"):c==Career.Ninja?L.T("혼자이면서 여럿"):L.T("꺼지지 않은 새벽");
@@ -54,7 +54,7 @@ namespace DotRPG
             player=p;map=Game.Session.MapId;hp=p.Health.Current;mana=p.Data.Mana;started=Time.time;nextHazard=Time.time+2;root=gameObject;
             var data=CharacterData.CreateCompanion("career_trial_ivy",L.T("시련 동료 아이비"),CharacterClass.Warrior,240);data.Look=StoryCast.Find("knight_ivy").look;
             companion=PlayerController.CreateCompanion(Game.Config,transform,data,new ScriptedInput());companion.Spawn(player.Position+Vector2.right*1.5f,Facing.Down,110,240);
-            var stats=Instantiate(Game.Config.skeletonStats);stats.maxHealth=100000;stats.attackDamage=0;stats.xpReward=0;stats.knockbackSpeed=0;stats.wanderSpeed=0;stats.chaseSpeed=0;stats.enemyId="career_trial_echo";
+            var stats=Instantiate(Game.Config.skeletonStats);stats.maxHealth=100000000;stats.attackDamage=0;stats.xpReward=0;stats.knockbackSpeed=0;stats.wanderSpeed=0;stats.chaseSpeed=0;stats.enemyId="career_trial_echo";
             dummy=EnemyController.Create(stats,CharacterLook.Skeleton,p.Position+Vector2.up*2,transform);
             if(p.Data.Progression.Career==Career.Bishop)CareerCombat.For(companion).AddCurse(45);
             p.Data.Mana=p.MaxMana;status=L.T("시련 시작");
@@ -86,9 +86,14 @@ namespace DotRPG
             }
             GUI.Box(new Rect(Screen.width/2-300,86,600,56),message);
         }
+        const float MinSuccessSeconds=5f;
         void Update()
         {
             if(player==null||player.IsDead||companion==null||companion.IsDead||Game.Session.MapId!=map){Finish(false);return;}
+            // [FIX 2026-10-29] The echo is a target, not a kill: a high-level hero (x3 level-gap damage) killed it in seconds and the
+            // role objectives could then never finish. Refill it every frame; if a burst still drops it, fail at once so a retry is possible.
+            if(dummy==null||dummy.IsDead){Finish(false);return;}
+            if(dummy.Health.Current<dummy.Health.Max)dummy.Health.Heal(dummy.Health.Max);
             if(!Game.IsWorldRunning)return;
             float elapsed=Time.time-started;
             if(elapsed>45){Finish(false);return;}
@@ -105,18 +110,22 @@ namespace DotRPG
                 :c==Career.Assassin?behindDone&&assassinations>0:c==Career.Ninja?ports>=1&&roots>=4:cleansed>0&&healed>=90&&absorbed>=25&&elapsed>=20;
             if(behindChain>=5)behindDone=true;
             status=c==Career.Assassin?L.F("등 뒤 연속 {0}/5 · 표식 5개 암살 {1}/1", (behindDone?5:Mathf.Min(behindChain,5)), Mathf.Min(assassinations,1)):c==Career.Ninja?L.F("분신 중 연막 도약 {0}/1 · 기폭 속박 {1}/4", Mathf.Min(ports,1), Mathf.Min(roots,4)):c==Career.Fighter?L.F("열린 틈 {0} · 연격 {1}/5", ((elapsed%4)<2?L.T("공격!"):L.T("대기")), chain):c==Career.Guardian?L.F("도발 {0}/2 · 흡수 {1}/40 · 버티기 {2:0}/20초", taunts, absorbed, elapsed):c==Career.Arcanist?L.F("원소 정렬 {0}/3", Mathf.Min(sequence,3)):L.F("정화 {0}/1 · 회복 {1}/90 · 흡수 {2}/25", cleansed, healed, absorbed);
-            if(success)Finish(true);
+            // [FIX 2026-10-29] The server refuses a success faster than careers.json trials.minSeconds (4 s; 20 s for the
+            // guardian and bishop, whose goals already need 20 s). A fast hero met the goal in the first 2 s window and was
+            // refused (TRIAL_TOO_FAST), so the stage stayed at 2. Keep the success and report it once 5 s have passed.
+            if(success)passed=true;
+            if(passed&&elapsed>=MinSuccessSeconds)Finish(true);
         }
         void Finish(bool success)
         {
             var prog=player!=null?player.Data.Progression:null;
             CareerClient.TrialFinish(success,(ok,msg,stage)=>{
-                if(prog==null)return;
-                if(ok&&success){prog.AdvanceAwakening(2);Game.Flow.Autosave();}
-                else if(!ok){GameEvents.RaiseToast(msg);prog.SyncAwakening(stage);}
+                // [FIX 2026-10-29] Say "완료" only once the server took it; a refusal shows the server's reason instead.
+                if(!ok){GameEvents.RaiseToast(msg);prog?.SyncAwakening(stage);return;}
+                if(success&&prog!=null&&prog.AdvanceAwakening(2))Game.Flow.Autosave();
+                GameEvents.RaiseToast(success?L.T("시련 완료! 전직 안내원과 각성의 대화를 마무리하세요."):L.T("시련 실패. 진행 단계는 유지됩니다. 다시 도전할 수 있습니다."));
             });
             if(player!=null&&!player.IsDead){player.Health.Heal(Mathf.Max(0,hp-player.Health.Current));player.Data.Mana=mana;}
-            GameEvents.RaiseToast(success?L.T("시련 완료! 전직 안내원과 각성의 대화를 마무리하세요."):L.T("시련 실패. 진행 단계는 유지됩니다. 다시 도전할 수 있습니다."));
             Running=null;Destroy(gameObject);
         }
         void OnDestroy(){if(Running==this)Running=null;}

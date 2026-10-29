@@ -7,7 +7,7 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
   const raids = [...getGameData().economy.dungeons.byId.values()].filter((d) => d.isRaid).map((d) => d.id);
   const r = await db.query<Record<string, unknown>>(
     `SELECT
-       (SELECT coalesce(max(CASE WHEN position('+' in to_key) > 0 THEN split_part(split_part(to_key, '+', 2), '^', 1)::int ELSE 0 END), 0)
+       (SELECT coalesce(max(CASE WHEN position('+' in to_key) > 0 THEN split_part(split_part(split_part(to_key, '+', 2), '^', 1), '~', 1)::int ELSE 0 END), 0)
           FROM enhance_log WHERE character_id = $1 AND outcome = 'success' AND to_key IS NOT NULL) AS enhance_best,
        (SELECT count(*) FROM enhance_log WHERE character_id = $1) AS enhance_tries,
        (SELECT coalesce(sum(gold), 0) FROM enhance_log WHERE character_id = $1) AS enhance_gold,
@@ -21,7 +21,7 @@ export async function statsOf(db: Queryable, characterId: number): Promise<Recor
        (SELECT count(*) FROM gacha_pulls WHERE account_id = (SELECT account_id FROM characters WHERE id = $1) AND rarity IN ('unique', 'legendary')) AS gacha_top,
        (SELECT count(*) FROM account_cosmetics WHERE account_id = (SELECT account_id FROM characters WHERE id = $1)) AS cosmetics,
        (SELECT count(*) FROM account_cosmetics WHERE account_id = (SELECT account_id FROM characters WHERE id = $1) AND item_id LIKE 'skin\\_%') AS skins,
-       (SELECT coalesce(-sum(delta), 0) FROM star_ledger WHERE account_id = (SELECT account_id FROM characters WHERE id = $1) AND reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy', 'skill_style_buy')) AS stars_spent,
+       (SELECT coalesce(-sum(delta), 0) FROM star_ledger WHERE account_id = (SELECT account_id FROM characters WHERE id = $1) AND reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy', 'skill_style_buy', 'item_buy')) AS stars_spent,
        (SELECT count(*) FROM dungeon_runs WHERE character_id = $1 AND state = 'cleared') AS dungeon_clears,
        (SELECT count(*) FROM dungeon_runs WHERE character_id = $1 AND state = 'cleared' AND party_run_id IS NOT NULL) AS party_clears,
        (SELECT count(*) FROM dungeon_runs WHERE character_id = $1 AND state = 'cleared' AND dungeon_id = ANY($2::text[])) AS raid_clears,

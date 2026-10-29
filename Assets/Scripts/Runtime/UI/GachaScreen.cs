@@ -166,6 +166,7 @@ namespace DotRPG
             w.skipBtn = Button(page.transform, "Skip", L.T("모두 열기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-260f, 24f), new Vector2(220f, 56f), w.RevealAll, 19);
             w.againBtn = Button(page.transform, "Again", L.T("한 번 더"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 56f), () => w.Ask(w.lastCount), 19);
             w.okBtn = Button(page.transform, "Ok", L.T("확인"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(260f, 24f), new Vector2(220f, 56f), w.CloseResults, 19);
+            w.BuildAuto(bigBox.transform, page.transform); // [GACHA 2026-10-29] 자동 뽑기 (GachaScreen.Auto.cs)
 
             // Results: ten cards, a gap, then the bonus card.
             w.cellRoot = UIFactory.Place(UIFactory.Rect(page.transform, "Results"), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(1000f, 420f));
@@ -420,6 +421,7 @@ namespace DotRPG
 
         void OpenResults()
         {
+            pullSerial++; // [GACHA 2026-10-29] a draw came back (자동 뽑기 tells success from failure by this)
             resultTitle.text = L.F("<b>{0} 결과</b>", Current().name);
             LayoutCells(shown.Count);
             resultPage.gameObject.SetActive(true);
@@ -430,6 +432,7 @@ namespace DotRPG
         void CloseResults()
         {
             if (Revealing) { RevealAll(); return; }
+            StopAuto(null); // [GACHA 2026-10-29] closing the results ends 자동 뽑기
             resultPage.gameObject.SetActive(false);
             shown = new List<StarPullResult>();
             Refresh();
