@@ -134,7 +134,7 @@ namespace DotRPG
                 if (point)
                 {
                     var target = Target(c.dir, c.n.range, out Vector2 at);
-                    CareerFx.Clip("f_x", target != null ? target.Center : at, CareerFx.Tilt(c.dir, i == 0 ? 20f : -20f), .9f, 30f, VfxLayer.Top, true, Tint(c, AssassinPink));
+                    CareerFx.Clip("f_x", target != null ? target.Center : at, CareerFx.Tilt(c.dir, i == 0 ? 20f : -20f), 1.25f, 30f, VfxLayer.Top, true, Tint(c, AssassinPink)); // [VFX 2026-10-29] was .9
                     if (target != null) Strike(c, target, damage, from, 2f, 0, "c_slash");
                 }
                 else
@@ -142,7 +142,7 @@ namespace DotRPG
                     for (int k = 0; k < 4; k++)
                     {
                         float a = (k * 90f + i * 45f) * Mathf.Deg2Rad;
-                        CareerFx.Clip("f_arc", from, new Vector2(Mathf.Cos(a), Mathf.Sin(a)), c.n.range / 1.45f, 40f, VfxLayer.Top, true, Tint(c, AssassinPink)).FlipY(k % 2 == 1);
+                        CareerFx.Clip("f_arc", from, new Vector2(Mathf.Cos(a), Mathf.Sin(a)), c.n.range / 1.3f, 32f, VfxLayer.Top, true, Tint(c, AssassinPink)).FlipY(k % 2 == 1); // [VFX 2026-10-29] was range/1.45 at 40 fps (as Rend)
                     }
                     int count = 0;
                     foreach (var e in Enemies(from, c.n.range))

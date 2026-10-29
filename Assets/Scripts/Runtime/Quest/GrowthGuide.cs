@@ -203,7 +203,7 @@ namespace DotRPG
                 {
                     order = OrderHunt,
                     shortText = L.F("{0} 사냥터", L.T(zone.name)),
-                    text = L.F("사냥터 <color=#78d6ff>{0}</color> (Lv{1}~{2}) · 분당 경험치 약 {3:N0}", L.T(zone.name), zone.minLevel, zone.maxLevel, XpPerMinute(zone)),
+                    text = L.F("사냥터 <color=#78d6ff>{0}</color> (Lv{1}~{2}) · 분당 경험치 약 {3:N0}", L.T(zone.name), zone.minLevel, zone.maxLevel, XpPerMinute(zone)) + Progression.XpShareSuffix(XpPerMinute(zone), level), // [UI 2026-10-29] the share of the bar too
                     // Before 자동 사냥 opens the line is a hint only (the player walks there).
                     button = ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? L.T("추천 사냥터로 자동 사냥") : null,
                     action = ContentUnlocks.IsOpen(ContentUnlocks.Feature.AutoHunt) ? () => { QuestAutoPilot.StartGrowth(); if (Game.Flow != null) Game.Flow.CloseInventory(); } : (Action)null,
@@ -220,7 +220,7 @@ namespace DotRPG
                 {
                     order = OrderHunt,
                     shortText = L.F("{0} 사냥터", L.T(target.name)),
-                    text = L.F("사냥터 <color=#78d6ff>{0}</color> (Lv{1}~{2}) · 분당 경험치 약 {3:N0}", L.T(target.name), target.minLevel, target.maxLevel, XpPerMinute(target)),
+                    text = L.F("사냥터 <color=#78d6ff>{0}</color> (Lv{1}~{2}) · 분당 경험치 약 {3:N0}", L.T(target.name), target.minLevel, target.maxLevel, XpPerMinute(target)) + Progression.XpShareSuffix(XpPerMinute(target), level),
                     button = L.T("이동"),
                     action = () => { if (Game.Flow != null && (Game.Dungeon == null || !Game.Dungeon.InRun)) { Game.Flow.CloseInventory(); Game.Flow.TravelTo(target.id); } },
                 });

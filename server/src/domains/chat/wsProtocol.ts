@@ -73,6 +73,10 @@ export const townPosFrame = z.strictObject({
   aura: z.string().max(40).optional(),
   weapon: z.string().max(60).optional(),
   level: z.number().int().min(1).max(999).optional(),
+  /** 공격·스킬 횟수(16비트로 돈다). 바뀌면 다른 사람 화면에서 그 동작을 한 번 재생한다. 표시용 */
+  a: z.number().int().min(0).max(65535).optional(),
+  /** 마지막 동작: -1 기본 공격, 0 이상 스킬 슬롯 */
+  k: z.number().int().min(-1).max(15).optional(),
 });
 
 export const chatSendFrame = z.strictObject({

@@ -46,6 +46,45 @@ namespace DotRPG
         public string FieldMap { get; private set; }
         /// <summary>Sync runs: a dungeon run is on, or this is a field session.</summary>
         bool SyncActive => FieldMode || (Game.Dungeon != null && Game.Dungeon.InRun);
+        /// <summary>
+        /// [PARTY 9] The dungeon run reached its end (clearing, cleared or failed). Rewards are personal, so people
+        /// leaving now (back to the village, relay room closed) is no disconnect worth a warning.
+        /// </summary>
+        /// <summary>[PARTY 7/8] Cleared or failed (after the host report and damage snapshot, which still need every body).</summary>
+        static bool RunOver
+        {
+            get
+            {
+                var run = Game.Dungeon != null ? Game.Dungeon.Run : null;
+                return run != null && run.IsOver;
+            }
+        }
+
+        /// <summary>
+        /// [PARTY 7/8] A dungeon keeps the body of someone who dropped mid-run (they may come back). Once the run is over
+        /// it only stands there as an afterimage until the village: remove it now.
+        /// </summary>
+        void DropKeptBodies(ICollection<int> absentSlots)
+        {
+            if (FieldMode || !RunOver || absentSlots.Count == 0 || Game.Party == null) return;
+            foreach (int slot in new List<int>(absentSlots))
+            {
+                if (slot == mySlot) continue;
+                if (MemberAt(slot) is PlayerController gone && Game.Party.IsNetMember(gone)) Game.Party.RemoveNetMember(gone);
+                bySlot.Remove(slot);
+                if (host) remoteInputs.Remove(slot);
+            }
+            absentSlots.Clear();
+        }
+
+        static bool RunFinished
+        {
+            get
+            {
+                var run = Game.Dungeon != null ? Game.Dungeon.Run : null;
+                return run != null && (run.IsOver || run.State == DungeonRunState.Clearing);
+            }
+        }
 
         /// <summary>[PARTY 8] Field session on this map; the host runs the field spawner for the party.</summary>
         public static PartyNet BeginFieldHost(ITransport t, string session, int slot, string map)

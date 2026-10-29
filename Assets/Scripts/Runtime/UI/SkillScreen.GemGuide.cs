@@ -12,7 +12,7 @@ namespace DotRPG
     public partial class SkillScreen
     {
         const float GuideX = 812f, GuideWidth = 408f, EntryHeight = 58f;
-        const int MaxEntries = 8;
+        const int MaxEntries = 32; // [UI 2026-10-29] was 8: longer lists (rogue base + career skill gems) were cut off
 
         sealed class GuideEntry { public SkillGem gem; public Image bg, icon; public Text title, body; }
         readonly List<GuideEntry> guideEntries = new List<GuideEntry>();
@@ -29,6 +29,17 @@ namespace DotRPG
             var scroll = viewport.gameObject.AddComponent<ScrollRect>();
             scroll.viewport = viewport; scroll.content = items; scroll.horizontal = false;
             scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 30f;
+            // [UI 2026-10-29] A visible bar on the right edge while the list is longer than its view.
+            var track = UIFactory.Image(viewport, "ScrollTrack", null, new Color(1f, 1f, 1f, .15f));
+            UIFactory.Place(track.rectTransform, new Vector2(1, 1), new Vector2(1, 1), Vector2.zero, new Vector2(6f, size.y));
+            var handle = UIFactory.Image(track.transform, "Handle", null, new Color32(184, 196, 216, 255));
+            UIFactory.Stretch(handle.rectTransform);
+            track.raycastTarget = true; handle.raycastTarget = true;
+            var bar = track.gameObject.AddComponent<Scrollbar>();
+            bar.handleRect = handle.rectTransform; bar.targetGraphic = handle;
+            bar.direction = Scrollbar.Direction.BottomToTop;
+            scroll.verticalScrollbar = bar;
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
             return items;
         }
 

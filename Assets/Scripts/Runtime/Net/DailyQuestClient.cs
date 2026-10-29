@@ -232,6 +232,7 @@ namespace DotRPG
             if (!CanClaim(s)) { done(false, L.T("아직 목표를 채우지 못했습니다.")); return; }
             Post("/dailies/claim", s, r =>
             {
+                int levelBefore = Game.Session != null ? Game.Session.Progression.Level : 1; // [UI 2026-10-29] for the XP share below
                 // Level, XP and gold from the server, the same path as quest rewards (delta when sent, else the top-level values).
                 var delta = MiniJson.Obj(r.data, "delta");
                 if (delta != null) OnlineEconomy.ApplyDelta(delta);
@@ -247,7 +248,7 @@ namespace DotRPG
                 var granted = MiniJson.Obj(r.data, "granted");
                 int xp = MiniJson.Int(granted, "xp"), gold = MiniJson.Int(granted, "gold");
                 var parts = new List<string>();
-                if (xp > 0) parts.Add(L.F("경험치 {0:N0}", xp));
+                if (xp > 0) parts.Add(L.F("경험치 {0:N0}", xp) + Progression.XpShareSuffix(xp, levelBefore));
                 if (gold > 0) parts.Add(L.F("골드 {0:N0}", gold));
                 done(true, L.F("{0} '{1}' 완료!", Kind(s), L.T(s.title)) + (parts.Count > 0 ? " " + string.Join(", ", parts) : ""));
             }, done);

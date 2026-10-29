@@ -679,5 +679,7 @@
  "<color=#ffe066>파티 중입니다. 방장이 입장하면 함께 들어갑니다.</color>": "<color=#ffe066>You are in a party. You enter together when the leader enters.</color>",
  "방장 대기": "Wait for leader",
  "목적지를 먼저 고르세요. [던전 변경]": "Pick a destination first. [Change dungeon]",
- " · 던전 입장 시 함께 출발": " · Departs together on dungeon entry"
+ " · 던전 입장 시 함께 출발": " · Departs together on dungeon entry",
+ "<color=#b8c4d8>(현재 레벨의 {0})</color>": "<color=#b8c4d8>({0} of current level)</color>",
+ "<color=#ffe0a0><b>기본 스킬</b></color>  <size=14><color=#b8c4d8>끌어다 아래 키에 놓을 수 있습니다</color></size>": "<color=#ffe0a0><b>Base skills</b></color>  <size=14><color=#b8c4d8>Drag one onto a key below</color></size>"
 }

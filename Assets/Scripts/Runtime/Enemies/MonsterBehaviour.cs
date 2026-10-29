@@ -228,6 +228,8 @@ namespace DotRPG
         protected IEnumerator Charge(Vector2 dir, float length, float width, float windup, float speed, float contact, float mul, float knock, float recover)
         {
             E.MonsterFace(E.Position + dir);
+            // [HIT] The lane as drawn (feet level, lifted like every member hit test): the dash only hits inside it.
+            Vector2 laneOrigin = E.Position + Vector2.up * Telegraph.HitHeight;
             var t = Track(Telegraph.Rect(E, E.Position, dir, length, width, windup, 0));
             Game.Audio.PlaySfx("enemy_windup");
             yield return Hold(windup, CharacterAnim.Attack, true);
@@ -245,8 +247,12 @@ namespace DotRPG
                     time += Time.deltaTime;
                     E.MonsterMove(dir, speed);
                     E.MonsterAnim(CharacterAnim.Walk);
-                    foreach (var m in MonsterHits.InCircle(E.Center, contact))
+                    // [HIT] Touch measured from the feet (not the taller body centre, which reached past the lane's far edge) and
+                    // never outside the drawn lane: a wider contact circle, a shove off the line or the end of the dash used to
+                    // hit members standing next to the warning.
+                    foreach (var m in MonsterHits.InCircle(E.Position + Vector2.up * Telegraph.HitHeight, Mathf.Max(contact, width * 0.5f)))
                     {
+                        if (!MonsterHits.InRectAt(MonsterHits.HitPoint(m), laneOrigin, dir, length, width * 0.5f)) continue;
                         if (!hit.Add(m)) continue;
                         MonsterHits.Apply(new[] { m }, E.MonsterDamage(mul), E.Position - dir, knock, true, E.gameObject);
                     }

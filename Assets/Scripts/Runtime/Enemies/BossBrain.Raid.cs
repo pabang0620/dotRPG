@@ -20,6 +20,16 @@ namespace DotRPG
         /// <summary>Lets the member side (PartyNet) show a boss line on the HP bar.</summary>
         public static void RaiseAnnounce(BossBrain b, string text, Color color) => Announce?.Invoke(b, text, color);
 
+        /// <summary>[UI 2026-10-29] A countdown shown big on its own under the line (BossHpBarView). Raised after Announce.</summary>
+        public static event System.Action<BossBrain, int> AnnounceCount;
+
+        /// <summary>[UI 2026-10-29] A boss line with a countdown number that the HP bar draws apart, large.</summary>
+        public static void RaiseAnnounce(BossBrain b, string text, Color color, int count)
+        {
+            Announce?.Invoke(b, text, color);
+            AnnounceCount?.Invoke(b, count);
+        }
+
         /// <summary>Called every boss frame: the 40% enrage and the roar timer. True = the roar owns this frame.</summary>
         bool RaidTick()
         {

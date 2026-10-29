@@ -194,7 +194,8 @@ namespace DotRPG
             }
             // Host gone from the fight connection: ask the server whether I take over (§6.7).
             // On the relay the server decides by itself and says host.changed.
-            if (state == "playing" && PartyNet.IsMember && transportInfo.current != "relay" && !PartyNet.Current.Transport.IsConnected && PartyNet.Current.Welcomed)
+            // [PARTY 9] Not once the run is over: the host going home from the result window is no reason to take over.
+            if (state == "playing" && PartyNet.IsMember && transportInfo.current != "relay" && !PartyNet.Current.Transport.IsConnected && PartyNet.Current.Welcomed && !RunFinished)
             {
                 hostLostFor += Time.unscaledDeltaTime;
                 if (hostLostFor >= HostLostSeconds && !claiming) ClaimHost();
@@ -301,10 +302,20 @@ namespace DotRPG
             });
         }
 
+        /// <summary>[PARTY 9] The dungeon run reached its end (clearing, cleared or failed); rewards are personal from here.</summary>
+        static bool RunFinished
+        {
+            get
+            {
+                var run = Game.Dungeon != null ? Game.Dungeon.Run : null;
+                return run != null && (run.IsOver || run.State == DungeonRunState.Clearing);
+            }
+        }
+
         /// <summary>[8] The relay server handed the host role to this PC.</summary>
         void OnPromoted()
         {
-            if (Instance != this || amHost) return;
+            if (Instance != this || amHost || RunFinished) return; // [PARTY 9] the run is over: nothing left to host
             TakeOver();
         }
 

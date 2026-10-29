@@ -159,8 +159,9 @@ namespace DotRPG
             if (r.xp > 0)
             {
                 int xp = Progression.QuestXp(r.xp); // scaled with the level curve (the server pays the same exported value)
+                int levelBefore = Game.Session.Progression.Level; // [UI 2026-10-29] the share is of the bar it was earned on
                 if (!online) Game.Session.Progression.AddXp(xp);
-                parts.Add(L.F("경험치 {0:N0}", xp));
+                parts.Add(L.F("경험치 {0:N0}", xp) + Progression.XpShareSuffix(xp, levelBefore));
             }
             if (r.gold > 0)
             {

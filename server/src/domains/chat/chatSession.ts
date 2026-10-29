@@ -15,6 +15,9 @@ export interface TownLook {
   aura: string;
   weapon: string;
   level: number;
+  /** 공격·스킬 횟수와 마지막 동작(townPosFrame a, k). 표시용 */
+  a?: number;
+  k?: number;
 }
 
 export interface ServerProfile {

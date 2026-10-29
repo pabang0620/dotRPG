@@ -22,11 +22,11 @@ namespace DotRPG
         }
 
         /// <summary>The key badge ("Q") on a node card whose skill is on a key.</summary>
-        void KeyBadge(Transform card, string id, Progression p)
+        void KeyBadge(Transform card, string id, Progression p, float y = -60f)
         {
             int slot = p.SlotOf(id);
             if (slot < 0) return;
-            var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, -60), new Vector2(34, 26), new Color32(255, 211, 74, 235));
+            var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, y), new Vector2(34, 26), new Color32(255, 211, 74, 235));
             var key = Label(badge.transform, "Key", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 16,
                 new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(32, 24), TextAnchor.MiddleCenter);
             key.color = new Color32(30, 24, 10, 255);
@@ -36,9 +36,12 @@ namespace DotRPG
             key.verticalOverflow = VerticalWrapMode.Truncate;
         }
 
+        // [UI 2026-10-29] The key bar sits under the scrolling skill list (left column, was at the bottom of the detail panel).
+        const float KeyBarTop = 412f, KeyBox = 52f, KeyStep = 58f;
+
         void BuildKeyBar(Transform side, Progression p, CareerSkill chosen)
         {
-            CareerText(side, "KeyBarTitle", L.T("<b>장착 슬롯</b>  <size=14><color=#b8c4d8>우클릭: 해제</color></size>\n<size=14><color=#b8c4d8>스킬을 끌어다 놓거나, 스킬을 고른 뒤 칸을 누르세요</color></size>"), 16, 18, 422, 390, 40);
+            CareerText(side, "KeyBarTitle", L.T("<b>장착 슬롯</b>  <size=14><color=#b8c4d8>우클릭: 해제</color></size>\n<size=14><color=#b8c4d8>스킬을 끌어다 놓거나, 스킬을 고른 뒤 칸을 누르세요</color></size>"), 16, 14, KeyBarTop, 330, 66);
             for (int i = 0; i < SkillGems.Slots; i++)
             {
                 int slot = i;
@@ -47,15 +50,23 @@ namespace DotRPG
                 bool holdsChosen = chosen != null && gem != null && gem.id == chosen.id;
                 // [SKILL 8] Eight smaller keys in bar order (Q W E R A S D T) instead of five 68 px ones.
                 int pos = System.Array.IndexOf(SkillGems.BarOrder, slot);
-                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(18 + pos * 48, -464), new Vector2(44, 44),
+                var box = Panel(side, "Key" + slot, new Vector2(0, 1), new Vector2(0, 1), new Vector2(330 + pos * KeyStep, -(KeyBarTop + 8f)), new Vector2(KeyBox, KeyBox),
                     holdsChosen ? new Color32(90, 74, 30, 255) : new Color32(14, 20, 32, 255));
                 box.raycastTarget = true;
                 var icon = UIFactory.Image(box.transform, "Icon", SkillIcon(gem), gem != null ? Color.white : new Color(1, 1, 1, 0));
                 icon.raycastTarget = false;
                 icon.preserveAspect = true;
                 UIFactory.Stretch(icon.rectTransform, 4, 4, 4, 4);
-                var key = Label(box.transform, "KeyLabel", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 12,
-                    new Vector2(0, 0), new Vector2(0, 0), new Vector2(2, 0), new Vector2(26, 16), TextAnchor.LowerLeft);
+                // [UI 2026-10-29] The key on a dark tag (bottom-left): over the skill icon a bare label was unreadable, so
+                // only the empty keys seemed to have one.
+                var keyTag = Panel(box.transform, "KeyTag", new Vector2(0, 0), new Vector2(0, 0), new Vector2(1, 1), new Vector2(30, 17), new Color(0.03f, 0.04f, 0.08f, 0.85f));
+                keyTag.raycastTarget = false;
+                var key = Label(keyTag.transform, "KeyLabel", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 13,
+                    new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(28, 17), TextAnchor.MiddleCenter);
+                key.color = new Color32(255, 224, 102, 255);
+                key.resizeTextForBestFit = true; // a long rebound key ("Space") shrinks inside the tag
+                key.resizeTextMinSize = 8;
+                key.resizeTextMaxSize = key.fontSize;
                 key.raycastTarget = false;
                 if (!p.IsSlotOpen(slot))
                 {

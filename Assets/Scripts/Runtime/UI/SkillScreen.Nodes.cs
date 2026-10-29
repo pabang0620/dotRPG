@@ -12,6 +12,9 @@ namespace DotRPG
         static readonly Color32 NodeMax = new Color32(255, 215, 106, 255), NodeLearned = new Color32(232, 184, 74, 255),
             NodeOpen = new Color32(95, 211, 200, 255), NodeLocked = new Color32(60, 70, 88, 255), NodeFace = new Color32(22, 30, 48, 255);
 
+        /// <summary>[UI 2026-10-29] Cards go into the scrolling skill list while it is being built (else the page itself).</summary>
+        RectTransform NodeParent => nodeParent != null ? nodeParent : careerRoot;
+
         Color32 NodeAccent(CareerSkill s, Progression p)
         {
             int rank = p.Career == browsing ? p.Rank(s.id) : 0;
@@ -26,10 +29,10 @@ namespace DotRPG
             var accent = NodeAccent(s, p);
             int rank = p.Career == browsing ? p.Rank(s.id) : 0;
             // Frame: a slightly larger plate behind the face, bright when selected.
-            var frame = Panel(careerRoot, "NodeFrame_" + s.id, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x - 2, -(y - 2)), new Vector2(W + 4, H + 4),
+            var frame = Panel(NodeParent, "NodeFrame_" + s.id, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x - 2, -(y - 2)), new Vector2(W + 4, H + 4),
                 selected ? (Color)new Color32(255, 250, 230, 255) : (Color)accent);
             frame.raycastTarget = false;
-            var bg = Panel(careerRoot, "Node_" + s.id, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x, -y), new Vector2(W, H), NodeFace);
+            var bg = Panel(NodeParent, "Node_" + s.id, new Vector2(0, 1), new Vector2(0, 1), new Vector2(x, -y), new Vector2(W, H), NodeFace);
             var strip = Panel(bg.transform, "Accent", new Vector2(0, 1), new Vector2(0, 1), Vector2.zero, new Vector2(W, 4), accent);
             strip.raycastTarget = false;
             // Picture in a ring, with a halo once learned.
@@ -79,7 +82,7 @@ namespace DotRPG
         void NodeLink(Progression p, CareerSkill next, float x, float y)
         {
             bool on = p.Career == browsing && p.Rank(next.id) > 0;
-            var line = Panel(careerRoot, "Link_" + next.id, new Vector2(0, 1), new Vector2(0, .5f), new Vector2(x, -y), new Vector2(12, on ? 5 : 3),
+            var line = Panel(NodeParent, "Link_" + next.id, new Vector2(0, 1), new Vector2(0, .5f), new Vector2(x, -y), new Vector2(12, on ? 5 : 3),
                 on ? (Color)NodeLearned : new Color(1, 1, 1, .2f));
             line.raycastTarget = false;
         }

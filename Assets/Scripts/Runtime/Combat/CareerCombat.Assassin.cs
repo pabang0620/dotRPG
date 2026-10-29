@@ -28,7 +28,8 @@ namespace DotRPG
 
         /// <summary>[ROGUE 2026-10-23] Plain colours (user: no premium violet): dagger steel cuts, grey shadows and smoke.</summary>
         public static readonly Color AssassinPink = CareerFx.DaggerSteel;
-        static readonly Color AssassinShade = new Color(.42f, .43f, .46f, .55f);
+        // [VFX 2026-10-29] Lighter and more opaque (was .42 grey at .55): the phantoms vanished on dark ground.
+        static readonly Color AssassinShade = new Color(.62f, .64f, .7f, .8f);
         static readonly Color SmokeGray = new Color(.7f, .7f, .72f, .9f);
         static readonly Color VenomGreen = new Color(.5f, .62f, .38f, 1f);
         /// <summary>Dims the bright green poison picture (a_venom) toward a murky green.</summary>
@@ -322,7 +323,7 @@ namespace DotRPG
                 {
                     if (travelled >= lengths[i]) continue;
                     Vector2 a = from + dirs[i] * travelled, b = from + dirs[i] * Mathf.Min(lengths[i], travelled + step);
-                    if (drawn) ShadowAt(b, Tint(c, AssassinShade), .25f, dirs[i].x < 0f);
+                    if (drawn) ShadowAt(b, Tint(c, AssassinShade), .35f, dirs[i].x < 0f);
                     foreach (var e in Corridor(a, b, c.n.radius))
                     {
                         if (!cut[i].Add(e) || (shared != null && !shared.Add(e))) continue;
@@ -358,7 +359,12 @@ namespace DotRPG
                 if (!Live(c)) yield break;
                 Vector2 from = owner.Center;
                 Pose(.1f, i % 2);
-                CareerFx.Clip("f_arc", from, CareerFx.Tilt(c.dir, i == 0 ? 14f : -14f), c.n.range / 1.45f, 40f, VfxLayer.Top, true, AssassinPink).FlipY(i == 1);
+                // [VFX 2026-10-29] Was range/1.45 at 40 fps, smaller and shorter than the fighter's cut (range/1.35, 34 fps), so
+                // it barely showed: fighter size and pace, an additive copy for a bright edge, and a cross mark on the second cut.
+                Vector2 cutDir = CareerFx.Tilt(c.dir, i == 0 ? 14f : -14f);
+                CareerFx.Clip("f_arc", from, cutDir, c.n.range / 1.3f, 32f, VfxLayer.Top, true, AssassinPink).FlipY(i == 1);
+                CareerFx.Clip("f_arc", from, cutDir, c.n.range / 1.3f, 32f, VfxLayer.Top, true, AssassinPink, true).FlipY(i == 1);
+                if (i == 1) CareerFx.Clip("f_x", from + c.dir * c.n.range * .55f, c.dir, 1.4f, 30f, VfxLayer.Top, true, AssassinPink);
                 Sound("c_slash", .5f);
                 foreach (var e in Fan(from, c.dir, c.n.range, 120f)) Strike(c, e, c.n.damage, from, 2f, 0, "c_slash");
                 if (i < c.s.hits - 1) yield return new WaitForSeconds(CutGap);
@@ -371,13 +377,13 @@ namespace DotRPG
             var target = Target(c.dir, c.n.range, out Vector2 point);
             Pose(.2f, 2);
             Sound("c_heavy", .9f);
-            if (target == null) { CareerFx.Clip("f_x", point, c.dir, .8f, 30f, VfxLayer.Top, true, AssassinPink); return; }
+            if (target == null) { CareerFx.Clip("f_x", point, c.dir, 1.1f, 30f, VfxLayer.Top, true, AssassinPink); return; } // [VFX 2026-10-29] was .8
             int n = Marks(target);
             int damage = Mathf.RoundToInt(c.n.damage * (1f + RupturePerMark * n));
             if (c.n.spec == 'a') damage *= 2; // [ROGUE SPEC] 파열 극 (cooldown x2 in SkillSpecs.Rogue)
             int bleed = c.n.spec == 'b' ? Mathf.RoundToInt(damage * RuptureBleedShare) : 0; // [ROGUE SPEC] 출혈 파열
             damage -= bleed;
-            CareerFx.Gen("a_mark", "f_shatter", target.Center, Vector2.zero, 1.2f, 1.2f, 20f, VfxLayer.Top, false, tint: SpecTint(c), fps: 14f);
+            CareerFx.Gen("a_mark", "f_shatter", target.Center, Vector2.zero, 1.6f, 1.6f, 20f, VfxLayer.Top, false, tint: SpecTint(c), fps: 14f); // [VFX 2026-10-29] was 1.2
             SkillVisuals.Flash(target.Center, Tint(c, AssassinPink), 1.2f + .2f * n, .15f);
             bool hit = Strike(c, target, damage, owner.Center, 5f, n >= 3 ? 2 : 1, "c_heavy");
             if (hit && bleed > 0 && c.authority) StartCoroutine(Bleed(target, bleed, float.IsNaN(c.n.duration) ? 4f : c.n.duration));
@@ -389,12 +395,13 @@ namespace DotRPG
         {
             var target = Target(c.dir, c.n.range, out Vector2 point);
             Pose(.25f, 2);
-            if (target == null) { Sound("c_slash", .6f); CareerFx.Clip("f_x", point, c.dir, .9f, 30f, VfxLayer.Top, true, Tint(c, AssassinPink)); return; }
+            if (target == null) { Sound("c_slash", .6f); CareerFx.Clip("f_x", point, c.dir, 1.2f, 30f, VfxLayer.Top, true, Tint(c, AssassinPink)); return; } // [VFX 2026-10-29] was .9
             if (c.n.spec == 'b') BlinkBehind(c, target); // [ROGUE SPEC] 그림자 암살: always from behind
             bool behind = target.IsBehind(owner.Position) || Stealthed || c.n.spec == 'b';
             bool full = Marks(target) >= MarkCap;
             float mult = (behind ? AssassinateBehind : 1f) * (full ? AssassinateMarks : 1f) * AssassinateSpecMul(c, target);
-            CareerFx.Gen("r_backstab", "f_x", target.Center, c.dir, 1.5f, 1.4f, tint: SpecTint(c));
+            CareerFx.Gen("r_backstab", "f_x", target.Center, c.dir, 1.9f, 1.8f, tint: SpecTint(c)); // [VFX 2026-10-29] was 1.5 / 1.4
+            SkillVisuals.Flash(target.Center, new Color(1f, 1f, 1f, .5f), 1.3f, .1f);
             if (full) SkillVisuals.Flash(target.Center, Tint(c, AssassinPink), 2f, .18f);
             Sound("c_heavy");
             bool landed = Strike(c, target, Mathf.RoundToInt(c.n.damage * mult), owner.Center, 6f, 2, "c_heavy");

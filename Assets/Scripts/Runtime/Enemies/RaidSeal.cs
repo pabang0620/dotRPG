@@ -198,7 +198,7 @@ namespace DotRPG
                 if (count == lastCount && filled == lastFilled) return;
                 lastCount = count;
                 lastFilled = filled;
-                BossBrain.RaiseAnnounce(brain, L.F("마법진에 한 명씩 올라서라! {0}/{1}  {2}", filled, need, count), Violet);
+                BossBrain.RaiseAnnounce(brain, L.F("마법진에 한 명씩 올라서라! {0}/{1}", filled, need), Violet, count); // [UI 2026-10-29] the count drawn big apart
             }
         }
     }

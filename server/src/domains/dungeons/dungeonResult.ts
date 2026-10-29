@@ -119,8 +119,10 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
   }
   // 2026-10-14 사용자 결정: 빠른 클리어(쩔 포함)는 운영자 확인 대기에 넣지 않는다. 판정은 아래 화력 검사 하나로 한다
   const soft: string[] = [];
+  // 시험 서버 전용(TEST_OPEN_ALL_DAYS=1, DEPLOY_STAGE=test): 빨리 깬 판도 보상을 준다
+  const relaxed = process.env.DEPLOY_STAGE === 'test' && process.env.TEST_OPEN_ALL_DAYS === '1';
   if (claimed > serverElapsed + ELAPSED_SLACK_SECONDS) soft.push('TIME_OVER_SERVER');
-  if (claimed < minClearSeconds(run)) soft.push('TOO_FAST');
+  if (!relaxed && claimed < minClearSeconds(run)) soft.push('TOO_FAST');
 
   const kills = await killsOfRun(ctx.client, run.id);
   const hpMul = diff.hpMul * partyHpScaleOf(eco, run.humans, run.ai_count, dungeon.isRaid);
@@ -130,11 +132,11 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
   });
   // 파티 전원의 화력 상한(판 스냅샷: 사람 상한 합 + AI 몫)으로 이 시간 안에 몬스터 체력 합을 깎을 수 있는지 본다.
   // 여유 IMPLAUSIBLE_TOLERANCE배를 줘서 고레벨 쩔은 통과하고 명백히 불가능한 속도만 걸린다
-  if (!powerAllows(eco, pol, (await runAttackCap(ctx, run)) * IMPLAUSIBLE_TOLERANCE, serverElapsed + ELAPSED_SLACK_SECONDS, hpList)) {
+  if (!relaxed && !powerAllows(eco, pol, (await runAttackCap(ctx, run)) * IMPLAUSIBLE_TOLERANCE, serverElapsed + ELAPSED_SLACK_SECONDS, hpList)) {
     reasons.push('POWER');
   }
-  if (stats.revives_used > diff.revives) soft.push('REVIVES_OVER');
-  if (stats.max_combo > claimed / eco.player.attackCooldown) soft.push('COMBO_OVER');
+  if (!relaxed && stats.revives_used > diff.revives) soft.push('REVIVES_OVER');
+  if (!relaxed && stats.max_combo > claimed / eco.player.attackCooldown) soft.push('COMBO_OVER');
   return { reasons, soft, serverElapsed, claimed };
 }
 

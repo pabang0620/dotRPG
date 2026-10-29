@@ -142,6 +142,7 @@ namespace DotRPG
             Game.UI.Confirm($"{L.T(def.name)} {L.T(DungeonDatabase.Difficulty(difficulty).name)}\n{ask}", () =>
             {
                 sweepResult.text = L.T("<color=#b8c4d8>소탕하는 중...</color>");
+                int levelBefore = Game.Session.Progression.Level; // [UI 2026-10-29] the XP share is of the bar before the sweep
                 SweepClient.Run(def.id, difficulty, all, (ok, msg, list, limitedBy) =>
                 {
                     if (!ok) { sweepResult.text = $"<color=#ff9f7a>{msg}</color>"; Game.Audio.PlaySfx("cancel"); return; }
@@ -149,13 +150,13 @@ namespace DotRPG
                     var sb = new StringBuilder(L.F("<b>소탕 완료</b> {0}회", list.Count));
                     long xp = 0; bool up = false;
                     foreach (var s in list) { xp += s.xp; up |= s.leveledUp; }
-                    sb.Append("\n" + L.F("경험치 <color=#8fe28f>+{0:N0}</color>", xp) + (up ? L.T("  <color=#ffd34a>레벨 업!</color>") : ""));
+                    sb.Append("\n" + L.F("경험치 <color=#8fe28f>+{0:N0}</color>", xp) + Progression.XpShareSuffix(xp, levelBefore) + (up ? L.T("  <color=#ffd34a>레벨 업!</color>") : ""));
                     foreach (var s in list)
                         if (!string.IsNullOrEmpty(s.cardKey))
                             sb.Append("\n" + L.F("카드: {0}", EquipmentDatabase.IsEquipment(s.cardKey) ? EquipmentDatabase.RichName(s.cardKey) : L.T(DungeonDatabase.ItemName(s.cardKey))) + (s.cardCount > 1 ? $" x{s.cardCount:N0}" : ""));
                     if (limitedBy == "tickets") sb.Append("\n" + L.T("<color=#b8c4d8>클리어권이 모자라 일부만 소탕했습니다.</color>"));
                     sweepResult.text = sb.ToString();
-                    GameEvents.RaiseToast(L.F("소탕 {0}회 완료 · 경험치 +{1:N0}", list.Count, xp));
+                    GameEvents.RaiseToast(L.F("소탕 {0}회 완료 · 경험치 +{1:N0}", list.Count, xp) + Progression.XpShareSuffix(xp, levelBefore));
                     Refresh();
                 });
             }, true);

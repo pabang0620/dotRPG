@@ -291,6 +291,7 @@ namespace DotRPG
             MemberCardCheck.Correct(card, true); // [ANTI-ABUSE] level, gear and career as the server has them
             bool fresh = !peerSlot.ContainsKey(peer);
             peerSlot[peer] = slot;
+            keptSlots.Remove(slot); // [PARTY 7/8] back in the kept body
             humanCards[slot] = card;
 
             // [AI] A person takes a seat an AI was holding: the AI steps out first.
@@ -341,6 +342,8 @@ namespace DotRPG
         // ---------------- tick ----------------
 
         readonly List<int> lostPeers = new List<int>();
+        /// <summary>[PARTY 7/8] Seats whose person dropped while the dungeon kept their body.</summary>
+        readonly HashSet<int> keptSlots = new HashSet<int>();
 
         void HostTick()
         {
@@ -366,10 +369,13 @@ namespace DotRPG
                     fieldHumanSeats.Remove(slot);
                     ApplyFieldSeats(); // [AI] an AI takes the seat back
                 }
+                else keptSlots.Add(slot);
                 string who = humanCards.TryGetValue(slot, out var c) ? c.name : L.T("파티원");
-                GameEvents.RaiseToast(L.F("{0}님 연결 끊김", who));
+                if (!RunFinished) GameEvents.RaiseToast(L.F("{0}님 연결 끊김", who)); // [PARTY 9] leaving after the end is fine
                 Broadcast(NetChannel.Event, PartyWire.Build(w => { w.Write(PartyMsg.MemberLeft); w.Write((byte)slot); }));
             }
+
+            DropKeptBodies(keptSlots); // [PARTY 7/8] no afterimage after the end
 
             if (!SyncActive) return;
             AssignEnemyIds();

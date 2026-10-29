@@ -86,8 +86,14 @@ namespace DotRPG
 
                 v.timers[i] = UIFactory.Text(bg.transform, "Timer", "", ult ? 21 : 18, Color.white, TextAnchor.MiddleCenter, true);
                 UIFactory.Stretch(v.timers[i].rectTransform);
-                v.keys[i] = UIFactory.Text(bg.transform, "Key", "", 14, new Color32(255, 224, 102, 255), TextAnchor.UpperLeft, true);
-                UIFactory.Stretch(v.keys[i].rectTransform, 7f, 2f, 2f, 5f); // [UI] inside the slot rim
+                // [UI 2026-10-29] The key sits on its own dark tag in the top-left corner: drawn straight over the skill
+                // picture it vanished on bright icons (only the empty S / D slots showed theirs).
+                var keyTag = UIFactory.Image(bg.transform, "KeyTag", Game.Art.Get("ui_white"), new Color(0.03f, 0.04f, 0.08f, 0.82f));
+                keyTag.preserveAspect = false;
+                keyTag.raycastTarget = false;
+                UIFactory.Place(keyTag.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(3f, -3f), new Vector2(Mathf.Round(s * 0.55f), 19f));
+                v.keys[i] = UIFactory.Text(keyTag.transform, "Key", "", 14, new Color32(255, 224, 102, 255), TextAnchor.MiddleCenter, true);
+                UIFactory.Stretch(v.keys[i].rectTransform, 2f, 0f, 2f, 0f);
                 v.costs[i] = UIFactory.Text(bg.transform, "Cost", "", UiTheme.FontMin, new Color32(140, 190, 255, 255), TextAnchor.LowerRight, true);
                 UIFactory.Stretch(v.costs[i].rectTransform, 2f, 5f, 7f, 2f);
                 // [UI] A long rebound key ("Space") or "각성 시련" shrinks inside the smaller slot instead of wrapping out of it.

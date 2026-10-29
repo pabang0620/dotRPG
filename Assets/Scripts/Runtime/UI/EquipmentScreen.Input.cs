@@ -57,19 +57,20 @@ namespace DotRPG
             weaponPreview.enabled = body != null && wpn != null;
             if (!weaponPreview.enabled) return;
             weaponPreview.sprite = wpn;
-            var box = character.rectTransform.rect.size;
-            float scale = Mathf.Min(box.x / body.rect.width, box.y / body.rect.height); // UI px per art px
-            // The character image is anchored at its top centre; its sprite is centred in the box.
-            Vector2 boxCenter = character.rectTransform.anchoredPosition + new Vector2(0f, -box.y * 0.5f);
-            float feetY = boxCenter.y - body.rect.height * scale * 0.5f + body.pivot.y * scale;
+            // [FIX] The fitted sprite sits at the top of the box (image pivot), not in its middle: see PreviewOrigin.
+            float scale; // UI px per art px
+            Vector2 feet = SilverWarriorPresentation.PreviewOrigin(character, body, out scale);
             bool staff = Class == CharacterClass.Mage;
-            Vector2 hand = staff ? new Vector2(0.36f, 0.04f) : new Vector2(0.3f, 0.34f); // same as the in-game rest pose
             float ppu = body.pixelsPerUnit;
+            // [FIX] Same as the in-game rest pose (PlayerCombat.HoldPose, front view): the staff at (0.19, 0.04) next to a body
+            // nudged 2 art px left (CharacterAnimator). The preview body is not nudged, so the staff moves those 2 px right.
+            Vector2 hand = staff ? new Vector2(0.19f + 2f / ppu, 0.04f) : new Vector2(0.3f, 0.34f);
             var rt = weaponPreview.rectTransform;
             rt.anchorMin = rt.anchorMax = character.rectTransform.anchorMin;
             rt.pivot = new Vector2(wpn.pivot.x / wpn.rect.width, wpn.pivot.y / wpn.rect.height);
-            rt.sizeDelta = new Vector2(wpn.rect.width, wpn.rect.height) * scale * 0.85f;
-            rt.anchoredPosition = new Vector2(boxCenter.x + hand.x * ppu * scale, feetY + hand.y * ppu * scale);
+            // [FIX] World size is rect / weapon ppu, so a weapon drawn at another density keeps its in-game size.
+            rt.sizeDelta = new Vector2(wpn.rect.width, wpn.rect.height) * (ppu / wpn.pixelsPerUnit) * scale * 0.85f;
+            rt.anchoredPosition = feet + hand * ppu * scale;
             rt.localRotation = Quaternion.Euler(0f, 0f, staff ? -6f : -160f);
         }
 

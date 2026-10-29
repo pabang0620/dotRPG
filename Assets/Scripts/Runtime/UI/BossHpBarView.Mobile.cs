@@ -18,10 +18,13 @@ namespace DotRPG
         {
             float width = canvas != null ? canvas.rect.width : UIFactory.CanvasReference.x;
             float full = Width + 24f;
-            float room = width - MobileLeftReach - MobileRightReach;
+            // [UI 2026-10-29] A top-right status card (dungeon clock, boss rush / mini dungeon card) reaches further left than
+            // the menu buttons: the bar keeps clear of it too, or falls back under the top-left HUD (below the card).
+            float rightReach = RightCardBottom() > 0f ? Mathf.Max(MobileRightReach, CardLeftFromRight + CardGap) : MobileRightReach;
+            float room = width - MobileLeftReach - rightReach;
             bool fits = room >= full * MobileMinScale;
             float k = fits ? Mathf.Min(1f, room / full) : MobileMinScale;
-            float x = fits ? (MobileLeftReach + width - MobileRightReach) * 0.5f - width * 0.5f : 0f;
+            float x = fits ? (MobileLeftReach + width - rightReach) * 0.5f - width * 0.5f : 0f;
             float top = fits ? Top : HudLeftBottom;
             if (!Mathf.Approximately(root.localScale.x, k)) root.localScale = new Vector3(k, k, 1f);
             if (!Mathf.Approximately(root.anchoredPosition.x, x)) root.anchoredPosition = new Vector2(x, root.anchoredPosition.y);

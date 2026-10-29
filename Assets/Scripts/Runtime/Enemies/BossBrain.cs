@@ -27,7 +27,13 @@ namespace DotRPG
         const int SummonBatch = 2;
         /// <summary>망자의 심판: cast time, groggy length when broken, first cast after phase 3 starts, repeat.</summary>
         public const float JudgmentCast = 6f, JudgmentGroggy = 10f, JudgmentFirstDelay = 4f, JudgmentEvery = 34f;
-        const float JudgmentVisualRadius = 9f;
+        /// <summary>
+        /// [HIT] Warning circle of the whole-room blasts (망자의 심판, 섬멸), which hit everyone wherever they stand: it covers the
+        /// whole raid arena (36 x 18 tiles) from any boss position. The old 9 / 13 x size circles left far members outside a
+        /// drawn area that still hit them.
+        /// </summary>
+        const float RoomWideRadius = 40f;
+        const float JudgmentVisualRadius = RoomWideRadius;
         /// <summary>Phase 3: move speed ×, cooldowns ×.</summary>
         public const float EnrageSpeed = 1.3f, EnrageCooldown = 0.7f;
 
@@ -274,9 +280,9 @@ namespace DotRPG
             E.BeginJudgmentGauge(); // [G2] a burst check: 3.2% of max HP in 6 s
             Announce?.Invoke(this, L.T("망자의 심판"), new Color(1f, 0.35f, 0.3f));
             float cast = JudgmentCastNow;
-            var tele = Track(Telegraph.Circle(E, E.Position, JudgmentVisualRadius, cast, 0));
             // It hits everyone wherever they stand: not a ground warning to run from (AI and the measure bot fled it instead of bursting).
-            CompanionBrain.DangerZones.RemoveAll(z => z.radius >= JudgmentVisualRadius - .01f);
+            // [HIT] So the warning covers the whole room and is a NoDanger notice (no danger circles, autopilots do not flee it).
+            var tele = Track(Telegraph.Warning(E, E.Position, JudgmentVisualRadius, cast));
             Game.Audio.PlaySfx("magic");
             float t = 0f;
             while (t < cast)

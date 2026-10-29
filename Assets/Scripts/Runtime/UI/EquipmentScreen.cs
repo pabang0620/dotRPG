@@ -263,6 +263,13 @@ namespace DotRPG
 
         // ================= Actions =================
 
+        /// <summary>[UX] Enhancement tickets in the bag (protection ticket, +N 강화권): a click opens the forge window.</summary>
+        static bool OpensForge(string id)
+        {
+            var c = ConsumableDatabase.Get(id);
+            return c != null && (c.kind == ConsumableKind.Protection || c.kind == ConsumableKind.EnhanceTicket);
+        }
+
         void Use(Slot s)
         {
             if (s == null || s.itemId == null) return;
@@ -288,11 +295,12 @@ namespace DotRPG
             var gear = EquipmentDatabase.Get(s.itemId);
             if (gear == null)
             {
-                if (ConsumableDatabase.IsTicket(s.itemId))
+                if (OpensForge(s.itemId))
                 {
-                    // The protection ticket only works on its own, from the enhancement window.
-                    Game.Audio.PlaySfx("cancel");
-                    GameEvents.RaiseToast(L.T("강화 실패로 장비가 파괴될 때 자동으로 사용됩니다."));
+                    // [UX] 2026-10-29: 장비 보호권 / +N 강화권 open the forge window from the bag anywhere (no walk to the
+                    // blacksmith). The protection ticket still works on its own there; 강화권 are used from that window.
+                    Game.UI.Enhance.SetKeeper(null, null);
+                    Game.Flow.OpenWindow(Game.UI.Enhance);
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId) && Game.Player != null) Game.Player.UseConsumable(s.itemId);
                 else Game.Audio.PlaySfx("cancel");

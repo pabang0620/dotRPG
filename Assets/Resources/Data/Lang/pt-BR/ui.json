@@ -1384,5 +1384,7 @@
  "목적지를 먼저 고르세요. [던전 변경]": "Escolha um destino primeiro. [Mudar masmorra]",
  " · 던전 입장 시 함께 출발": " · Partida conjunta ao entrar na masmorra",
  "<color=#ffb347>유니크 {0}종 (+5%)</color>\n<color=#c58cff>에픽 {1}종 (+4%)</color>": "<color=#ffb347>Único: {0} tipos (+5%)</color>\n<color=#c58cff>Épico: {1} tipos (+4%)</color>",
- "코바 마을": "Vila de Koba"
+ "코바 마을": "Vila de Koba",
+ "<color=#b8c4d8>(현재 레벨의 {0})</color>": "<color=#b8c4d8>({0} do nível atual)</color>",
+ "<color=#ffe0a0><b>기본 스킬</b></color>  <size=14><color=#b8c4d8>끌어다 아래 키에 놓을 수 있습니다</color></size>": "<color=#ffe0a0><b>Habilidades básicas</b></color>  <size=14><color=#b8c4d8>Arraste para uma tecla abaixo</color></size>"
 }

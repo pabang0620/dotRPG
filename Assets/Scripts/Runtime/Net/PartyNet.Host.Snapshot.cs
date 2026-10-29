@@ -225,6 +225,11 @@ namespace DotRPG
         {
             var list = new List<MemberRunStats>();
             foreach (var slot in HumanSlots) list.Add(StatsFor(slot));
+            // [PARTY 10] The damage meter this PC counted for every seat (its own result window shows the same), so
+            // members see the 딜 기여도 too: their puppets never take the hits here, the host's numbers are the real ones.
+            var meter = new List<KeyValuePair<int, int>>();
+            if (Game.Party != null)
+                foreach (var kv in bySlot) if (kv.Value != null) meter.Add(new KeyValuePair<int, int>(kv.Key, Game.Party.DamageOf(kv.Value)));
             Broadcast(NetChannel.Event, PartyWire.Build(w =>
             {
                 w.Write(PartyMsg.RunEnd);
@@ -238,6 +243,13 @@ namespace DotRPG
                     w.Write((short)s.hitsTaken);
                     w.Write((short)s.maxCombo);
                     w.Write((byte)s.revives);
+                }
+                // [PARTY 10] Trailing block: an older member build stops reading before it.
+                w.Write((byte)meter.Count);
+                foreach (var m in meter)
+                {
+                    w.Write((byte)m.Key);
+                    w.Write(m.Value);
                 }
             }));
         }

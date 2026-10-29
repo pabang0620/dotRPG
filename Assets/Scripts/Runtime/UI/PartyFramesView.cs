@@ -77,6 +77,15 @@ namespace DotRPG
             return fill;
         }
 
+        /// <summary>[PARTY 12] HP / MP bar frames on or off (off only when no live value exists).</summary>
+        static void SetBarsVisible(Frame frame, bool on)
+        {
+            var hp = frame.hpFill.transform.parent.gameObject;
+            var mp = frame.mpFill.transform.parent.gameObject;
+            if (hp.activeSelf != on) hp.SetActive(on);
+            if (mp.activeSelf != on) mp.SetActive(on);
+        }
+
         static void SetFill(Image fill, float ratio) => fill.rectTransform.sizeDelta = new Vector2(BarW * Mathf.Clamp01(ratio), fill.rectTransform.sizeDelta.y);
 
         /// <summary>Stripe colour: the mercenary's colour (warriors warm, mages cool).</summary>
@@ -96,10 +105,16 @@ namespace DotRPG
             frame.shownLevel = -1;
             frame.name.text = $"<color=#{ColorUtility.ToHtmlStringRGB(classColor)}>{v.name}</color>";
             frame.info.text = $"Lv.{v.level} {L.T(CharacterClassInfo.Get(v.cls).displayName)}";
+            frame.shownDowned = -2;
+            // [PARTY 12] Same map as me but no party body here (a town: people are drawn by presence only): no location
+            // text. Presence carries no HP, so the bars are hidden rather than faked. With a body (field, dungeon,
+            // raid) the frame is drawn from that body's real HP in Update instead.
+            bool sameMap = v.online && Game.Session != null && !string.IsNullOrEmpty(v.mapId) && v.mapId == Game.Session.MapId;
             SetFill(frame.hpFill, 0f);
             SetFill(frame.mpFill, 0f);
-            if (!frame.downed.gameObject.activeSelf) frame.downed.gameObject.SetActive(true);
-            frame.shownDowned = -2;
+            SetBarsVisible(frame, !sameMap);
+            if (frame.downed.gameObject.activeSelf == sameMap) frame.downed.gameObject.SetActive(!sameMap);
+            if (sameMap) return;
             frame.downedText.text = WhereText(v);
         }
 
@@ -165,6 +180,7 @@ namespace DotRPG
                     frame.info.text = $"Lv.{member.Data.Level} {(mercenary != null ? mercenary.roleName.Split(' ')[0] : "")}";
                 }
                 var health = member.Health;
+                SetBarsVisible(frame, true); // [PARTY 12] a body here: its real HP
                 SetFill(frame.hpFill, health.Max > 0 ? (float)health.Current / health.Max : 0f);
                 int maxMana = member.MaxMana;
                 SetFill(frame.mpFill, maxMana > 0 ? member.Data.Mana / maxMana : 0f);

@@ -29,6 +29,21 @@ namespace DotRPG
         const float HudLeftReach = 396f, HudLeftBottom = 214f;
         float barTop = Top;
         float WarningTop => barTop + BarBlockHeight + 4f;
+        // [UI 2026-10-29] The top-right status card (dungeon clock with 방 / 내 부활 / 파티 부활, the boss rush and mini dungeon
+        // cards) starts at x W-528. At UI size 1.0 / 0.9 the top-centre bar reaches past that (right edge 840 / 911) and the
+        // card covered the "xN" line count (카마츠 raid): then the bar steps down under the card.
+        const float CardGap = 8f, ClockCardBottom = DungeonHudView.ClockTop + DungeonHudView.ClockHeight + 8f; // +8: the 방/부활 line may wrap below the frame
+        const float TallCardBottom = DungeonHudView.ClockTop + 126f; // BossRushHudView / MiniDungeonHudView card height
+        static float CardLeftFromRight => DungeonHudView.ClockRight + DungeonHudView.ClockWidth;
+
+        /// <summary>Bottom of the top-right status card from the top edge, or 0 while none shows.</summary>
+        static float RightCardBottom()
+        {
+            if (Game.BossRush != null && Game.BossRush.Active) return TallCardBottom;
+            if (Game.MiniDungeon != null && Game.MiniDungeon.Active) return TallCardBottom;
+            if (Game.Dungeon != null && Game.Dungeon.InRun) return ClockCardBottom;
+            return 0f;
+        }
 
         /// <summary>The bar's distance from the top edge for the current canvas width.</summary>
         float BarTopFor(RectTransform canvas)
@@ -36,7 +51,10 @@ namespace DotRPG
             if (TouchUi.Enabled) return MobileBarTop(canvas); // [TOUCH] BossHpBarView.Mobile.cs
             float width = canvas != null ? canvas.rect.width : 1280f;
             float left = width * 0.5f - (Width + 24f) * 0.5f;
-            return left < HudLeftReach ? HudLeftBottom : Top;
+            if (left < HudLeftReach) return HudLeftBottom;
+            float card = RightCardBottom();
+            bool underCard = card > 0f && left < CardLeftFromRight + CardGap; // the bar's right edge (W - left) passes the card's left edge (W - 528)
+            return underCard ? card + CardGap : Top;
         }
         const float LagHold = 0.35f, LagSpeed = 0.9f;
         const float IntroTime = 2.6f, WarningTime = 2.2f;
@@ -65,7 +83,7 @@ namespace DotRPG
 
         RectTransform root, banner, warning;
         Image frameGlow, back, lag, front, overall, groggyFill;
-        Text nameText, linesText, groggyText, groggyLabel, bannerTitle, bannerSub, warningText;
+        Text nameText, linesText, groggyText, groggyLabel, bannerTitle, bannerSub, warningText, countText;
         RectTransform markers;
         Image[] markerImages = new Image[0];
         float lagHp, lastHp, lagHoldUntil, glowUntil, introAt = -99f, warningAt = -99f, unbindAt = -1f, hitAt = -99f;
@@ -86,6 +104,7 @@ namespace DotRPG
         {
             EnemyController.BossSpawned -= OnBossSpawned;
             BossBrain.Announce -= OnAnnounce;
+            BossBrain.AnnounceCount -= OnAnnounceCount;
             if (Instance == this) Instance = null;
         }
 
@@ -177,10 +196,17 @@ namespace DotRPG
             wo.effectColor = new Color(0.1f, 0.02f, 0.02f, 1f);
             wo.effectDistance = new Vector2(2f, -2f);
             UIFactory.Stretch(warningText.rectTransform);
+            // [UI 2026-10-29] A mechanic's countdown (안전지대로, 마법진) on its own, big, right under the line.
+            countText = UIFactory.Text(warning, "Count", "", 64, Color.white, TextAnchor.MiddleCenter, true);
+            var co = countText.gameObject.AddComponent<Outline>();
+            co.effectColor = new Color(0.1f, 0.02f, 0.02f, 1f);
+            co.effectDistance = new Vector2(3f, -3f);
+            UIFactory.Place(countText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -2f), new Vector2(160f, 80f));
             warning.gameObject.SetActive(false);
 
             root.gameObject.SetActive(false);
             BossBrain.Announce += OnAnnounce;
+            BossBrain.AnnounceCount += OnAnnounceCount;
         }
 
         // =============================== Binding ===============================
@@ -224,8 +250,16 @@ namespace DotRPG
             if (Current == null || b == null || b.Controller != Current) return;
             warningText.text = text;
             warningText.color = color;
+            countText.text = ""; // a line without a count clears the last one (OnAnnounceCount follows when it has one)
             warningAt = Time.unscaledTime;
             warning.gameObject.SetActive(true);
+        }
+
+        void OnAnnounceCount(BossBrain b, int count)
+        {
+            if (Current == null || b == null || b.Controller != Current) return;
+            countText.text = count >= 0 ? count.ToString() : "";
+            countText.color = warningText.color;
         }
 
         void BuildMarkers()
@@ -311,6 +345,7 @@ namespace DotRPG
                     var c = warningText.color;
                     c.a = t > 0.7f ? 1f - (t - 0.7f) / 0.3f : 1f;
                     warningText.color = c;
+                    countText.color = c;
                 }
             }
         }

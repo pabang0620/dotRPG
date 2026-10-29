@@ -84,6 +84,12 @@ namespace DotRPG
             double pct = xp * 100.0 / Math.Max(1, XpToNext(level));
             return pct >= 10 ? $"{pct:0}%" : pct >= 1 ? $"{pct:0.#}%" : $"{pct:0.##}%";
         }
+        /// <summary>
+        /// [UI 2026-10-29] " (현재 레벨의 7%)" to put after a raw XP number, so players can tell what the number means.
+        /// Empty at max level or for no XP.
+        /// </summary>
+        public static string XpShareSuffix(long xp, int level) =>
+            level >= LevelCap || xp <= 0 ? "" : " " + L.F("<color=#b8c4d8>(현재 레벨의 {0})</color>", XpPercent(xp, level));
         /// <summary>Quest XP rewards: data value x <see cref="QuestScale"/>.</summary>
         public static int QuestXp(int dataXp) => (int)Math.Round(dataXp * QuestScale);
         /// <summary>

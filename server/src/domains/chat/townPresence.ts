@@ -36,6 +36,7 @@ function frameOf(s: ChatSession, t: TownLook): Frame {
     aura: t.aura,
     weapon: t.weapon,
     level: t.level,
+    ...(t.a !== undefined ? { a: t.a, k: t.k ?? -1 } : {}),
     ...(s.profile?.guildName ? { guild_name: s.profile.guildName } : {}),
     ...(s.profile?.guildColor ? { guild_color: s.profile.guildColor } : {}),
     ...(s.profile?.nameColor ? { name_color: s.profile.nameColor } : {}),
@@ -118,6 +119,7 @@ export async function handleTownPos(s: ChatSession, f: TownPosFrame): Promise<vo
     aura: f.aura !== undefined && (profile.ownedSkins.has(f.aura) || FREE_AURAS.has(f.aura)) ? f.aura : '',
     weapon: profile.weapon,
     level: profile.level,
+    ...(f.a !== undefined ? { a: f.a, k: f.k ?? -1 } : {}),
   };
   s.town = look;
   const others = neighbours(s, look.map);

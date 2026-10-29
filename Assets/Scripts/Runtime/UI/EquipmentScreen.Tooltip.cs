@@ -31,6 +31,15 @@ namespace DotRPG
                     sb.Append($"<b>{L.T(ItemText.Name(s.itemId))}</b>\n<color=#b8c4d8>{L.T(ItemText.Kind(s.itemId))}</color>\n\n");
                     sb.Append(L.F("보유 {0}개", Game.Session.Inventory.Count(s.itemId)) + "\n");
                     sb.Append($"<i>{L.T(ticket.description)}</i>\n\n" + L.T("<color=#b8c4d8>가방에 있으면 장비가 파괴될 때 1장이 자동으로 사용됩니다.</color>"));
+                    sb.Append("\n" + L.T("<color=#ffe066>우클릭: 강화 창 열기</color>")); // [UX] 2026-10-29
+                }
+                else if (OpensForge(s.itemId))
+                {
+                    // [UX] 2026-10-29: +N 강화권 (used from the forge window, which a click opens anywhere).
+                    var ticket = ConsumableDatabase.Get(s.itemId);
+                    sb.Append($"<b>{ItemText.Name(s.itemId)}</b>\n\n");
+                    sb.Append(L.F("보유 {0}개", Game.Session.Inventory.Count(s.itemId)) + "\n");
+                    sb.Append($"<i>{L.T(ticket.description)}</i>\n\n" + L.T("<color=#ffe066>우클릭: 강화 창 열기</color>"));
                 }
                 else if (ConsumableDatabase.IsUsable(s.itemId))
                 {

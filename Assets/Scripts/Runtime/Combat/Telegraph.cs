@@ -16,42 +16,60 @@ namespace DotRPG
     }
 
     /// <summary>
-    /// Party-member queries used by monster attacks (Party.MembersIn* with a solo fallback). Shapes are
-    /// tested against the members' body centres, like the party helpers.
+    /// Party-member queries used by monster attacks (party members, or the solo player). Shapes are tested
+    /// against <see cref="HitPoint"/>: the body centre, where the remote PC last reported it for a host copy.
     /// </summary>
     public static class MonsterHits
     {
-        static List<PlayerController> Solo(Func<PlayerController, bool> inside)
+        /// <summary>
+        /// [HIT] Where a member is judged: its body centre. A remote member's host copy walks behind its reports, so it is judged
+        /// where its PC last reported it (NetTarget), like the raid gimmicks: a player who stepped out of the drawn area on their
+        /// own screen is not hit by the lagging copy still standing inside.
+        /// </summary>
+        public static Vector2 HitPoint(PlayerController m) => m.NetTarget + (m.Center - m.Position);
+
+        static List<PlayerController> Members(Func<PlayerController, bool> inside)
         {
             var list = new List<PlayerController>();
+            if (Game.Party != null)
+            {
+                foreach (var m in Game.Party.AliveMembers) if (inside(m)) list.Add(m);
+                return list;
+            }
             var p = Game.Player;
             if (p != null && !p.IsDead && p.isActiveAndEnabled && inside(p)) list.Add(p);
             return list;
         }
 
         public static List<PlayerController> InCircle(Vector2 center, float radius) =>
-            Game.Party != null ? Game.Party.MembersInCircle(center, radius) : Solo(m => Vector2.Distance(m.Center, center) < radius);
+            Members(m => Vector2.Distance(HitPoint(m), center) < radius);
 
-        public static List<PlayerController> InArc(Vector2 origin, Vector2 dir, float radius, float halfAngle) =>
-            Game.Party != null ? Game.Party.MembersInArc(origin, dir, radius, halfAngle)
-                : Solo(m => (m.Center - origin).magnitude <= radius && Vector2.Angle(dir, m.Center - origin) <= halfAngle);
-
-        public static List<PlayerController> InRect(Vector2 origin, Vector2 dir, float length, float halfWidth)
+        public static List<PlayerController> InArc(Vector2 origin, Vector2 dir, float radius, float halfAngle)
         {
-            if (Game.Party != null) return Game.Party.MembersInRect(origin, dir, length, halfWidth);
-            Vector2 d = dir.normalized;
-            return Solo(m =>
+            Vector2 d = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.down;
+            return Members(m =>
             {
-                Vector2 to = m.Center - origin;
-                float along = Vector2.Dot(to, d);
-                return along >= 0f && along <= length && Mathf.Abs(to.x * d.y - to.y * d.x) <= halfWidth;
+                Vector2 to = HitPoint(m) - origin;
+                return to.magnitude <= radius && (to.sqrMagnitude < 0.0001f || Vector2.Angle(d, to) <= halfAngle);
             });
+        }
+
+        public static List<PlayerController> InRect(Vector2 origin, Vector2 dir, float length, float halfWidth) =>
+            Members(m => InRectAt(HitPoint(m), origin, dir, length, halfWidth));
+
+        /// <summary>Is <paramref name="point"/> in the rectangle from <paramref name="origin"/> along <paramref name="dir"/>?</summary>
+        public static bool InRectAt(Vector2 point, Vector2 origin, Vector2 dir, float length, float halfWidth)
+        {
+            Vector2 d = dir.sqrMagnitude > 0.0001f ? dir.normalized : Vector2.down;
+            Vector2 to = point - origin;
+            float along = Vector2.Dot(to, d);
+            return along >= 0f && along <= length && Mathf.Abs(to.x * d.y - to.y * d.x) <= halfWidth;
         }
 
         public static List<PlayerController> InDonut(Vector2 center, float inner, float outer)
         {
             var list = InCircle(center, outer);
-            list.RemoveAll(m => Vector2.Distance(m.Center, center) < inner);
+            list.RemoveAll(m => Vector2.Distance(HitPoint(m), center) < inner);
             return list;
         }
 

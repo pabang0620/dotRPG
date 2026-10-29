@@ -20,6 +20,8 @@ namespace DotRPG
             public string map, skin, weapon, aura, name, guildName, nameColor, guildColor;
             public int cls = -1, career;
             public float seenAt;
+            /// <summary>[PARTY 13] Last action counter seen (-1 = none yet: the first frame only sets it).</summary>
+            public int act = -1;
         }
 
         static TownPeers instance;
@@ -28,6 +30,8 @@ namespace DotRPG
         Vector2 sentPos;
         Facing sentFacing;
         string sentMap;
+        /// <summary>[PARTY 13] My swings and casts in town: a counter the others replay when it moves, and what the last one was (-1 attack, else skill slot).</summary>
+        int actCount, actKind = -1, sentAct;
 
         static TownPeers Instance
         {
@@ -38,8 +42,21 @@ namespace DotRPG
                 DontDestroyOnLoad(go);
                 instance = go.AddComponent<TownPeers>();
                 GameEvents.MapEntered += instance.OnMapEntered;
+                PlayerCombat.AttackPressed += instance.OnAttackPressed; // [PARTY 13]
+                SkillCaster.Casted += instance.OnCasted;
                 return instance;
             }
+        }
+
+        void OnAttackPressed(PlayerController m) => CountAct(m, -1);
+        void OnCasted(PlayerController m, int slot) => CountAct(m, slot);
+
+        /// <summary>[PARTY 13] Only my own character counts (the bodies of others replay through NetAct and raise these too).</summary>
+        void CountAct(PlayerController m, int kind)
+        {
+            if (m == null || m != Game.Player) return;
+            actCount = (actCount + 1) & 0xFFFF;
+            actKind = kind;
         }
 
         /// <summary>Is this map a town where people see each other?</summary>
@@ -55,13 +72,14 @@ namespace DotRPG
             if (player == null || string.IsNullOrEmpty(map) || !IsTown(map) || !player.gameObject.activeInHierarchy) return;
             var self = Instance;
             var pos = player.Position;
-            bool changed = map != self.sentMap || (pos - self.sentPos).sqrMagnitude > 0.0025f || player.Facing != self.sentFacing;
+            bool changed = map != self.sentMap || (pos - self.sentPos).sqrMagnitude > 0.0025f || player.Facing != self.sentFacing || self.actCount != self.sentAct;
             if (now - self.sentAt < (changed ? SendGap : IdleResend)) return;
             bool moving = map == self.sentMap && (pos - self.sentPos).sqrMagnitude > 0.0025f;
             self.sentAt = now;
             self.sentPos = pos;
             self.sentFacing = player.Facing;
             self.sentMap = map;
+            self.sentAct = self.actCount;
             var cls = Game.Session.PlayerClass;
             var frame = new Dictionary<string, object>
             {
@@ -76,6 +94,8 @@ namespace DotRPG
                 ["aura"] = Game.Cosmetics?.Equipped?.Id ?? "",
                 ["weapon"] = Game.Session.Equipment[EquipSlot.Weapon] ?? "",
                 ["level"] = Game.Session.Progression.Level,
+                ["a"] = self.actCount, // [PARTY 13] swing / cast counter
+                ["k"] = self.actKind,
             };
             socket.Send("town.pos", frame);
         }
@@ -131,6 +151,17 @@ namespace DotRPG
             if (p.guildName != guildName || p.nameColor != nameColor || p.guildColor != guildColor) self.Decorate(id, p, guildName, nameColor, guildColor);
             p.seenAt = Time.unscaledTime;
             p.body.NetMoveTo(at, facing);
+            // [PARTY 13] The counter moved: they swung or cast since the last frame, play it here (the look only).
+            int act = MiniJson.Int(d, "a", -1);
+            if (act >= 0)
+            {
+                if (p.act >= 0 && act != p.act)
+                {
+                    int kind = MiniJson.Int(d, "k", -1);
+                    p.body.NetAct(kind >= 0 ? 1 : 0, kind, facing);
+                }
+                p.act = act;
+            }
         }
 
         public static void Gone(string id) => instance?.Remove(id);

@@ -80,7 +80,7 @@ namespace DotRPG
             string line = L.T("섬멸! 방패 뒤나 빛의 원 안으로 숨으세요!");
             RaidSeal.ShowLine(E, line);
             RaidSeal.RaiseLine(E, line);
-            Track(Telegraph.Warning(E, E.Position, 13f * Scale, cast));
+            Track(Telegraph.Warning(E, E.Position, RoomWideRadius, cast)); // [HIT] the blast reaches the whole room, so does the warning
             float first = NextFloat(0f, Mathf.PI * 2f);
             for (int i = 0; i < 2; i++)
             {

@@ -47,6 +47,7 @@ namespace DotRPG
         public static bool IsOpen(DungeonDef dungeon, DateTime now)
         {
             if (dungeon == null) return false;
+            if (TestTools.Visible) return true; // [TEST TOOLS] test server: every dungeon and raid is open every day (the server agrees via TEST_OPEN_ALL_DAYS)
             if (dungeon.isRaid) return dungeon.openDays == null || dungeon.openDays.Length == 0 || Array.IndexOf(dungeon.openDays, GameDay(now)) >= 0;
             var day = GameDay(now);
             if (day == DayOfWeek.Saturday || day == DayOfWeek.Sunday) return true;

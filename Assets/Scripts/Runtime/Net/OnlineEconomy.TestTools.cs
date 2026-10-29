@@ -17,7 +17,7 @@ namespace DotRPG
             serverSays = meta != null && meta.TryGetValue("test_tools", out var on) && on is bool b && b;
 
         /// <summary>Show the test tools entry: an online character on a server that says it is a test server.</summary>
-        public static bool Visible => serverSays && OnlineSession.Playing;
+        public static bool Visible => OnlineSession.Playing && (serverSays || ApiClient.Instance.BaseUrl.TrimEnd('/') == ApiClient.MobileTestServer); // the test server address also counts: the server still answers 404 to these calls off the test stage
     }
 
     public static partial class OnlineEconomy

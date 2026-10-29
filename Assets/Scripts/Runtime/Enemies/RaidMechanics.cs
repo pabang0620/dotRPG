@@ -105,7 +105,7 @@ namespace DotRPG
                 if (count != lastCount && t < cast)
                 {
                     lastCount = count;
-                    if (brain != null) BossBrain.RaiseAnnounce(brain, L.F("{0}  안전지대로! {1}", L.T(RoarLine), count), Red);
+                    if (brain != null) BossBrain.RaiseAnnounce(brain, L.F("{0}  안전지대로!", L.T(RoarLine)), Red, count); // [UI 2026-10-29] the count drawn big apart
                 }
                 float a = (.25f + .25f * Mathf.Sin(t * 12f)) * Mathf.Clamp01((cast + .25f - t) / .25f);
                 foreach (var e in edges) e.color = new Color(1f, .1f, .08f, a);

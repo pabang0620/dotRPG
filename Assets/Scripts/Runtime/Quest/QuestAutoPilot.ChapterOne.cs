@@ -19,7 +19,8 @@ namespace DotRPG
         /// <summary>The current run was started by the chapter 1 auto-start (quieter toasts).</summary>
         bool autoStarted;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        // [AUTO] 2026-10-29: auto-progress no longer starts by itself when the hero stands idle (request item 3). It runs only
+        // when the player turns it on (button / key), so the idle starter below is not installed any more.
         static void InstallChapterOneStarter()
         {
             var go = new GameObject("ChapterOneAutoStart");

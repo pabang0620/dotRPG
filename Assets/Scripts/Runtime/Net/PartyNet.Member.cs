@@ -15,6 +15,8 @@ namespace DotRPG
         uint lastSnapshot;
         readonly List<byte[]> pendingSpawns = new List<byte[]>();
         readonly Dictionary<int, EnemyController> puppets = new Dictionary<int, EnemyController>();
+        /// <summary>[PARTY 7/8] Seats the host said were left while the dungeon keeps the body.</summary>
+        readonly HashSet<int> leftSlots = new HashSet<int>();
 
         public bool Welcomed => welcomed;
 
@@ -34,10 +36,11 @@ namespace DotRPG
         void MemberTick()
         {
             bool connected = transport.IsConnected;
-            if (wasConnected && !connected) GameEvents.RaiseToast(L.T("방장과의 연결이 끊겼습니다."));
+            if (wasConnected && !connected && !RunFinished) GameEvents.RaiseToast(L.T("방장과의 연결이 끊겼습니다.")); // [PARTY 9] not after the end
             // Back after a drop: the host forgot this seat's connection (it ignores our input until a Hello), so greet again.
             if (!wasConnected && connected && everWelcomed) Regreet();
             wasConnected = connected;
+            DropKeptBodies(leftSlots); // [PARTY 7/8] no afterimage after the end
 
             if (!welcomed)
             {
@@ -122,7 +125,21 @@ namespace DotRPG
             welcomed = true;
             everWelcomed = true;
             Game.Party?.SetRosterHidden(true);
-            if (again) { foreach (var c in cards) AddPuppet(c); return; }
+            if (again)
+            {
+                // [PARTY 7/8] Reconnect or new host: bodies the (new) host does not have any more (the old host, its AI) go,
+                // or they stand as a second copy next to the ones it draws now.
+                var listed = new HashSet<int>();
+                foreach (var c in cards) listed.Add(c.slot);
+                foreach (var slot in new List<int>(bySlot.Keys))
+                {
+                    if (slot == mySlot || listed.Contains(slot)) continue;
+                    if (MemberAt(slot) is PlayerController stale && Game.Party != null && Game.Party.IsNetMember(stale)) Game.Party.RemoveNetMember(stale);
+                    bySlot.Remove(slot);
+                }
+                foreach (var c in cards) AddPuppet(c);
+                return;
+            }
             foreach (var c in cards) AddPuppet(c);
             GameEvents.RaiseToast(L.T("방장에게 연결되었습니다."));
             if (field) { FieldMode = true; FieldMap = fieldMap; expectedRoom = 0; return; }
@@ -131,7 +148,16 @@ namespace DotRPG
 
         void AddPuppet(MemberCard c)
         {
-            if (c.slot == mySlot || MemberAt(c.slot) != null || Game.Party == null) return;
+            if (c.slot == mySlot || Game.Party == null) return;
+            leftSlots.Remove(c.slot); // [PARTY 7/8] someone sits there again
+            if (MemberAt(c.slot) != null) return;
+            // [PARTY 7/8] The same person drawn under another seat (seats moved with a new host): one body only.
+            foreach (var kv in new List<KeyValuePair<int, PlayerController>>(bySlot))
+            {
+                if (kv.Key == mySlot || kv.Value == null || kv.Value.DisplayName != c.name || !Game.Party.IsNetMember(kv.Value)) continue;
+                Game.Party.RemoveNetMember(kv.Value);
+                bySlot.Remove(kv.Key);
+            }
             var local = Game.Party.Local;
             var body = Game.Party.AddNetMember(c.ToData(), null, true, local != null ? local.Position : Vector2.zero, Facing.Up);
             bySlot[c.slot] = body;
@@ -263,6 +289,7 @@ namespace DotRPG
                             var s = new MemberRunStats { slot = r.ReadByte(), hitsTaken = r.ReadInt16(), maxCombo = r.ReadInt16(), revives = r.ReadByte() };
                             if (s.slot == mySlot) mine = s;
                         }
+                        if (r.BaseStream.Position < r.BaseStream.Length) ReadHostMeter(r); // [PARTY 10]
                         Game.Dungeon?.FollowEnd(cleared, reason, elapsedMs / 1000f, mine);
                         break;
                     }
@@ -293,7 +320,8 @@ namespace DotRPG
                     {
                         int slot = r.ReadByte();
                         var body = MemberAt(slot);
-                        if (body != null) GameEvents.RaiseToast(L.F("{0}님 연결 끊김", body.DisplayName));
+                        if (body != null && !RunFinished) GameEvents.RaiseToast(L.F("{0}님 연결 끊김", body.DisplayName)); // [PARTY 9]
+                        if (!FieldMode && slot != mySlot) leftSlots.Add(slot); // [PARTY 7/8] kept until the run is over
                         // [8] In the field the host drops the body of someone who left; do the same here (a dungeon keeps it).
                         if (FieldMode && slot != mySlot && body is PlayerController gone)
                         {
@@ -303,6 +331,24 @@ namespace DotRPG
                         break;
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// [PARTY 10] The host's damage meter per seat, read before the run ends here so the result window's 딜 기여도
+        /// shows the host's numbers (puppets take no real hits on a member, its own meter stays near zero).
+        /// </summary>
+        void ReadHostMeter(BinaryReader r)
+        {
+            int n = r.ReadByte();
+            for (int i = 0; i < n; i++)
+            {
+                int slot = r.ReadByte();
+                int damage = r.ReadInt32();
+                var body = slot == mySlot ? Game.Player : MemberAt(slot);
+                if (body == null || Game.Party == null) continue;
+                int missing = damage - Game.Party.DamageOf(body);
+                if (missing > 0) Game.Party.RecordDamageDealt(body, missing);
             }
         }
 

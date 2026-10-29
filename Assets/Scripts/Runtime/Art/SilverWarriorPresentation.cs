@@ -72,24 +72,39 @@ namespace DotRPG
         public static void Preview(Image character, Image weapon, string item, string frame, string skin = null, string lookId = null)
         {
             var body = character.sprite;
-            // [ROGUE] A rogue look holds the dagger at the rogue drawing's hand.
-            var sword = SilverWarriorArt.IsRogue(lookId) ? Game.Art.GetRogueWeapon(item) : Game.Art.GetWarriorWeapon(item);
+            // [ROGUE] The rogue sheets draw both daggers in the hands, so no weapon picture goes on top (same as in the world).
+            if (SilverWarriorArt.IsRogue(lookId)) { weapon.enabled = false; return; }
+            var sword = Game.Art.GetWarriorWeapon(item);
             weapon.enabled = body != null && sword != null;
             if (!weapon.enabled) return;
             weapon.sprite = sword;
-            var box = character.rectTransform.rect.size;
-            float scale = Mathf.Min(box.x / body.rect.width, box.y / body.rect.height);
-            var center = character.rectTransform.anchoredPosition + new Vector2(0, -box.y * .5f);
-            float feet = center.y - body.rect.height * scale * .5f + body.pivot.y * scale;
+            float scale;
+            var origin = PreviewOrigin(character, body, out scale);
             var hand = SilverWarriorArt.Hand("down", frame, skin, lookId);
             var rt = weapon.rectTransform;
             rt.anchorMin = rt.anchorMax = character.rectTransform.anchorMin;
             rt.pivot = new Vector2(sword.pivot.x / sword.rect.width, sword.pivot.y / sword.rect.height);
             rt.sizeDelta = sword.rect.size * (body.pixelsPerUnit / sword.pixelsPerUnit) * scale * SilverWarriorArt.WeaponScale;
-            rt.anchoredPosition = new Vector2(center.x + hand.x * body.pixelsPerUnit * scale, feet + hand.y * body.pixelsPerUnit * scale);
+            rt.anchoredPosition = origin + hand * body.pixelsPerUnit * scale;
             rt.localRotation = Quaternion.Euler(0, 0, SilverWarriorArt.Angle("down", frame) - 90);
             rt.localScale = new Vector3(-1, 1, 1);
             rt.SetSiblingIndex(character.transform.GetSiblingIndex() + 1);
+        }
+
+        /// <summary>
+        /// [FIX] Where the preview body's pivot (the feet) sits, in the character image's anchored space, and the UI pixels
+        /// per art pixel. A preserveAspect image places the fitted sprite by its rect pivot (top for the bag's card), not
+        /// in the middle of the box: assuming the middle put every held weapon about half the spare height too low.
+        /// </summary>
+        public static Vector2 PreviewOrigin(Image character, Sprite body, out float scale)
+        {
+            var crt = character.rectTransform;
+            var box = crt.rect.size;
+            scale = Mathf.Min(box.x / body.rect.width, box.y / body.rect.height);
+            var drawn = body.rect.size * scale;
+            var boxMin = crt.anchoredPosition - Vector2.Scale(crt.pivot, box);
+            var drawnMin = boxMin + Vector2.Scale(box - drawn, crt.pivot);
+            return drawnMin + body.pivot * scale;
         }
     }
 }

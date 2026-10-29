@@ -35,7 +35,13 @@ namespace DotRPG
             var facing = characterAnimator!=null?characterAnimator.PresentationFacing(owner.Facing):owner.Facing;
             SilverWarriorPresentation.Pose(weapon, silverGrip, characterAnimator, facing, !owner.IsDead);
             if (weaponLeft != null && classInfo.dualWield) SilverWarriorPresentation.PoseLeft(weaponLeft, weapon, characterAnimator, facing, !owner.IsDead);
+            // [ROGUE] The rogue sheets already draw both daggers in the hands: the equipped weapon still counts for stats,
+            // but no second picture goes on top (it showed two blades per hand).
+            if (ArtDrawsWeapon) { weapon.enabled = false; if (weaponLeft != null) weaponLeft.enabled = false; }
         }
+
+        /// <summary>[ROGUE] The body drawing holds its own blades (rogue sheets), so the weapon overlay stays hidden.</summary>
+        bool ArtDrawsWeapon => characterAnimator != null && characterAnimator.Look != null && SilverWarriorArt.IsRogue(characterAnimator.Look.id);
 
         PlayerController owner;
         PlayerStats stats;
@@ -312,12 +318,19 @@ namespace DotRPG
             slash.sprite = WarriorFlameSlash.Get(comboStage, t);
             SilverWarriorPresentation.ApplyMaterial(slash);
             slash.transform.localRotation = Quaternion.Euler(0, 0, pose.swordAngle);
-            slash.transform.localScale = new Vector3(1, sign, 1);
+            // [VFX 2026-10-29] The rogue's dagger swing is shorter (0.24 s) and its trail only flashed: a bigger trail that
+            // stays visible over more of the swing (picture and timing of the hit unchanged).
+            bool rogueTrail = classInfo != null && classInfo.id == CharacterClass.Rogue;
+            float trailScale = rogueTrail ? 1.25f : 1f;
+            slash.transform.localScale = new Vector3(trailScale, sign * trailScale, 1);
             ySort?.SetLocalOrder(slash, pose.rightHandBack ? -1 : 3);
             var trailColor = slash.color;
-            trailColor.a = recovering ? 0 : WarriorAttackMotion.TrailAlpha(t);
+            trailColor.a = recovering ? 0 : rogueTrail ? RogueTrailAlpha(t) : WarriorAttackMotion.TrailAlpha(t);
             slash.color = trailColor;
         }
+
+        /// <summary>[VFX 2026-10-29] Rogue trail alpha: shown over t 0.12..0.97 (warrior 0.26..0.82), held near full in the middle.</summary>
+        static float RogueTrailAlpha(float t) => t < .12f || t > .97f ? 0f : Mathf.Min(.95f, Mathf.Sin(Mathf.InverseLerp(.12f, .97f, t) * Mathf.PI) * 1.4f);
 
         /// <summary>Mage: raise the staff towards the facing direction, then release a bolt.</summary>
         void UpdateCast(float t, Vector2 dir, float baseAngle)

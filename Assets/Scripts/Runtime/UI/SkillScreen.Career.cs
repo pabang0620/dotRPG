@@ -6,6 +6,9 @@ namespace DotRPG
     public partial class SkillScreen
     {
         RectTransform careerRoot; Career browsing=Career.None; string selectedSkill=""; Career confirmation=Career.None;
+        // [UI 2026-10-29] Scrolling skill list (career nodes, awakening note, base skills) with the key bar under it.
+        RectTransform nodeParent, careerList; float careerListY;
+        const float ListTop=120f, ListWidth=790f, ListHeightPromoted=288f, ListHeightPlain=366f;
         public void ShowAwakening(){tab=TabId.Tree;var p=Game.Session.Progression;if(p.IsPromoted)selectedSkill=CareerCatalog.For(p.Career)[8].id;Game.Flow.OpenWindow(this);}
         void BuildCareer(){careerRoot=UIFactory.Stretch(UIFactory.Rect(treePage,"Career"));}
 
@@ -55,8 +58,11 @@ namespace DotRPG
             var es=UnityEngine.EventSystems.EventSystem.current;
             var was=es!=null?es.currentSelectedGameObject:null;
             string keep=was!=null&&was.transform.IsChildOf(careerRoot)?was.name:null;
+            if(careerList!=null)careerListY=careerList.anchoredPosition.y; // [UI 2026-10-29] keep the list's scroll through the rebuild
             for(int i=careerRoot.childCount-1;i>=0;i--){var child=careerRoot.GetChild(i).gameObject;child.SetActive(false);Destroy(child);}
+            careerList=null;nodeParent=null;
             BuildCareerPage();
+            if(careerList!=null)careerList.anchoredPosition=new Vector2(0f,careerListY); // the ScrollRect clamps it
             if(keep==null||es==null)return;
             foreach(var sel in careerRoot.GetComponentsInChildren<Selectable>(false))
                 if(sel.name==keep&&sel.IsInteractable()){es.SetSelectedGameObject(sel.gameObject);break;}
@@ -81,27 +87,44 @@ namespace DotRPG
                 CareerButton("ResetCareer",L.T("전직 기술 초기화"),540,75,240,40,()=>Game.UI.Confirm(L.T("배운 전직 기술을 모두 초기화합니다.\n<size=18>쓴 포인트는 전부 돌아오고, 장착한 직업 스킬은 해제됩니다.</size>\n초기화할까요?"),()=>{p.ResetCareerNodes();Game.Flow.Autosave();Refresh();},true));
             }
             var branch=CareerCatalog.Branches(browsing);var skills=CareerCatalog.For(browsing);
+            bool keys=p.IsPromoted&&p.Career==browsing;
+            // [UI 2026-10-29] Every skill in one scrolling list (wheel, drag on empty space or the bar): the 2x4 career tree,
+            // the extra node and the awakening note, then the base skills of the class. The key bar sits under it.
+            float listH=keys?ListHeightPromoted:ListHeightPlain;
+            var list=SkillScroll(careerRoot,"SkillList",new Vector2(0f,-ListTop),new Vector2(ListWidth,listH),listH);
+            careerList=list;nodeParent=list;
+            const float Y0=ListTop; // the rows keep their old page coordinates, shifted to the top of the list
             for(int b=0;b<2;b++)
             {
-                CareerText(careerRoot,"Branch"+b,branch[b],19,16,122+b*148,750,20);
+                CareerText(list,"Branch"+b,branch[b],19,16,122+b*148-Y0+2,750,20);
                 for(int tier=0;tier<4;tier++)
                 {
-                    var s=skills[b*4+tier];float x=14+tier*195,y=148+b*148;
+                    var s=skills[b*4+tier];float x=14+tier*195,y=148+b*148-Y0+2;
                     var bg=NodeCard(s,p,x,y,selectedSkill==s.id); // [UX] styled card (frame by state, ring, rank pips)
                     if(tier<3)NodeLink(p,skills[b*4+tier+1],x+183,y+58);
-                    if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);} // [UX] drag onto the key bar; badge = its key
+                    if(keys){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);} // [UX] drag onto the key bar; badge = its key
                 }
             }
             // [FIGHTER] A node outside the 2x4 tree (검기 태세) sits at the bottom right; the awakening row makes room for it.
             bool extra=skills.Length>CareerSkill.ExtraIndex;
-            CareerText(careerRoot,"Awakening",L.F("<color=#ffe0a0><b>별도 각성 영역 · {0}</b></color>\n{1}", L.T(skills[8].name), (p.Awakened?L.T("각성 완료 · T 슬롯에서 사용"):L.T("포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성"))),18,16,436,extra?570:740,50);
-            CareerButton("AwakeningInfo",L.T("각성 이야기 · 진행"),16,492,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
-            CareerButton("BaseSkillTab",L.T("기본 스킬 · 장착 / 보조 젬"),325,492,extra?255:340,42,()=>{tab=TabId.Gems;Refresh();});
+            CareerText(list,"Awakening",L.F("<color=#ffe0a0><b>별도 각성 영역 · {0}</b></color>\n{1}", L.T(skills[8].name), (p.Awakened?L.T("각성 완료 · T 슬롯에서 사용"):L.T("포인트로 배울 수 없음 · 직업 시련과 마지막 대화를 마치면 각성"))),18,16,436-Y0+2,extra?570:740,50);
+            float bottom=436-Y0+2+56;
             if(extra)
             {
                 var s=skills[CareerSkill.ExtraIndex];
-                var bg=NodeCard(s,p,599,420,selectedSkill==s.id);
-                if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);}
+                var bg=NodeCard(s,p,599,420-Y0+2,selectedSkill==s.id);
+                if(keys){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);}
+                bottom=Mathf.Max(bottom,420-Y0+2+120);
+            }
+            if(keys)bottom=BaseSkillCards(list,p,bottom+6);
+            nodeParent=null;
+            list.sizeDelta=new Vector2(list.sizeDelta.x,Mathf.Max(listH,bottom+8));
+            CareerButton("AwakeningInfo",L.T("각성 이야기 · 진행"),16,492,290,42,()=>{selectedSkill=skills[8].id;Refresh();});
+            CareerButton("BaseSkillTab",L.T("기본 스킬 · 장착 / 보조 젬"),325,492,340,42,()=>{tab=TabId.Gems;Refresh();});
+            if(keys)
+            {
+                var keyChosen=CareerCatalog.Get(selectedSkill);if(keyChosen==null||keyChosen.career!=browsing)keyChosen=skills[1];
+                BuildKeyBar(careerRoot,p,keyChosen); // [UI 2026-10-29] under the list (was in the detail panel)
             }
             var chosen=CareerCatalog.Get(selectedSkill);if(chosen==null||chosen.career!=browsing)chosen=skills[1];
             var side=Panel(careerRoot,"CareerDetail",new Vector2(0,1),new Vector2(0,1),new Vector2(802,-4),new Vector2(414,530),new Color32(20,29,45,255));
@@ -129,7 +152,6 @@ namespace DotRPG
                 CareerText(side.transform,"SkillDetail",DescribeCareer(chosen,p),17,20,20,374,350);
                 string why=p.NodeLock(chosen);
                 CareerButton("Learn",why==""?L.F("습득 / 강화 ({0}P)", p.Rank(chosen.id)+1):L.T(why),824,380,365,42,()=>{if(!p.Learn(chosen.id))GameEvents.RaiseToast(L.T(p.NodeLock(chosen)));Game.Flow.Autosave();Refresh();});
-                BuildKeyBar(side.transform,p,chosen); // [UX] drag-and-drop key bar instead of four "Q 장착" buttons
             }
         }
         /// <summary>"로" after a vowel or ㄹ, "으로" after any other final consonant.</summary>
@@ -157,6 +179,41 @@ namespace DotRPG
             var n=CharacterData.Session.Stats.Skill(Game.Session.PlayerClass,0,s.Gem,new SkillGem[0]);
             string synergy=s.synergy=="해당 없음"?"":L.T(s.synergy)+"\n"; // i18n-ignore data key compare
             return L.F("<b>{0}</b> · 액티브\n\n{1}\n\n{2}\n사거리 {3:0.#} · 반경 {4:0.#}\n지속 {5:0.#}초 · 최대 {6}회\n{7}조건: Lv.{8} · 선행: {9}", L.T(s.name), L.T(s.description), L.T(CareerNumbers.Summary(s,CharacterData.Session,n)), s.range, n.radius, s.duration, s.hits, synergy, s.level, (s.Prerequisite==null?L.T("없음"):L.T(CareerCatalog.Get(s.Prerequisite).name)));
+        }
+
+        /// <summary>
+        /// [UI 2026-10-29] The class's base skills under the career tree (the rogue has six): drag one onto a key like a
+        /// career skill. Returns the bottom of the rows inside the list.
+        /// </summary>
+        float BaseSkillCards(RectTransform list,Progression p,float top)
+        {
+            var cls=Game.Player!=null?Game.Player.Class:Game.Session.PlayerClass;
+            var gems=new System.Collections.Generic.List<SkillGem>();
+            foreach(var g in SkillGems.All)
+                if(g.kind==GemKind.Active&&g.UsableBy(cls)&&!g.IsUltimate&&CareerCatalog.Get(g.id)==null)gems.Add(g);
+            if(gems.Count==0)return top;
+            gems.Sort((a,b)=>a.slot.CompareTo(b.slot));
+            CareerText(list,"BaseTitle",L.T("<color=#ffe0a0><b>기본 스킬</b></color>  <size=14><color=#b8c4d8>끌어다 아래 키에 놓을 수 있습니다</color></size>"),18,16,top,740,24);
+            const float W=183f,H=64f;
+            float y=top+28f;
+            for(int i=0;i<gems.Count;i++)
+            {
+                var g=gems[i];float x=14+(i%4)*195,cy=y+(i/4)*(H+8f);
+                bool open=p.IsUnlocked(g);
+                var bg=Panel(list,"Base_"+g.id,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-cy),new Vector2(W,H),NodeFace);
+                bg.raycastTarget=true;
+                var icon=UIFactory.Image(bg.transform,"Icon",SkillIcon(g),open?Color.white:new Color(.45f,.45f,.5f,1f));
+                icon.raycastTarget=false;icon.preserveAspect=true;
+                UIFactory.Place(icon.rectTransform,new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(8,0),new Vector2(48,48));
+                FitCareerCopy(CareerText(bg.transform,"Name",$"<b>{L.T(g.name)}</b>",15,62,6,112,30),10);
+                FitCareerCopy(CareerText(bg.transform,"State",open?L.T("<color=#8fe28f>사용 가능</color>"):L.F("<color=#ff9f7a>Lv.{0} 필요</color>",g.unlockLevel),13,62,38,80,20),9);
+                var drag=bg.gameObject.AddComponent<DragSource>();
+                var id=g.id;
+                drag.payload=()=>p.IsUnlocked(SkillGems.Get(id))?id:null;
+                drag.ghostSprite=()=>SkillIcon(SkillGems.Get(id));
+                KeyBadge(bg.transform,g.id,p,-34f);
+            }
+            return y+((gems.Count+3)/4)*(H+8f);
         }
     }
 }
