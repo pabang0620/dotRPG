@@ -33,8 +33,20 @@ namespace DotRPG
                 });
             }
         }
-        void CareerText(Transform parent,string name,string text,int size,float x,float y,float w,float h)
-        {Label(parent,name,text,size,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(w,h));}
+        Text CareerText(Transform parent,string name,string text,int size,float x,float y,float w,float h)
+        {
+            var label = Label(parent,name,text,size,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(w,h));
+            if (name == "PointRule" || name == "Awakening") FitCareerCopy(label, 10);
+            return label;
+        }
+        static void FitCareerCopy(Text label, int minimum)
+        {
+            label.lineSpacing = 1f;
+            label.resizeTextForBestFit = true;
+            label.resizeTextMaxSize = label.fontSize;
+            label.resizeTextMinSize = minimum;
+            label.verticalOverflow = VerticalWrapMode.Truncate;
+        }
         void CareerButton(string name,string text,float x,float y,float w,float h,System.Action action)
         {Button(careerRoot,name,text,"ui_btngray",new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(w,h),action,18);}
         void RefreshCareer()
@@ -71,10 +83,10 @@ namespace DotRPG
             var branch=CareerCatalog.Branches(browsing);var skills=CareerCatalog.For(browsing);
             for(int b=0;b<2;b++)
             {
-                CareerText(careerRoot,"Branch"+b,branch[b],19,16,130+b*150,750,26);
+                CareerText(careerRoot,"Branch"+b,branch[b],19,16,122+b*148,750,20);
                 for(int tier=0;tier<4;tier++)
                 {
-                    var s=skills[b*4+tier];float x=14+tier*195,y=162+b*150;
+                    var s=skills[b*4+tier];float x=14+tier*195,y=148+b*148;
                     var bg=NodeCard(s,p,x,y,selectedSkill==s.id); // [UX] styled card (frame by state, ring, rank pips)
                     if(tier<3)NodeLink(p,skills[b*4+tier+1],x+183,y+58);
                     if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);} // [UX] drag onto the key bar; badge = its key
@@ -88,7 +100,7 @@ namespace DotRPG
             if(extra)
             {
                 var s=skills[CareerSkill.ExtraIndex];
-                var bg=NodeCard(s,p,599,414,selectedSkill==s.id);
+                var bg=NodeCard(s,p,599,420,selectedSkill==s.id);
                 if(p.IsPromoted&&p.Career==browsing){MakeDraggable(bg.gameObject,s,p);KeyBadge(bg.transform,s.id,p);}
             }
             var chosen=CareerCatalog.Get(selectedSkill);if(chosen==null||chosen.career!=browsing)chosen=skills[1];

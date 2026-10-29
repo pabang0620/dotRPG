@@ -42,7 +42,12 @@ namespace DotRPG
             var left = Panel(w.content, "Stamp", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(LeftW, 230f), new Color32(24, 36, 54, 235));
             w.stamp = UIFactory.Text(left.transform, "Rank", "", 120, Color.white, TextAnchor.MiddleCenter, true);
             w.stampRt = w.stamp.rectTransform;
-            UIFactory.Place(w.stampRt, new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -88f), new Vector2(LeftW, 150f));
+            UIFactory.Place(w.stampRt, new Vector2(0.5f, 1f), new Vector2(0.5f, 0.5f), new Vector2(0f, -88f), new Vector2(LeftW - 32f, 150f));
+            w.stamp.horizontalOverflow = HorizontalWrapMode.Wrap;
+            w.stamp.verticalOverflow = VerticalWrapMode.Truncate;
+            w.stamp.resizeTextForBestFit = true;
+            w.stamp.resizeTextMinSize = 24;
+            w.stamp.resizeTextMaxSize = 120;
             var ol = w.stamp.gameObject.AddComponent<Outline>();
             ol.effectColor = new Color(0.08f, 0.05f, 0.03f, 0.9f);
             ol.effectDistance = new Vector2(4f, -4f);

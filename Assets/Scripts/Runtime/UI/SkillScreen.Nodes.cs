@@ -48,15 +48,17 @@ namespace DotRPG
             UIFactory.Place(icon.rectTransform, new Vector2(0, 1), new Vector2(.5f, .5f), new Vector2(42, -46), Vector2.one * 60);
             // Name, kind and requirement.
             string kind = s.kind == CareerSkillKind.Passive ? L.T("<color=#b8a0ff>패시브</color>") : L.T("<color=#9fd0ff>액티브</color>");
-            CareerText(bg.transform, "Name", $"<b>{L.T(s.name)}</b>\n<size=13>{kind} · Lv.{s.level}</size>", 16, 82, 12, 98, 50);
+            FitCareerCopy(CareerText(bg.transform, "Name", $"<b>{L.T(s.name)}</b>", 16, 82, 8, 95, 38), 10);
+            FitCareerCopy(CareerText(bg.transform, "Kind", kind, 13, 82, 47, 95, 12), 9);
+            FitCareerCopy(CareerText(bg.transform, "Level", $"Lv.{s.level}", 13, 82, 66, 60, 16), 9);
             // Rank pips.
             for (int i = 0; i < 3; i++)
             {
                 var pip = UIFactory.Image(bg.transform, "Pip" + i, Game.Art.Get("ui_circle"), i < rank ? (Color)accent : new Color(1, 1, 1, .18f));
                 pip.raycastTarget = false;
-                UIFactory.Place(pip.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(84 + i * 17, -66), Vector2.one * 12);
+                UIFactory.Place(pip.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(14 + i * 17, -78), Vector2.one * 8);
             }
-            CareerText(bg.transform, "State", NodeState(s, p), 14, 10, 88, 168, 24);
+            FitCareerCopy(CareerText(bg.transform, "State", NodeState(s, p), 14, 8, 90, 167, 22), 8);
             // Hover / press feedback and gamepad reach.
             bg.raycastTarget = true;
             var btn = bg.gameObject.AddComponent<Button>();

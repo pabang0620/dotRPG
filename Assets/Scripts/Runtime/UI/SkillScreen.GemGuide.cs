@@ -18,6 +18,19 @@ namespace DotRPG
         readonly List<GuideEntry> guideEntries = new List<GuideEntry>();
         readonly Image[] guideTabBg = new Image[2];
         bool guideSkills; // false = 보조 젬, true = 스킬 젬
+        RectTransform guideList;
+
+        static RectTransform SkillScroll(Transform parent, string name, Vector2 position, Vector2 size, float height)
+        {
+            var viewport = UIFactory.Place(UIFactory.Rect(parent, name), new Vector2(0, 1), new Vector2(0, 1), position, size);
+            viewport.gameObject.AddComponent<Image>().color = Color.clear;
+            viewport.gameObject.AddComponent<RectMask2D>();
+            var items = UIFactory.Place(UIFactory.Rect(viewport, "Content"), new Vector2(0, 1), new Vector2(0, 1), Vector2.zero, new Vector2(size.x, height));
+            var scroll = viewport.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = viewport; scroll.content = items; scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped; scroll.scrollSensitivity = 30f;
+            return items;
+        }
 
         void BuildGemGuide()
         {
@@ -30,25 +43,34 @@ namespace DotRPG
                 L.T("<color=#8c96a8>보조 젬의 MP 증가는 서로 곱해진다. 두 개를 끼우면 MP가 크게 늘어난다.</color>"),
                 14, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -38f), new Vector2(GuideWidth - 28f, 118f));
             intro.lineSpacing = 1.1f;
+            // Localized instructions may need more lines; scroll them inside their own region.
+            var introContent = SkillScroll(panel.transform, "IntroViewport", new Vector2(14f, -38f), new Vector2(GuideWidth - 28f, 142f), 142f);
+            intro.transform.SetParent(introContent, false);
+            UIFactory.Place(intro.rectTransform, new Vector2(0, 1), new Vector2(0, 1), Vector2.zero, new Vector2(GuideWidth - 28f, 142f));
+            intro.horizontalOverflow = HorizontalWrapMode.Wrap;
+            intro.verticalOverflow = VerticalWrapMode.Overflow;
+            intro.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            introContent.parent.GetComponent<ScrollRect>().content = intro.rectTransform;
             string[] tabs = { L.T("보조 젬 목록"), L.T("스킬 젬 목록") };
             for (int i = 0; i < 2; i++)
             {
                 int index = i;
-                var bg = Panel(panel.transform, "GuideTab" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f + i * 192f, -160f), new Vector2(186f, 30f), Color.clear);
+                var bg = Panel(panel.transform, "GuideTab" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f + i * 192f, -186f), new Vector2(186f, 30f), Color.clear);
                 bg.raycastTarget = true;
                 bg.gameObject.AddComponent<PointerRelay>().onClick = _ => { guideSkills = index == 1; Game.Audio.PlaySfx("select"); Refresh(); };
                 Label(bg.transform, "Text", tabs[i], 16, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(186f, 30f), TextAnchor.MiddleCenter);
                 guideTabBg[i] = bg;
             }
+            guideList = SkillScroll(panel.transform, "GuideViewport", new Vector2(10f, -222f), new Vector2(GuideWidth - 20f, 306f), MaxEntries * (EntryHeight + 2f));
             for (int i = 0; i < MaxEntries; i++)
             {
                 var e = new GuideEntry();
-                e.bg = Panel(panel.transform, "Gem" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -196f - i * (EntryHeight + 2f)), new Vector2(GuideWidth - 20f, EntryHeight), UiTheme.Panel);
+                e.bg = Panel(guideList, "Gem" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -i * (EntryHeight + 2f)), new Vector2(GuideWidth - 20f, EntryHeight), UiTheme.Panel);
                 e.bg.raycastTarget = true;
                 e.icon = UIFactory.SharpIcon(e.bg.transform, "Icon", Color.white);
                 UIFactory.Place(e.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(42f, 42f));
-                e.title = Label(e.bg.transform, "Title", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -3f), new Vector2(GuideWidth - 64f, 20f));
-                e.body = Label(e.bg.transform, "Body", "", 13, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -22f), new Vector2(GuideWidth - 64f, EntryHeight - 24f));
+                e.title = Label(e.bg.transform, "Title", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -3f), new Vector2(GuideWidth - 80f, 20f));
+                e.body = Label(e.bg.transform, "Body", "", 13, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(54f, -22f), new Vector2(GuideWidth - 80f, EntryHeight - 24f));
                 e.body.lineSpacing = 1f;
                 // [UI 2026-10-14] One line each: a long name or effect shrinks to fit instead of running into the next row.
                 foreach (var t in new[] { e.title, e.body })
@@ -131,6 +153,7 @@ namespace DotRPG
                 guideTabBg[i].color = Color.white;
             }
             var gems = GuideGems(cls);
+            guideList.sizeDelta = new Vector2(guideList.sizeDelta.x, Mathf.Min(gems.Count, MaxEntries) * (EntryHeight + 2f));
             for (int i = 0; i < guideEntries.Count; i++)
             {
                 var e = guideEntries[i];
@@ -139,7 +162,7 @@ namespace DotRPG
                 e.bg.gameObject.SetActive(g != null);
                 if (g == null) continue;
                 bool open = g.kind == GemKind.Active ? (g.IsUltimate ? prog.Awakened : prog.IsUnlocked(g)) : prog.IsUnlocked(g); // [ROGUE] 허수아비 opens (Lv12) before its default key (A, Lv20)
-                e.icon.sprite = Game.Art.Get(g.icon);
+                e.icon.sprite = Game.Art.Get(CareerMoves.IconKey(g.icon));
                 e.icon.color = open ? Color.white : new Color(.45f, .45f, .5f, 1f);
                 string worn = WornOn(prog, g);
                 string locked = g.IsUltimate ? L.T("전직 각성 후") : L.F("Lv.{0} 해금", g.unlockLevel);

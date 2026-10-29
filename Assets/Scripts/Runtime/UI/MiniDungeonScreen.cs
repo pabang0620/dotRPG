@@ -53,15 +53,29 @@ namespace DotRPG
             stripe.preserveAspect = false;
             UIFactory.Place(stripe.rectTransform, TL, TL, new Vector2(16, -16), new Vector2(360, 3));
             var crest = UIFactory.Image(p.transform, "Crest", Game.Art.Get("ui_circle"), new Color(accent.r, accent.g, accent.b, .14f));
-            UIFactory.Place(crest.rectTransform, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -35), new Vector2(98, 98));
+            UIFactory.Place(crest.rectTransform, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -28), new Vector2(76, 76));
             var icon = UIFactory.Image(crest.transform, "TrainingIcon", Game.Art.Get("menuicon_dungeon"), accent);
             UIFactory.Place(icon.rectTransform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(52, 52));
             icon.raycastTarget = false;
-            Label(p.transform, "TierName", L.T(def.Name), 26, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -141), new Vector2(354, 36), TextAnchor.MiddleCenter).color = accent;
-            Label(p.transform, "Band", $"Lv.{def.MinLevel} ~ {def.MaxLevel}", 22, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -182), new Vector2(354, 30), TextAnchor.MiddleCenter);
-            Label(p.transform, "Description", L.T(Descriptions[index]), 17, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -221), new Vector2(354, 44), TextAnchor.UpperCenter);
-            gates[index] = Label(p.transform, "Gate", "", 16, TL, TL, new Vector2(20, -286), new Vector2(200, 26), TextAnchor.MiddleLeft);
-            enters[index] = Button(p.transform, "Enter", L.T("자동사냥 입장"), "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-18, 18), new Vector2(154, 46), () => Game.MiniDungeon?.Enter(def.Tier), 18);
+            var name = Label(p.transform, "TierName", L.T(def.Name), 24, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -108), new Vector2(354, 58), TextAnchor.MiddleCenter);
+            name.color = accent;
+            FitCardText(name, 16, 24);
+            Label(p.transform, "Band", $"Lv.{def.MinLevel} ~ {def.MaxLevel}", 22, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -168), new Vector2(354, 30), TextAnchor.MiddleCenter);
+            var description = Label(p.transform, "Description", L.T(Descriptions[index]), 17, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -204), new Vector2(354, 58), TextAnchor.UpperCenter);
+            FitCardText(description, 13, 17);
+            gates[index] = Label(p.transform, "Gate", "", 16, TL, TL, new Vector2(16, -264), new Vector2(354, 24), TextAnchor.MiddleCenter);
+            enters[index] = Button(p.transform, "Enter", L.T("자동사냥 입장"), "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-18, 8), new Vector2(250, 34), () => Game.MiniDungeon?.Enter(def.Tier), 18);
+            FitCardText(gates[index], 12, 16);
+            FitCardText(enters[index].GetComponentInChildren<Text>(), 12, 18);
+        }
+
+        static void FitCardText(Text text, int min, int max)
+        {
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = min;
+            text.resizeTextMaxSize = max;
         }
 
         public void Open()

@@ -240,7 +240,20 @@ namespace DotRPG
             cmd.aim = (Target.Center - self.Center).normalized;
             cmd.faceAim = true;
 
-            if (Def.IsMage)
+            if (RitualTargeting.IsTotem(Target))
+            {
+                // A distant priority target can still lose the skill caster's nearest-enemy auto-aim.
+                float reach = Def.IsMage ? MageMaxRange : MeleeRange;
+                if (dist > reach || RitualTargeting.NeedsApproach(self, Target))
+                {
+                    cmd.move = RitualTargeting.Steer(self, tp);
+                    if (InDanger(me + cmd.move * .6f)) cmd.move = Vector2.zero;
+                    return;
+                }
+                // Hold the aim-winning position instead of strafing or retreating back toward the boss.
+                cmd.attack = true;
+            }
+            else if (Def.IsMage)
             {
                 // Keep 3–5 units away; strafe a little while shooting.
                 if (dist < MageMinRange) cmd.move = Away(me, tp);

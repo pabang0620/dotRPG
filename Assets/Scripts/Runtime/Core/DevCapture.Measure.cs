@@ -39,17 +39,20 @@ namespace DotRPG
             AudioListener.volume = 0f;
             DungeonAuthority.Current = new LocalDungeonAuthority(20261012);
             QuestAutoPilot.MeasureAnywhere = true;
+            MeasurePortalDirections();
+            MapPortal.MeasureInwardBlocks = 0;
             string only = MeasureArg("-measureOnly", "all");
             float minutes = MeasureFloat("-measureMinutes", 2f);
             float scale = MeasureFloat("-measureScale", 5f);
-            // Fixed step (default): every frame is 1/30 s of game time and frames are not capped, so a run goes as fast as
+            // Fixed step (default 30 fps, configurable with -measureFps): frames are not capped, so a run goes as fast as
             // the PC renders (finer steps than -measureScale 5, which jumped 0.08 s a frame). -measureFast 0 = the old scale.
             bool fast = MeasureArg("-measureFast", "1") == "1";
+            int measureFps = Mathf.Clamp(Mathf.RoundToInt(MeasureFloat("-measureFps", 30f)), 15, 240);
             if (fast)
             {
                 QualitySettings.vSyncCount = 0;
                 Application.targetFrameRate = -1;
-                Time.captureFramerate = 30;
+                Time.captureFramerate = measureFps;
                 scale = 1f;
             }
             string outPath = MeasureArg("-measureOut", MeasureDefaultOut);
@@ -59,6 +62,14 @@ namespace DotRPG
             var bossrush = new List<object>();
             float started = Time.realtimeSinceStartup;
             MeasureChapter3Open(); // [MEASURE CH3] -measureChapter3 1 (DevCapture.Measure.Ch3.cs)
+            measureCheckpoint = () =>
+            {
+                var partialMeta = HRow(("driverRevision", "decision-trace-14-ninja-leap-fixture"), ("partial", true),
+                    ("seedBase", MeasureArg("-measureSeed", "20261026")), ("huntSeedIdentity", "base+zone+level; shared across classes and drivers"), ("ninjaLeapFixture", MeasureArg("-measureNinjaLeapFixture", "0")), ("timeScale", fast ? $"fixed 1/{measureFps}" : (object)scale));
+                Directory.CreateDirectory(Path.GetDirectoryName(outPath));
+                File.WriteAllText(outPath + ".partial.json", MiniJson.Write(HRow(("meta", partialMeta), ("hunting", hunting),
+                    ("dungeons", dungeons), ("raids", raids), ("bossrush", bossrush))));
+            };
             Log($"measure start: only={only} minutes={minutes} scale={scale} out={outPath}");
             if (only == "all" || only == "hunting") yield return MeasureHunting(hunting, minutes, scale);
             if (only == "all" || only == "dungeons") yield return MeasureDungeons(dungeons, scale);
@@ -69,10 +80,10 @@ namespace DotRPG
             QuestAutoPilot.MeasureAnywhere = false;
             int levelCap = Progression.LevelCap;
             MeasureChapter3Restore();
-            var meta = HRow(("build", Application.version), ("timeScale", fast ? "fixed 1/30" : (object)scale), ("huntMinutes", minutes), ("only", only), ("levelCap", levelCap),
-                ("driverRevision", "decision-trace-2"), ("measureDodge", MeasureArg("-measureDodge", "1")),
+            var meta = HRow(("build", Application.version), ("timeScale", fast ? $"fixed 1/{measureFps}" : (object)scale), ("huntMinutes", minutes), ("only", only), ("levelCap", levelCap),
+                ("driverRevision", "decision-trace-14-ninja-leap-fixture"), ("seedBase", MeasureArg("-measureSeed", "20261026")), ("huntSeedIdentity", "base+zone+level; shared across classes and drivers"), ("ninjaLeapFixture", MeasureArg("-measureNinjaLeapFixture", "0")), ("portal_inward_frames_blocked", MapPortal.MeasureInwardBlocks), ("measureDodge", MeasureArg("-measureDodge", "1")),
                 ("measuredAt", DateTime.Now.ToString("s")), ("wallSeconds", Mathf.RoundToInt(Time.realtimeSinceStartup - started)),
-                ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 2.4-3.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled; -measureDodge 1 (default): 0.25 s late steps out of ground warnings, stands in its 낙인 circle, hides from 섬멸, hits gimmick totems first. Potions under 40% HP / 20% MP"));
+                ("driver", "hunting: auto = QuestAutoPilot 자동 사냥 (skill every 1.6-2.2 s, basic 0.5-0.7 s), skilled = spam main skill + skills on cooldown; dungeons/raids: skilled; -measureDodge 1 (default): 0.25 s late steps out of ground warnings, stands in its 낙인 circle, hides from 섬멸, hits gimmick totems first. Potions under 40% HP / 20% MP"));
             var root = HRow(("meta", meta), ("hunting", hunting), ("dungeons", dungeons), ("raids", raids), ("bossrush", bossrush));
             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
             File.WriteAllText(outPath, MiniJson.Write(root));
@@ -84,13 +95,103 @@ namespace DotRPG
         static string MeasureCareerName(CharacterClass cls, Career career) =>
             career != Career.None ? career.ToString().ToLowerInvariant() : cls == CharacterClass.Mage ? "mage" : cls == CharacterClass.Rogue ? "rogue" : "warrior";
 
+        void MeasurePortalDirections()
+        {
+            var bounds = new Rect(0f, 0f, 56f, 48f);
+            int checks = 0;
+            void Check(bool value, string label)
+            {
+                if (!value) throw new InvalidOperationException("Portal direction regression: " + label);
+                checks++;
+            }
+            foreach (var edge in new[] {
+                (new Vector2(.5f,24.5f), Vector2.left), (new Vector2(55.5f,24.5f), Vector2.right),
+                (new Vector2(28.5f,.5f), Vector2.down), (new Vector2(28.5f,47.5f), Vector2.up) })
+            {
+                Check(MapPortal.AllowsTravel(bounds, edge.Item1, edge.Item1 - edge.Item2 * .4f, edge.Item2), "outward " + edge.Item2);
+                Check(!MapPortal.AllowsTravel(bounds, edge.Item1, edge.Item1 + edge.Item2 * .2f, -edge.Item2), "inward " + edge.Item2);
+            }
+            Check(!MapPortal.AllowsTravel(bounds, new Vector2(.5f,25.5f), new Vector2(.3f,25.12f), new Vector2(1.82f,-.94f)), "observed diagonal inward crossing");
+            Check(MapPortal.AllowsTravel(bounds, new Vector2(26.5f,25.5f), new Vector2(26.5f,24.5f), Vector2.up), "interior stair approach");
+            Check(!MapPortal.AllowsTravel(bounds, new Vector2(26.5f,25.5f), new Vector2(26.5f,24.5f), Vector2.down), "interior stair departure");
+            Log($"portal direction regression: {checks} passed");
+        }
+
+        Action measureCheckpoint;
+        sealed class MeasureIdleInput : IActorInput
+        {
+            public ActorCommand Read(PlayerController self) => ActorCommand.None;
+        }
+        static void MeasureOwnInput()
+        {
+            if (Game.Player != null && !QuestAutoPilot.Drives(Game.Player)) Game.Player.Input = new MeasureIdleInput();
+        }
+
+        string MeasureWorldTrace() => $"state={Game.State?.Current} map={Game.World?.MapId} transition={Game.Flow?.IsTransitioning} top={Game.UI?.Top?.name} dialogue={Game.Dialogue?.IsOpen} dead={Game.Player?.IsDead} scale={Time.timeScale} pos={Game.Player?.Position} input={Game.Player?.Input?.GetType().Name} hunt={QuestAutoPilot.Hunting}";
+
+        void MeasureResumeField()
+        {
+            MeasureOwnInput();
+            if (Game.Flow.IsTransitioning) return;
+            if (!Game.IsPlaying) Log("measure field state before resume: " + MeasureWorldTrace());
+            if (Game.Dialogue.IsOpen) Game.Dialogue.Close();
+            if (Game.State.Current == GameState.Inventory) Game.Flow.CloseInventory();
+            if (Game.State.Current == GameState.Paused) Game.Flow.Resume();
+            if (Game.State.Current == GameState.GameOver && Game.Player != null && !Game.Player.IsDead)
+                Game.State.Set(GameState.Playing);
+        }
+
+        bool measureTravelSucceeded;
+        IEnumerator MeasureTravel(string zone)
+        {
+            QuestAutoPilot.Stop("");
+            measureTravelSucceeded = false;
+            float deadline = Time.realtimeSinceStartup + 60f, nextRequest = 0f;
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                MeasureResumeField();
+                if (!Game.Flow.IsTransitioning && Game.World?.MapId == zone)
+                {
+                    measureTravelSucceeded = true;
+                    yield break;
+                }
+                if (!Game.Flow.IsTransitioning && Time.realtimeSinceStartup >= nextRequest)
+                {
+                    Log($"measure travel {zone}: {MeasureWorldTrace()}");
+                    Game.Flow.TravelTo(zone, true);
+                    nextRequest = Time.realtimeSinceStartup + 2f;
+                }
+                yield return null;
+            }
+            Log($"measure travel timeout {zone}: {MeasureWorldTrace()}");
+        }
+
+        int measureRowSeed;
+        void MeasureSeedRow(string identity)
+        {
+            int.TryParse(MeasureArg("-measureSeed", "20261026"), out int seedBase);
+            unchecked
+            {
+                uint hash = (uint)seedBase;
+                foreach (char c in identity) hash = (hash ^ c) * 16777619u;
+                measureRowSeed = (int)(hash & 0x7fffffffu);
+            }
+            UnityEngine.Random.InitState(measureRowSeed);
+        }
+
+        void MeasureReseed() => UnityEngine.Random.InitState(measureRowSeed);
+
         IEnumerator MeasureHero(CharacterClass cls, Career career, int level, string grade)
         {
+            QuestAutoPilot.Stop("");
+            while (Game.Flow.IsTransitioning) { MeasureOwnInput(); yield return null; }
             Game.Party?.ClearCompanions();
             Game.Flow.NewGame(cls);
+            yield return null;
             yield return Wait(.3f);
             while (Game.Flow.IsTransitioning) yield return null;
             MeasureLevel(cls, career, level, grade);
+            MeasureOwnInput();
         }
 
         /// <summary>Sets the hero to <paramref name="level"/> (only upward), promotes, learns and keys career skills, wears that tier's gear.</summary>
@@ -140,6 +241,7 @@ namespace DotRPG
 
         static void MeasureEnsureHunting()
         {
+            MeasureOwnInput();
             if (!QuestAutoPilot.Hunting && Game.Player != null && !Game.Player.IsDead && (Game.Flow == null || !Game.Flow.IsTransitioning)) QuestAutoPilot.ToggleHunt();
         }
 
@@ -172,7 +274,7 @@ namespace DotRPG
 
         IEnumerator MeasureHunting(List<object> rows, float minutes, float scale)
         {
-            // One hero per class (before the career) or career, levelled up zone by zone (a new game per row is slow).
+            // A fresh hero per driver prevents XP and skill state carrying into the next row.
             // -measureZones a,b,c: only these hunting grounds (re-measuring a few with more minutes).
             var zoneFilter = MeasureArg("-measureZones", "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             var plans = MeasureHuntPlans(); // [MEASURE CH3] -measureCareers also picks warrior / mage / rogue
@@ -180,19 +282,25 @@ namespace DotRPG
             var zones = HuntingGrounds.All.Where(z => Chapter3.Enabled || !MapRegistry.Chapter3Maps.Contains(z.id)).OrderBy(z => z.monsterLevel).ToList();
             foreach (var (cls, career) in plans)
             {
-                bool made = false;
                 foreach (var zone in zones)
                 {
                     int lv = Mathf.Clamp(zone.monsterLevel, 1, Progression.LevelCap);
                     if ((career == Career.None) != (lv < 15)) continue;
                     if (zoneFilter.Length > 0 && System.Array.IndexOf(zoneFilter, zone.id) < 0) continue;
-                    if (!made) { yield return MeasureHero(cls, career, lv, "r"); made = true; }
-                    else MeasureLevel(cls, career, lv, "r");
-                    Game.Flow.TravelTo(zone.id, true);
-                    yield return Wait(.3f);
-                    while (Game.Flow.IsTransitioning) yield return null;
                     foreach (bool skilled in new[] { false, true })
                     {
+                        MeasureSeedRow($"hunt:{zone.id}:{lv}");
+                        yield return MeasureHero(cls, career, lv, "r");
+                        // Optional QA fixture only: preserve the standard loadout unless explicitly requested.
+                        bool ninjaLeapFixture = MeasureArg("-measureNinjaLeapFixture", "0") == "1";
+                        if (ninjaLeapFixture && (career != Career.Ninja || !Game.Session.Progression.EquipSkill(0, "leap")))
+                            throw new System.InvalidOperationException("Ninja leap fixture requires a promoted ninja and an unlocked leap skill.");
+                        MeasureReseed();
+                        yield return MeasureTravel(zone.id);
+                        int startLevel = Game.Session.Progression.Level;
+                        bool setupValid = measureTravelSucceeded && startLevel == lv && Game.Session.PlayerClass == cls;
+                        if (!setupValid) Log($"hunt setup mismatch: intended {cls} Lv{lv}, actual {Game.Session.PlayerClass} Lv{startLevel}");
+                        MeasureReseed();
                         // auto = 자동 사냥 as players get it; skilled = a practised player (spam skill, skills on cooldown).
                         QuestAutoPilot.MeasureSkilled = skilled;
                         QuestAutoPilot.ResetMeasureTrace();
@@ -200,11 +308,18 @@ namespace DotRPG
                         var tally = new MeasureTally();
                         Time.timeScale = scale;
                         float t0 = Time.time, nextHuntTrace = 30f;
+                        float rowDeadline = Time.realtimeSinceStartup + Mathf.Max(240f, minutes * 180f);
+                        bool rowTimedOut = false;
                         int strays = 0;
+                        int ninjaLeapRequestsStart = QuestAutoPilot.NinjaLeapRequests;
+                        int ninjaLeapSkipsStart = QuestAutoPilot.NinjaLeapNoTargetSkips;
                         float recoverySeconds = 0f;
                         bool recoveryFailed = false;
-                        while (Time.time - t0 < minutes * 60f)
+                        while (setupValid && Time.time - t0 < minutes * 60f)
                         {
+                            if (Time.realtimeSinceStartup >= rowDeadline) { rowTimedOut = true; Log("hunt watchdog: " + MeasureWorldTrace()); break; }
+                            if (!Game.IsPlaying && !Game.Flow.IsTransitioning) Log("hunt resume: " + MeasureWorldTrace());
+                            MeasureResumeField();
                             tally.Track();
                             if (Time.time - t0 >= nextHuntTrace)
                             {
@@ -226,13 +341,9 @@ namespace DotRPG
                                 strays++;
                                 QuestAutoPilot.Stop("");
                                 float recoveryStart = Time.time;
-                                float recoveryDeadline = Time.realtimeSinceStartup + 30f;
-                                Game.Flow.TravelTo(zone.id, true);
-                                yield return null;
-                                while ((Game.Flow.IsTransitioning || Game.World == null || Game.World.MapId != zone.id)
-                                    && Time.realtimeSinceStartup < recoveryDeadline) yield return null;
+                                yield return MeasureTravel(zone.id);
                                 recoverySeconds += Time.time - recoveryStart;
-                                if (Game.Flow.IsTransitioning || Game.World == null || Game.World.MapId != zone.id)
+                                if (!measureTravelSucceeded)
                                 {
                                     recoveryFailed = true;
                                     Log("measure: hunt recovery failed for " + zone.id);
@@ -246,20 +357,23 @@ namespace DotRPG
                             MeasureEnsureHunting();
                             yield return null;
                         }
-                        float mins = (Time.time - t0) / 60f;
+                        float mins = Mathf.Max(.001f, (Time.time - t0) / 60f);
                         Time.timeScale = 1f;
                         QuestAutoPilot.Stop("");
                         tally.Close();
                         string name = MeasureCareerName(cls, career);
                         string driver = skilled ? "skilled" : "auto";
-                        var huntRow = HRow(("zone", zone.id), ("name", zone.name), ("mlv", zone.monsterLevel), ("career", name), ("level", Game.Session.Progression.Level),
-                            ("driver", driver), ("minutes", R2(mins)),
+                        var huntRow = HRow(("zone", zone.id), ("name", zone.name), ("mlv", zone.monsterLevel), ("career", name), ("level", startLevel), ("intended_level", lv), ("start_level", startLevel), ("end_level", Game.Session.Progression.Level), ("seed", measureRowSeed),
+                            ("driver", driver), ("minutes", R2(mins)), ("qa_fixture", ninjaLeapFixture ? "ninja-leap-slot0" : "standard"),
                             ("kills_per_min", R2(tally.kills / mins)), ("xp_per_min", R1(tally.Xp / mins)), ("gold_per_min", R1(tally.gold / mins)),
                             ("drops_per_min", R2(tally.drops / mins)), ("damage_taken_per_min", R1(tally.damage / mins)),
                             ("potions_per_min", R2(tally.potions / mins)), ("deaths", tally.deaths), ("hero_hp", Game.Player != null ? Game.Player.Health.Max : 0), ("strays", strays),
-                            ("recovery_s", R1(recoverySeconds)), ("valid", !recoveryFailed));
+                            ("ninja_leap_requests", QuestAutoPilot.NinjaLeapRequests - ninjaLeapRequestsStart),
+                            ("ninja_leap_no_target_skips", QuestAutoPilot.NinjaLeapNoTargetSkips - ninjaLeapSkipsStart),
+                            ("recovery_s", R1(recoverySeconds)), ("valid", setupValid && !recoveryFailed && !rowTimedOut), ("row_timeout", rowTimedOut));
                         MeasureTraceRow(huntRow);
                         rows.Add(huntRow);
+                        measureCheckpoint?.Invoke();
                         Log($"hunt {zone.id} Lv{lv} {name} {driver}: kills/min {tally.kills / mins:0.0} xp/min {tally.Xp / mins:0} dmg/min {tally.damage / mins:0} potions {tally.potions} deaths {tally.deaths}");
                     }
                     QuestAutoPilot.MeasureSkilled = false;
@@ -285,6 +399,8 @@ namespace DotRPG
             select.Open(false);
             yield return Wait(.3f);
             bool picked = select.DevSelect(def.id, diff);
+            MeasureReseed();
+            row["seed"] = measureRowSeed;
             bool entered = picked && select.DevEnter();
             Log($"run {def.id} {diff}: picked {picked} entered {entered} '{select.DevStatus}'");
             yield return Wait(1f);
@@ -313,6 +429,7 @@ namespace DotRPG
             row["dodge"] = QuestAutoPilot.MeasureDodge;
             // Ground hits on the hero (warnings that resolved with the hero inside) and 섬멸 blasts sat out in cover or not.
             int groundHits = 0, coverOk = 0, coverMiss = 0;
+            int ruinStarted = BossBrain.RuinStarted, ruinBroken = BossBrain.RuinBroken, ruinFailed = BossBrain.RuinFailed;
             bool annihilating = false, coveredLast = false;
             Action<Telegraph, List<PlayerController>> onResolve = (t, inside) => { if (t.damage > 0 && Game.Player != null && inside.Contains(Game.Player)) groundHits++; };
             Telegraph.AnyResolved += onResolve;
@@ -406,6 +523,9 @@ namespace DotRPG
             row["seal_broken"] = sealOk;
             row["seal_failed"] = sealFail;
             row["ground_hits"] = groundHits;
+            row["ruin_started"] = BossBrain.RuinStarted - ruinStarted;
+            row["ruin_broken"] = BossBrain.RuinBroken - ruinBroken;
+            row["ruin_failed"] = BossBrain.RuinFailed - ruinFailed;
             row["dodges"] = QuestAutoPilot.MeasureDodges;
             MeasureTraceRow(row);
             row["cover_moves"] = QuestAutoPilot.MeasureCoverMoves;
@@ -447,12 +567,18 @@ namespace DotRPG
                     // Same hero alone and with three AI, so the two rows compare (2026-10-13).
                     foreach (int companions in new[] { 0, 3 })
                     {
+                        MeasureSeedRow($"dungeon:{def.id}:{d}:{career}:{lv}:{companions}");
                         yield return MeasureHero(cls, career, lv, "r");
+                        // Optional QA fixture only: preserve the standard loadout unless explicitly requested.
+                        bool ninjaLeapFixture = MeasureArg("-measureNinjaLeapFixture", "0") == "1";
+                        if (ninjaLeapFixture && (career != Career.Ninja || !Game.Session.Progression.EquipSkill(0, "leap")))
+                            throw new System.InvalidOperationException("Ninja leap fixture requires a promoted ninja and an unlocked leap skill.");
                         for (int below = 0; below < d; below++) Game.Session.Dungeons.RecordClear(def.id, (DungeonDifficulty)below, DungeonRank.A);
                         var row = HRow(("id", def.id), ("name", def.name), ("difficulty", d), ("level", lv), ("career", MeasureCareerName(cls, career)),
                             ("party", companions == 0 ? "solo" : "1+3ai"));
                         yield return MeasureOneRun(def, diff, companions, scale, row);
                         rows.Add(row);
+                        measureCheckpoint?.Invoke();
                         clock = clock.AddDays(7);
                     }
                 }
@@ -481,6 +607,7 @@ namespace DotRPG
                         int lv = numbers.recommendedLevel;
                         var cls = CareerCatalog.Base(career);
                         Log($"raid {def.id} {diff} {career} x{companions}: hero Lv{lv}");
+                        MeasureSeedRow($"raid:{def.id}:{diff}:{career}:{lv}:{companions}");
                         yield return MeasureHero(cls, career, lv, "e");
                         Log("  hero ready");
                         if (!string.IsNullOrEmpty(def.unlockQuest)) Game.Session.Journal.State(def.unlockQuest).status = (int)QuestStatus.Active;
@@ -492,6 +619,7 @@ namespace DotRPG
                         while (def.openDays != null && def.openDays.Length > 0 && Array.IndexOf(def.openDays, clock.DayOfWeek) < 0) clock = clock.AddDays(1);
                         yield return MeasureOneRun(def, diff, companions, scale, row);
                         rows.Add(row);
+                        measureCheckpoint?.Invoke();
                         clock = clock.AddDays(7);
                     }
             if (Game.Config != null) Game.Config.chapter3Open = wasOpen;

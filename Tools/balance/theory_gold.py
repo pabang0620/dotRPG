@@ -366,7 +366,9 @@ EXCHANGES = 4                # 아카브 교환(주 2회 x 2주)
 WORLD_GUILD_PER_WEEK = 80000  # 월드보스 참가 30,000 + 격파 30,000 + 길드보스 20,000(PLAN_GUILD_WORLDBOSS 3·4절, Lv40 입장)
 WINDOW_DAYS = 60             # 장 공개부터 다음 장 공개까지(약 2달, ROADMAP 3절)
 BAL40_SIM = 910000           # 옛 기준: 출시 20명 시뮬 Lv40 잔고 중앙값(BALANCE_MEASURE_2026-10-16 5절)
-CH4_TARGET = (1329500, 1444100)  # PLAN_CHAPTER4 9.3절: 이 범위면 4장 비율 0.85~0.90
+# PLAN_CHAPTER4 9.3절의 설계 비용으로 역산한 허용 잔고이며 관측값이 아니다.
+CH4_PLAN_INCOME, CH4_PLAN_SPEND = 608170, 2686775
+CH4_TARGET = tuple(round(CH4_PLAN_SPEND * ratio - CH4_PLAN_INCOME) for ratio in (0.85, 0.90))
 LIFE_RAIDS = {40: ("raid_skeleton_king", 3, "raid_grah", 1), 50: ("raid_xibak", 3, "raid_kamatz", 1)}
 
 
@@ -462,7 +464,7 @@ def chapter3(after_days=None, window=WINDOW_DAYS, verbose=True):
     res = {"hours": hours, "days": days_b, "income": ib, "spend": sb, "bal40": bal40, "open3": open3, "open4": open4,
            "ratio": (open3 + ib) / sb, "ratio_old": (BAL40_SIM + ib) / sb, "life40": life40, "life50": life50, "after_a": after_a, "after_b": after_b}
     if verbose:
-        print(f"## 챕터 3 골드 (Lv40+c2_end {t0:.1f}h -> Lv{max_level} {t1:.1f}h = {hours:.1f}시간, {days_b:.1f}일, 직업 {tp.CAREER or '4직업 합산'})")
+        print(f"## 챕터 3 골드 (Lv40+c2_end {t0:.1f}h -> Lv{max_level} {t1:.1f}h = {hours:.1f}시간, {days_b:.1f}일, 직업 {tp.CAREER or '직업 합산'})")
         print("| 3장 수입 | 골드 |\n|---|---|")
         for k, v in inc.items():
             print(f"| {k} | {v:,.0f} |")

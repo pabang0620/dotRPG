@@ -44,6 +44,9 @@ namespace DotRPG
         void OnEnable() { dirty = true; }
         void OnRectTransformDimensionsChange() { dirty = true; }
 
+        /// <summary>Resolve word wrapping before a parent measures its dynamic height.</summary>
+        public void RefreshNow() => LateUpdate();
+
         void LateUpdate()
         {
             if (text == null) return;

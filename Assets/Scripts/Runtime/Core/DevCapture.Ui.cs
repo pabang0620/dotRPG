@@ -12,6 +12,7 @@ namespace DotRPG
         /// <summary>-dotrpgUi: screenshots and checks of the 32px windows, HUD and icons.</summary>
         IEnumerator UiShowcase()
         {
+            if (UiAuditRequested()) { yield return UiAuditRun(); yield break; }
             // The standalone player keeps the desktop resolution in windowed mode, so honour the
             // requested -screen-width/-screen-height ourselves - the UI is resolution-dependent and the
             // brief wants a 1280x720 pass and a 1920x1080 pass.

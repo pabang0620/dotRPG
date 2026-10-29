@@ -25,6 +25,7 @@ namespace DotRPG
         }
 
         RectTransform specPage;
+        RectTransform specList;
         Text specHeader, specInfo;
         sealed class SpecRow { public Image bg, icon, frame; public Text name; public Button a, b; public Text aText, bText, cost; public string skill; }
         readonly List<SpecRow> specRows = new List<SpecRow>();
@@ -34,11 +35,12 @@ namespace DotRPG
         {
             specPage = UIFactory.Stretch(UIFactory.Rect(content, "SpecPage"), 0f, 0f, 0f, 56f);
             specHeader = Label(specPage, "Header", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(800f, 30f), TextAnchor.MiddleLeft);
+            specList = SkillScroll(specPage, "SpecViewport", new Vector2(0f, -34f), new Vector2(800f, 500f), SpecRows * (SpecRowH + 2f));
             for (int i = 0; i < SpecRows; i++)
             {
                 var row = new SpecRow();
-                float y = -34f - i * (SpecRowH + 2f);
-                row.bg = Panel(specPage, "SpecRow" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, y), new Vector2(800f, SpecRowH), UiTheme.Panel);
+                float y = -i * (SpecRowH + 2f);
+                row.bg = Panel(specList, "SpecRow" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, y), new Vector2(800f, SpecRowH), UiTheme.Panel);
                 // [CH3 SPEC] Skill icon, framed crimson (A) or silver (B) once a side is chosen.
                 row.icon = UIFactory.Image(row.bg.transform, "Icon", null, Color.white);
                 UIFactory.Place(row.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(6f, 0f), new Vector2(SpecRowH - 6f, SpecRowH - 6f));
@@ -50,19 +52,30 @@ namespace DotRPG
                 row.b = Button(row.bg.transform, "B", "", "ui_btngray", new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(454f, 0f), new Vector2(286f, SpecRowH - 3f), () => PickSpec(r, 'b'), 13);
                 row.aText = row.a.GetComponentInChildren<Text>();
                 row.bText = row.b.GetComponentInChildren<Text>();
+                foreach (var label in new[] { row.name, row.aText, row.bText })
+                {
+                    label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    label.verticalOverflow = VerticalWrapMode.Truncate;
+                    label.resizeTextForBestFit = true;
+                    label.resizeTextMinSize = 10;
+                    label.resizeTextMaxSize = label.fontSize;
+                }
                 HoverSpec(row.a.gameObject, r, 'a');
                 HoverSpec(row.b.gameObject, r, 'b');
                 row.cost = Label(row.bg.transform, "Cost", "", 13, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(50f, SpecRowH), TextAnchor.MiddleRight);
                 specRows.Add(row);
             }
-            var info = Panel(specPage, "SpecInfo", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -34f - SpecRows * (SpecRowH + 2f)), new Vector2(800f, 44f), UiTheme.PanelDeep);
-            specInfo = Label(info.transform, "Text", "", UiTheme.FontMin, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(776f, 42f), TextAnchor.MiddleLeft);
+            var info = Panel(specPage, "SpecInfo", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(812f, 0f), new Vector2(408f, 534f), UiTheme.PanelDeep);
+            var infoContent = SkillScroll(info.transform, "Viewport", new Vector2(14f, -14f), new Vector2(380f, 506f), 506f);
+            specInfo = Label(infoContent, "Text", "", UiTheme.FontMin, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(380f, 506f), TextAnchor.UpperLeft);
+            specInfo.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            infoContent.parent.GetComponent<ScrollRect>().content = specInfo.rectTransform;
         }
 
         void HoverSpec(GameObject go, SpecRow row, char side)
         {
             var relay = go.AddComponent<PointerRelay>();
-            relay.onEnter = () => { var s = SkillSpecs.Find(row.skill, side); specHover = s == null ? null : $"<b>{s.name}</b>  {s.text}"; RefreshSpecInfo(); };
+            relay.onEnter = () => { var s = SkillSpecs.Find(row.skill, side); specHover = s == null ? null : $"<b>{s.name}</b>\n\n{s.text}"; RefreshSpecInfo(); };
             relay.onExit = () => { specHover = null; RefreshSpecInfo(); };
         }
 
@@ -79,7 +92,7 @@ namespace DotRPG
 
         static string SkillName(string id) => CareerCatalog.Get(id)?.name ?? (Game.Session?.Progression?.Shown(SkillGems.Get(id)) ?? SkillGems.Get(id))?.name ?? id; // [NINJA] thrown names
 
-        static string SkillIcon(string id) => CareerCatalog.Get(id)?.Icon ?? SkillGems.Get(id)?.icon;
+        static string SkillIcon(string id) => CareerMoves.IconKey(CareerCatalog.Get(id)?.Icon ?? SkillGems.Get(id)?.icon);
 
         void PickSpec(SpecRow row, char side)
         {
@@ -97,6 +110,7 @@ namespace DotRPG
             if (specPage == null) return;
             var prog = Game.Session.Progression;
             var skills = SpecSkills(prog);
+            specList.sizeDelta = new Vector2(800f, Mathf.Min(skills.Count, SpecRows) * (SpecRowH + 2f));
             bool here = Progression.SpecEditPlace();
             specHeader.text = L.F("특화 포인트 <color=#ffe066>{0}</color> / {1}   ·   액티브 {2}점 · 패시브 {3}점", prog.SpecPointsLeft, prog.SpecPoints, SkillSpecs.ActiveCost, SkillSpecs.PassiveCost)
                 + (here ? "" : L.T("   <color=#ff9f7a>마을에서 바꿀 수 있어요</color>"));

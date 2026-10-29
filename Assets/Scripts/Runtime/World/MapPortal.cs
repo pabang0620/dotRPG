@@ -30,6 +30,24 @@ namespace DotRPG
 
         void OnTriggerStay2D(Collider2D other) => TryTravel(other);
 
+        internal static int MeasureInwardBlocks;
+
+        // Edge exits require movement out of the map; approaching a trigger centre from its outer half is not an exit.
+        internal static bool AllowsTravel(Rect bounds, Vector2 portal, Vector2 position, Vector2 intent)
+        {
+            float nearest = 1f;
+            Vector2 outward = Vector2.zero;
+            void Edge(float distance, Vector2 direction)
+            {
+                if (distance >= 0f && distance < nearest) { nearest = distance; outward = direction; }
+            }
+            Edge(portal.x - bounds.xMin, Vector2.left);
+            Edge(bounds.xMax - portal.x, Vector2.right);
+            Edge(portal.y - bounds.yMin, Vector2.down);
+            Edge(bounds.yMax - portal.y, Vector2.up);
+            return Vector2.Dot(intent, outward == Vector2.zero ? portal - position : outward) > 0f;
+        }
+
         void TryTravel(Collider2D other)
         {
             // Only the party leader (the local player) travels; companions follow it.
@@ -40,7 +58,13 @@ namespace DotRPG
             // Only the character's own walking takes it through: a monster's knockback (or standing in the doorway after
             // one) does not throw it into the next map.
             if (leader.KnockedBack) return;
-            if (Vector2.Dot(leader.MoveIntent, (Vector2)transform.position - leader.Position) <= 0f) return;
+            if (!AllowsTravel(Game.World.Bounds, transform.position, leader.Position, leader.MoveIntent))
+            {
+                if (QuestAutoPilot.MeasureAnywhere) MeasureInwardBlocks++;
+                return;
+            }
+            if (QuestAutoPilot.MeasureAnywhere)
+                Debug.Log($"[MeasurePortal] {Game.World?.MapId}->{TargetMap} pos={leader.Position} intent={leader.MoveIntent} input={leader.Input?.GetType().Name} hunt={QuestAutoPilot.Hunting} portal={transform.position}");
             Game.Flow.TravelTo(TargetMap);
         }
     }

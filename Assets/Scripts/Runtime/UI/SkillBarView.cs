@@ -200,7 +200,7 @@ namespace DotRPG
                 var shown = gem ?? (i==4 ? prog.IsPromoted ? CareerCatalog.For(prog.Career)[8].Gem : null : SkillGems.ForSlot(player.Class, i));
                 keys[i].text = Game.Input.GetBindingLabel(SkillGems.ActionFor(i));
                 icons[i].enabled = shown != null;
-                if (shown != null) icons[i].sprite = Game.Art.Get(shown.icon);
+                if (shown != null) icons[i].sprite = Game.Art.Get(CareerMoves.IconKey(shown.icon));
                 ShowSpec(i, gem != null ? prog.SpecOf(gem.id) : '\0');
                 bool open = gem != null;
                 // [SKILL 8] An A/S/D key that is open but has nothing on it: an empty slot, not a lock.

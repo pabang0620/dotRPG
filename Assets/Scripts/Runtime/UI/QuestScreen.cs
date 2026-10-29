@@ -47,7 +47,7 @@ namespace DotRPG
             w.detail.resizeTextMinSize = 14;
             w.detail.resizeTextMaxSize = 21;
             w.detail.verticalOverflow = VerticalWrapMode.Truncate;
-            w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 16f), new Vector2(704f, 30f));
+            w.hint = Label(side.transform, "Hint", "", UiTheme.FontMin, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(28f, 12f), new Vector2(704f, 44f));
             w.hint.color = new Color32(184, 196, 216, 255);
             // Check this quest for auto-progress (nothing checked: the main quest first, then the pinned side quest).
             w.autoBtn = Button(side.transform, "AutoTarget", L.T("자동 진행에 체크"), "ui_btngray", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 52f), new Vector2(280f, 44f), w.ToggleAutoTarget, 18);

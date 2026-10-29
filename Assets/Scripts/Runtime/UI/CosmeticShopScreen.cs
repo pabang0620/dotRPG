@@ -13,7 +13,7 @@ namespace DotRPG
     public sealed class CosmeticShopScreen : WindowScreen
     {
         static readonly Vector2 TopLeft = new Vector2(0f, 1f);
-        const float ListW = 430f, RowH = 72f, TabH = 46f;
+        const float ListW = 430f, RowH = 96f, TabH = 46f;
         enum Tab { Aura, WarriorSkin, MageSkin, RogueSkin }
         static readonly string[] TabNames = { L.T("오라"), L.T("전사 스킨"), L.T("마법사 스킨"), L.T("도적 스킨") };
 
@@ -70,7 +70,7 @@ namespace DotRPG
                 row.rt = b.GetComponent<RectTransform>();
                 row.label = b.GetComponentInChildren<Text>();
                 row.label.alignment = TextAnchor.MiddleLeft;
-                UIFactory.Stretch(row.label.rectTransform, 92f, 0f, 10f, 0f);
+                UIFactory.Stretch(row.label.rectTransform, 92f, 8f, 14f, 8f);
                 var look = p.IsSkin ? SkinCatalog.LookFor(p.Skin.cls, p.Id) : null;
                 var card = CosmeticAura.Card(p);
                 row.thumb = UIFactory.Image(b.transform, "Thumbnail", card ?? (look != null ? Game.Art.GetCharacter(look, "down", "idle0") : CosmeticAura.ForProduct(p)), card != null || look != null ? Color.white : p.Color);

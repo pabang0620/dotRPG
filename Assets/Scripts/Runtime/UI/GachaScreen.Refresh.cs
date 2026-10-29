@@ -74,7 +74,15 @@ namespace DotRPG
             one.interactable = ten.interactable = online && StarShopClient.Loaded && !busy;
             RefreshTierPicker(!hasPity && !Sealed && online && StarShopClient.Loaded);
             RefreshCeiling(online);
-            if (rateModal.gameObject.activeSelf) rateText.text = RateText();
+            if (rateModal.gameObject.activeSelf)
+            {
+                rateText.text = RateText();
+                if (rateTopPending && StarShopClient.Loaded)
+                {
+                    rateTopPending = false;
+                    StartCoroutine(ResetRateTop(rateOpenVersion));
+                }
+            }
             DrawCells();
         }
 

@@ -20,6 +20,9 @@ namespace DotRPG
         public const float FateNetGrace = .3f;
         const int RuinTotems = 3;
 
+        // Cumulative diagnostic counters; measurement rows take deltas without changing encounter rules.
+        public static int RuinStarted, RuinBroken, RuinFailed;
+
         static readonly Color DoomRed = new Color(1f, .25f, .3f);
 
         readonly List<EnemyController> ruinTotems = new List<EnemyController>();
@@ -54,6 +57,7 @@ namespace DotRPG
                 ruinTotems.Add(t);
             }
             ruinUntil = Time.time + cast;
+            RuinStarted++;
             Game.Audio.PlaySfx("magic");
             yield return Hold(.4f, CharacterAnim.Attack, true);
         }
@@ -110,6 +114,7 @@ namespace DotRPG
                 ruinTotems.RemoveAll(t => t == null || t.IsDead);
                 if (ruinTotems.Count == 0)
                 {
+                    RuinBroken++;
                     EndRuin();
                     Announce?.Invoke(this, L.T("의식 붕괴! 그로기"), new Color(1f, .9f, .35f));
                     E.ForceGroggy(RuinGroggy);
@@ -119,6 +124,7 @@ namespace DotRPG
                 CompanionBrain.PriorityTargetAlt = ruinTotems.Count > 1 ? ruinTotems[1] : null;
                 if (Time.time >= ruinUntil)
                 {
+                    RuinFailed++;
                     foreach (var t in ruinTotems)
                         if (t != null && !t.IsDead) t.TakeDamage(new DamageInfo(t.Health.Current + 9999, t.Position, 0f, Team.Neutral));
                     EndRuin();

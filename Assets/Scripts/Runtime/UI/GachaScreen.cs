@@ -59,6 +59,8 @@ namespace DotRPG
         Button skipBtn, againBtn, okBtn;
         int lastCount = 1;
         Text rateText;
+        bool rateTopPending;
+        int rateOpenVersion;
         List<StarPullResult> shown = new List<StarPullResult>();
         string banner = "skin";
         float revealAt, flashAt = -10f, punchAt = -10f;
@@ -346,13 +348,34 @@ namespace DotRPG
 
         void OpenRates()
         {
+            rateTopPending = true;
+            int version = ++rateOpenVersion;
             rateText.text = RateText();
             rateModal.gameObject.SetActive(true);
             rateModal.SetAsLastSibling();
+            StartCoroutine(ResetRateTop(version));
             Game.Audio.PlaySfx("select");
         }
 
-        void CloseRates() => rateModal.gameObject.SetActive(false);
+        void CloseRates()
+        {
+            rateTopPending = false;
+            rateOpenVersion++;
+            rateModal.gameObject.SetActive(false);
+        }
+
+        System.Collections.IEnumerator ResetRateTop(int version)
+        {
+            yield return null;
+            yield return new WaitForEndOfFrame();
+            if (version != rateOpenVersion || !rateModal.gameObject.activeSelf) yield break;
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rateText.rectTransform);
+            var scroll = rateText.GetComponentInParent<ScrollRect>();
+            if (scroll != null) { scroll.StopMovement(); scroll.verticalNormalizedPosition = 1f; }
+            // A loading placeholder can be replaced later. Once loaded, ordinary refreshes preserve the reader's place.
+            if (StarShopClient.Loaded || !StarShopClient.Available) rateTopPending = false;
+        }
 
         void Ask(int count)
         {

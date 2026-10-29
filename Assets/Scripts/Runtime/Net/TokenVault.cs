@@ -14,6 +14,9 @@ namespace DotRPG
         const string PlainKey = "dotrpg.refresh", SealedKey = "dotrpg.refresh.dpapi";
         const int UiForbidden = 0x1;
         static bool warned;
+#if !DOTRPG_RELEASE
+        static string auditToken = "";
+#endif
 
         [StructLayout(LayoutKind.Sequential)]
         struct DataBlob { public int cbData; public IntPtr pbData; }
@@ -31,6 +34,9 @@ namespace DotRPG
 
         public static string Load()
         {
+#if !DOTRPG_RELEASE
+            if (DevCapture.IsolatedUiAuditTokenStore) return auditToken;
+#endif
             try
             {
                 string sealedText = PlayerPrefs.GetString(SealedKey, "");
@@ -49,6 +55,9 @@ namespace DotRPG
 
         public static void Save(string value)
         {
+#if !DOTRPG_RELEASE
+            if (DevCapture.IsolatedUiAuditTokenStore) { auditToken = value ?? ""; return; }
+#endif
             try
             {
                 if (string.IsNullOrEmpty(value))

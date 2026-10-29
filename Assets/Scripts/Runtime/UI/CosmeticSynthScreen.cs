@@ -19,7 +19,7 @@ namespace DotRPG
         protected override bool PadNavigation => !busy;
         // [UI] Sized for the 1220 x 594 window content (the old 1500 x 860 layout ran off the right and bottom).
         // [SKIN TIERS] Four rules now (unique -> legend added), so each card is shorter with its buttons stacked on the right.
-        const float RuleH = 114f, RuleGap = 8f, RuleW = 600f, SpareX = 616f, SpareW = 604f, SpareH = 56f, SetH = 88f, RuleTextW = 436f;
+        const float RuleH = 114f, RuleGap = 8f, RuleW = 600f, SpareX = 616f, SpareW = 604f, SpareH = 50f, SetH = 88f, RuleTextW = 436f;
 
         sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; }
         sealed class SpareView { public RectTransform row; public Image icon; public Text name; public Button dismantle, dismantleOne; public string id; }
@@ -62,23 +62,23 @@ namespace DotRPG
                 v.info = Label(card.transform, "Info", "", 15, tl, tl, new Vector2(16f, -36f), new Vector2(RuleTextW, 42f));
                 var barBg = UIFactory.Image(card.transform, "PityBg", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 230));
                 barBg.preserveAspect = false; barBg.raycastTarget = false;
-                UIFactory.Place(barBg.rectTransform, tl, tl, new Vector2(16f, -82f), new Vector2(280f, 14f));
+                UIFactory.Place(barBg.rectTransform, tl, tl, new Vector2(16f, -78f), new Vector2(280f, 5f));
                 v.bar = UIFactory.Image(barBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(197, 140, 255, 255));
                 v.bar.preserveAspect = false; v.bar.raycastTarget = false;
-                UIFactory.Place(v.bar.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 10f));
-                v.pity = Label(card.transform, "Pity", "", 14, tl, tl, new Vector2(16f, -96f), new Vector2(RuleTextW, 18f));
+                UIFactory.Place(v.bar.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 3f));
+                v.pity = Label(card.transform, "Pity", "", 14, tl, tl, new Vector2(16f, -86f), new Vector2(RuleTextW, 18f));
                 v.one = Button(card.transform, "One", L.T("1회 합성"), "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -10f), new Vector2(124f, 42f), () => w.DoSynth(from, false), 17);
                 v.all = Button(card.transform, "All", L.T("모두 합성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -60f), new Vector2(124f, 42f), () => w.DoSynth(from, true), 17);
                 w.rules.Add(v);
             }
-            w.resultText = Label(w.synthTab, "Result", "", 19, tl, tl, new Vector2(SpareX, -40f - (40f + SpareRows * SpareH + 16f) - 8f), new Vector2(SpareW, 48f));
+            w.resultText = Label(w.synthTab, "Result", "", 19, tl, tl, new Vector2(SpareX, -40f - (72f + SpareRows * SpareH + 16f) - 8f), new Vector2(SpareW, 48f));
 
-            var sparePanel = Panel(w.synthTab, "Spares", tl, tl, new Vector2(SpareX, -40f), new Vector2(SpareW, 40f + SpareRows * SpareH + 16f), new Color32(18, 26, 40, 240));
-            w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(420f, 30f));
+            var sparePanel = Panel(w.synthTab, "Spares", tl, tl, new Vector2(SpareX, -40f), new Vector2(SpareW, 72f + SpareRows * SpareH + 16f), new Color32(18, 26, 40, 240));
+            w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(420f, 60f));
             w.sparePager = Pager(sparePanel.transform, new Vector2(-10f, -6f), d => { w.sparePage += d; w.Refresh(); });
             for (int i = 0; i < SpareRows; i++)
             {
-                var v = new SpareView { row = Row(sparePanel.transform, i, -44f, SpareH, SpareW) };
+                var v = new SpareView { row = Row(sparePanel.transform, i, -76f, SpareH, SpareW) };
                 v.icon = UIFactory.SharpIcon(v.row, "Icon", Color.white);
                 v.icon.raycastTarget = false;
                 UIFactory.Place(v.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
@@ -104,7 +104,7 @@ namespace DotRPG
                 w.sets.Add(v);
             }
 
-            w.status = Label(w.content, "Status", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(1200f, 30f), TextAnchor.MiddleLeft);
+            w.status = Label(w.content, "Status", "", 16, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(SpareX, 0f), new Vector2(SpareW, 30f), TextAnchor.MiddleLeft);
             StarShopClient.Changed += () => { if (w != null && w.gameObject.activeInHierarchy) w.Refresh(); };
             w.ShowTab(false);
             return w;
@@ -154,7 +154,7 @@ namespace DotRPG
                 v.bar.transform.parent.gameObject.SetActive(hasPity);
                 if (hasPity)
                 {
-                    v.bar.rectTransform.sizeDelta = new Vector2(276f * Mathf.Clamp01(r.fails / (float)r.pity), 10f);
+                    v.bar.rectTransform.sizeDelta = new Vector2(276f * Mathf.Clamp01(r.fails / (float)r.pity), 3f);
                     v.pity.text = r.fails >= r.pity ? L.T("<color=#ffd34a><b>다음 합성은 성공 확정!</b></color>") : L.F("연속 실패 {0}/{1} · {1}번 실패하면 다음은 확정", r.fails, r.pity);
                 }
                 else v.pity.text = "";

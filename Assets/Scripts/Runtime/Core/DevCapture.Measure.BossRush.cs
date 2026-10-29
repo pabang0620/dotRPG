@@ -29,6 +29,7 @@ namespace DotRPG
                     foreach (int companions in new[] { 0, 3 })
                     {
                         var cls = CareerCatalog.Base(career);
+                        MeasureSeedRow($"bossrush:{set}:{career}:{BossRushCatalog.DefaultLevel}:{companions}");
                         yield return MeasureHero(cls, career, BossRushCatalog.DefaultLevel, "e");
                         if (set == "clear") MeasureClearKit(cls);
                         var party = Game.Party;
@@ -39,6 +40,7 @@ namespace DotRPG
                         var row = HRow(("set", set), ("career", MeasureCareerName(cls, career)), ("party", companions == 0 ? "solo" : "1+3ai"), ("level", BossRushCatalog.DefaultLevel));
                         yield return MeasureOneAttempt(scale, row);
                         rows.Add(row);
+                        measureCheckpoint?.Invoke();
                         party.ClearCompanions();
                     }
         }
@@ -62,6 +64,8 @@ namespace DotRPG
 
         IEnumerator MeasureOneAttempt(float scale, Dictionary<string, object> row)
         {
+            MeasureReseed();
+            row["seed"] = measureRowSeed;
             var dir = Game.BossRush;
             if (dir == null || !dir.DevEnter(BossRushClient.World))
             {
@@ -76,16 +80,19 @@ namespace DotRPG
             QuestAutoPilot.ResetMeasureTrace();
             var tally = new MeasureTally();
             float firstDamageSeconds = -1f, nextTraceSeconds = 30f;
+            float measureStarted = Time.time;
             Time.timeScale = scale;
             guard = Time.realtimeSinceStartup + 900f;
             while (dir.Active && !dir.Busy && Time.realtimeSinceStartup < guard)
             {
                 tally.Track();
-                if (firstDamageSeconds < 0f && dir.MyDamage > 0) firstDamageSeconds = dir.DevFightSeconds;
-                if (dir.DevFightSeconds >= nextTraceSeconds)
+                // DevFightSeconds is populated only when an attempt ends, so it cannot drive live traces.
+                float elapsed = Time.time - measureStarted;
+                if (firstDamageSeconds < 0f && dir.MyDamage > 0) firstDamageSeconds = elapsed;
+                if (elapsed >= nextTraceSeconds)
                 {
                     nextTraceSeconds += 30f;
-                    var trace = HRow(("fight_s", R1(dir.DevFightSeconds)), ("damage", dir.MyDamage), ("hits", dir.Hits));
+                    var trace = HRow(("elapsed_s", R1(elapsed)), ("damage", dir.MyDamage), ("hits", dir.Hits));
                     MeasureTraceRow(trace);
                     Log("bossrush trace " + MiniJson.Write(trace));
                 }

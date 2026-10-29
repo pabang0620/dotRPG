@@ -23,6 +23,8 @@ namespace DotRPG
         CanvasGroup group;
         /// <summary>False when other code drives this transform's scale (cards, animated icons).</summary>
         public bool ScaleFeedback = true;
+        /// <summary>Visual dimming without disabling the click that explains a content lock.</summary>
+        public float ContentAlpha = 1f;
         bool hovered, pressed, selected;
         bool lastInteractable = true;
         float shakeAt = -10f;
@@ -113,10 +115,11 @@ namespace DotRPG
         void LateUpdate()
         {
             bool on = Interactable;
-            if (on != lastInteractable || group.alpha != (on ? 1f : DisabledAlpha))
+            float alpha = Mathf.Clamp01(ContentAlpha) * (on ? 1f : DisabledAlpha);
+            if (on != lastInteractable || group.alpha != alpha)
             {
                 lastInteractable = on;
-                group.alpha = on ? 1f : DisabledAlpha;
+                group.alpha = alpha;
             }
             SwapDisabledFrame(on);
 

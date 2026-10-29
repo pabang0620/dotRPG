@@ -11,7 +11,7 @@ namespace DotRPG
     /// </summary>
     public partial class SkillScreen
     {
-        static Sprite SkillIcon(SkillGem g) => g == null ? null : CareerMoves.Icon(g.icon) ?? Game.Art.Get(g.icon);
+        static Sprite SkillIcon(SkillGem g) => g == null ? null : Game.Art.Get(CareerMoves.IconKey(g.icon));
 
         /// <summary>A career node card becomes draggable once the skill can be put on a key.</summary>
         void MakeDraggable(GameObject card, CareerSkill s, Progression p)

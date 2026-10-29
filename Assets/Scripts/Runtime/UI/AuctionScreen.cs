@@ -256,7 +256,18 @@ namespace DotRPG
                 bool on = i < total;
                 row.row.gameObject.SetActive(on);
                 if (!on) continue;
-                if (tab == Tab.Mail)
+                // Mail has no grade, bid or seller columns: give its complete title that space.
+                bool mail = tab == Tab.Mail;
+                row.name.rectTransform.sizeDelta = new Vector2(mail ? 840f : 330f, 38f);
+                row.name.horizontalOverflow = HorizontalWrapMode.Wrap;
+                row.name.verticalOverflow = VerticalWrapMode.Truncate;
+                row.name.resizeTextForBestFit = true;
+                row.name.resizeTextMinSize = 13;
+                row.name.resizeTextMaxSize = 18;
+                var pricePosition = row.price.rectTransform.anchoredPosition;
+                row.price.rectTransform.anchoredPosition = new Vector2(mail ? 905f : 485f, pricePosition.y);
+                row.price.rectTransform.sizeDelta = new Vector2(mail ? 120f : 140f, row.price.rectTransform.sizeDelta.y);
+                if (mail)
                 {
                     var m = mails[i];
                     string key = m.itemKey ?? ConsumableDatabase.Gold;

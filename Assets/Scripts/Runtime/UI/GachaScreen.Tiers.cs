@@ -21,6 +21,7 @@ namespace DotRPG
         {
             var tl = new Vector2(0f, 1f);
             tierHint = Label(box, "TierHint", "", 17, tl, tl, new Vector2(30f, -214f), new Vector2(560f, 26f), TextAnchor.MiddleLeft);
+            UIFactory.OneLine(tierHint, shrink: true);
             for (int i = 0; i < MaxTiers; i++)
             {
                 int index = i;

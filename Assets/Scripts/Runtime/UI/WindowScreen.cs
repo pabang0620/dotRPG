@@ -41,9 +41,13 @@ namespace DotRPG
                 UIFactory.Place(ic.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(134f, -14f), new Vector2(48f, 48f));
             }
             var t = UIFactory.Text(layout, "Title", title, UiTheme.FontTitle, Color.white, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(192f, -12f), new Vector2(560f, 52f));
+            UIFactory.Place(t.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(192f, -12f), new Vector2(500f, 52f));
+            t.resizeTextForBestFit = true; t.resizeTextMinSize = 18; t.resizeTextMaxSize = UiTheme.FontTitle;
+            t.verticalOverflow = VerticalWrapMode.Truncate;
             w.keeperLine = UIFactory.Text(layout, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
-            UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(760f, 52f));
+            UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(536f, 52f));
+            w.keeperLine.resizeTextForBestFit = true; w.keeperLine.resizeTextMinSize = 13; w.keeperLine.resizeTextMaxSize = 19;
+            w.keeperLine.verticalOverflow = VerticalWrapMode.Truncate;
             // Every window's content is the same 1220x594 rect (1280x720 minus margins and header).
             var area = UIFactory.Stretch(UIFactory.Rect(layout, "ContentArea"), 30f, 30f, 30f, 96f);
             w.content = UIFactory.Place(UIFactory.Rect(area, "Content"), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), Vector2.zero, ContentSize);

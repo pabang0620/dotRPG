@@ -23,6 +23,9 @@ namespace DotRPG
         float dangerSince = -1f, coverSince = -1f;
         bool escaping;
         Vector2 escapeTarget;
+        float escapeBestDistance, escapeProgressAt;
+        PlayerController dodgeBody;
+        string dodgeMap;
 
         // Measurement-only decisions are accumulated separately from damage and successful casts.
         internal static readonly Dictionary<string, float> MeasureDecisionSeconds = new Dictionary<string, float>();
@@ -63,6 +66,13 @@ namespace DotRPG
         /// </summary>
         bool MeasureDodgeTurn(PlayerController p, EnemyController best)
         {
+            if (dodgeBody != p || dodgeMap != Game.World?.MapId)
+            {
+                dodgeBody = p;
+                dodgeMap = Game.World?.MapId;
+                dangerSince = coverSince = -1f;
+                escaping = false;
+            }
             // 운명의 낙인: stand in the circle named for the hero (anyone outside their own circle dies).
             if (RaidDoom.SpotFor(p, out Vector2 fate))
                 return HoldSpot(p, fate, BossBrain.FateRadius * .4f, best, ref coverSince);
@@ -78,34 +88,86 @@ namespace DotRPG
                 // Finish the escape to a point with clearance instead of immediately turning back at the boundary.
                 if (escaping && Vector2.Distance(p.Position, escapeTarget) > .15f && !InGroundWarning(escapeTarget))
                 {
+                    float distance = Vector2.Distance(p.Position, escapeTarget);
+                    if (distance < escapeBestDistance - .05f)
+                    {
+                        escapeBestDistance = distance;
+                        escapeProgressAt = Time.time;
+                    }
+                    else if (Time.time - escapeProgressAt > .5f)
+                    {
+                        // Already outside danger: do not spend the attempt pushing into a blocked destination.
+                        escaping = false;
+                        MeasureDecision("escape_stalled_safe");
+                        return false;
+                    }
                     MeasureDecision("escape_clearance");
-                    input.next.move = GridPath.Steer(p.Position, escapeTarget);
+                    input.next.move = AvoidHuntPortals(p, GridPath.Steer(p.Position, escapeTarget), escapeTarget);
+                    if (!on) return true;
                     input.next.aim = input.next.move;
                     lastProgressAt = Time.time;
                     return true;
                 }
                 escaping = false;
                 // A person does not walk back into a warning that is still filling: wait at its edge and hit what is in reach.
-                if (best == null || !InGroundWarning(p.Position + GridPath.Steer(p.Position, best.Position) * .5f)) return false;
+                if (best == null) return false;
+                if (!InGroundWarning(p.Position + GridPath.Steer(p.Position, best.Position) * .5f))
+                    return ApproachRitualTotem(p, best);
                 AttackInPlace(p, best);
                 lastProgressAt = Time.time;
                 return true;
             }
             if (dangerSince < 0f) dangerSince = Time.time;
             if (Time.time - dangerSince < DodgeReaction) return false;
+            if (escaping)
+            {
+                float distance = Vector2.Distance(p.Position, escapeTarget);
+                if (distance < escapeBestDistance - .05f)
+                {
+                    escapeBestDistance = distance;
+                    escapeProgressAt = Time.time;
+                }
+                else if (Time.time - escapeProgressAt > .5f)
+                {
+                    escaping = false;
+                    MeasureDecision("escape_repath_blocked");
+                }
+            }
             if (!escaping || InGroundWarning(escapeTarget) || Vector2.Distance(p.Position, escapeTarget) < .15f)
             {
                 if (!escaping) MeasureDodges++;
                 escaping = true;
-                escapeTarget = SafeStep(p.Position, best != null ? best.Position : p.Position);
+                escapeTarget = SafeStep(p, best != null ? best.Position : p.Position);
+                escapeBestDistance = Vector2.Distance(p.Position, escapeTarget);
+                escapeProgressAt = Time.time;
             }
             Vector2 to = escapeTarget;
             Vector2 dir = to - p.Position;
             if (dir.sqrMagnitude < .0001f) { escaping = false; MeasureDecision("escape_no_path"); return true; }
             MeasureDecision("escape_warning");
             dir = GridPath.Steer(p.Position, to);
+            dir = AvoidHuntPortals(p, dir, to);
+            if (!on) return true;
             input.next.move = dir;
             input.next.aim = dir;
+            lastProgressAt = Time.time;
+            return true;
+        }
+
+        /// <summary>Move until a priority totem also wins the real skill auto-aim, rather than firing at a nearer boss.</summary>
+        bool ApproachRitualTotem(PlayerController p, EnemyController target)
+        {
+            if (!RitualTargeting.IsTotem(target)) return false;
+            Vector2 toward = target.Center - p.Center;
+            float distance = toward.magnitude;
+            Vector2 aim = distance > .001f ? toward / distance : p.AimDirection;
+            if (!RitualTargeting.NeedsApproach(p, target)) { MeasureDecision("ritual_aim_ready"); return false; }
+            MeasureDecision("ritual_aim_approach");
+            input.next.move = AvoidHuntPortals(p, RitualTargeting.Steer(p, target.Position), target.Position);
+            if (!on) return true;
+            if (InGroundWarning(p.Position + input.next.move * .6f)) input.next.move = Vector2.zero;
+            input.next.aim = aim;
+            input.next.faceAim = true;
             lastProgressAt = Time.time;
             return true;
         }
@@ -120,6 +182,8 @@ namespace DotRPG
             {
                 MeasureDecision("cover_move");
                 Vector2 dir = GridPath.Steer(p.Position, spot);
+                dir = AvoidHuntPortals(p, dir, spot);
+                if (!on) return true;
                 input.next.move = dir;
                 input.next.aim = dir;
                 return true;
@@ -133,9 +197,10 @@ namespace DotRPG
         {
             if (target == null) return;
             int spam = SpamSlot(p);
-            float reach = BasicReach(p);
-            if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * .85f, 6f));
+            float reach = CombatReach(p, spam);
             if (Vector2.Distance(p.Position, target.Position) > reach) { MeasureDecision("safe_wait_out_of_reach"); return; }
+            if (!p.Skills.IsCasting && !CanUseHunter(p, spam) && !BasicContact(p, target))
+            { MeasureDecision("safe_wait_out_of_reach"); return; }
             MeasureDecision("safe_attack");
             input.next.aim = (target.Center - p.Center).normalized;
             input.next.faceAim = true;
@@ -152,8 +217,9 @@ namespace DotRPG
         }
 
         /// <summary>The nearest walkable point outside every warning; among equals the one closest to <paramref name="target"/>.</summary>
-        static Vector2 SafeStep(Vector2 from, Vector2 target)
+        static Vector2 SafeStep(PlayerController actor, Vector2 target)
         {
+            Vector2 from = actor.Position;
             foreach (float r in DodgeRings)
             {
                 Vector2 best = from;
@@ -163,6 +229,7 @@ namespace DotRPG
                     float a = i * Mathf.PI * 2f / DodgeAngles;
                     Vector2 c = from + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
                     if (!GridPath.Walkable(c) || InGroundWarning(c)) continue;
+                    if (!RitualTargeting.ClearOfBodies(actor, from, c, allowMovingOut: false)) continue;
                     bool clear = true;
                     // Leave a body-width margin and reject destinations behind a wall.
                     for (int k = 0; k < 8 && clear; k++)
@@ -172,7 +239,11 @@ namespace DotRPG
                     }
                     int steps = Mathf.CeilToInt(r / .25f);
                     for (int k = 1; k <= steps && clear; k++)
-                        clear = GridPath.Walkable(Vector2.Lerp(from, c, k / (float)steps));
+                    {
+                        Vector2 step = Vector2.Lerp(from, c, k / (float)steps);
+                        clear = GridPath.Walkable(step);
+                        if (clear) clear = RitualTargeting.ClearOfBodies(actor, from, step);
+                    }
                     if (!clear) continue;
                     float score = Vector2.Distance(c, target);
                     if (score < bestScore) { bestScore = score; best = c; }

@@ -298,6 +298,14 @@ namespace DotRPG
     /// <summary>Career skill icons (Resources/Art/Careers/Icons) and the after-cast recovery of each skill.</summary>
     public static class CareerMoves
     {
+        /// <summary>Base rogue skills keep their ids but use throwing artwork after the ninja promotion.</summary>
+        public static string IconKey(string key)
+        {
+            var progression = Game.Session?.Progression;
+            if (progression == null || !progression.IsPromoted || progression.Career != Career.Ninja) return key;
+            return key == "gem_stab" || key == "gem_leap" || key == "gem_backstab" || key == "gem_raid" ? key + "_ninja" : key;
+        }
+
         public static Sprite Icon(string key)
         {
             if (key == null || !key.StartsWith("career_")) return null;

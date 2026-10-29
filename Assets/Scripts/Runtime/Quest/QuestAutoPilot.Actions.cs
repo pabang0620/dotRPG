@@ -106,14 +106,15 @@ namespace DotRPG
             }
             if (best == null) { status = L.F("{0} · 몬스터를 찾는 중", g.label); Roam(p); return; }
             // [BALANCE] Toned down: when nothing is close, stand a moment (3 s) before walking to a far monster.
-            if (bestD > HuntNear && Game.MiniDungeon?.Active != true && !focused)
+            // Deliberate auto-hunt hesitation is not part of the skilled measurement driver.
+            if (bestD > HuntNear && Game.MiniDungeon?.Active != true && !focused && !MeasureSkilled)
             {
                 if (farWaitUntil <= 0f) farWaitUntil = Time.time + HuntFarWait;
                 if (Time.time < farWaitUntil) { MeasureDecision("far_target_wait"); status = L.F("{0} · 다음 몬스터를 찾는 중", g.label); lastProgressAt = Time.time; lastPos = p.Position; return; }
             }
             else farWaitUntil = 0f;
             if (best != chaseTarget) { chaseTarget = best; chaseSince = Time.time; }
-            Fight(p, best.Position, best.Center, bestD);
+            Fight(p, best, bestD);
             // [MEASURE] Walking at a monster across water or a cliff for a while without getting closer: leave it for a
             // moment and take another (it stopped 자동 사냥 with "길이 막혀" after 25 s, 0 kills a minute in 붉은 돌 고개).
             if (Time.time - lastProgressAt > UnreachableSeconds && Time.time - chaseSince > UnreachableSeconds)
@@ -141,12 +142,33 @@ namespace DotRPG
         static float BasicReach(PlayerController p) =>
             p.Class == CharacterClass.Mage ? MageReach : p.Data.Progression.IsPromoted && p.Data.Progression.Career == Career.Ninja ? NinjaReach : AttackReach;
 
-        void Fight(PlayerController p, Vector2 pos, Vector2 center, float dist)
+        static bool CanUseHunter(PlayerController p, int spam) => spam >= 0
+            && (p.Skills.IsCasting || p.Skills.IsReady(spam) && Affordable(p, spam));
+
+        static float CombatReach(PlayerController p, int spam)
         {
+            float reach = BasicReach(p);
+            if (CanUseHunter(p, spam) && p.Skills.Numbers(spam).range > 1.5f)
+                reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * .85f, 6f));
+            return reach;
+        }
+
+        static bool BasicContact(PlayerController p, EnemyController target)
+        {
+            if (p.Class != CharacterClass.Rogue || BasicReach(p) == NinjaReach) return true;
+            var combat = p.GetComponent<PlayerCombat>();
+            return combat == null || combat.CanMeleeContact(target, target.Center - p.Center);
+        }
+
+        void Fight(PlayerController p, EnemyController target, float dist)
+        {
+            Vector2 pos = target.Position, center = target.Center;
             // [MEASURE] A person steps out of a ground warning (the AI companions' rule): the measure bot does too, else
             // squishy careers died to every telegraph and the raid failure rates were overstated (2026-10-13).
             if (MeasureSkilled && !MeasureDodge && CompanionBrain.EscapeDanger(p.Position, out Vector2 away))
             {
+                away = AvoidHuntPortals(p, away, pos);
+                if (!on) return;
                 input.next.move = away;
                 input.next.aim = away;
                 lastProgressAt = Time.time;
@@ -155,9 +177,10 @@ namespace DotRPG
             input.next.aim = (center - p.Center).normalized;
             input.next.faceAim = true;
             int spam = SpamSlot(p);
-            float reach = BasicReach(p);
-            if (spam >= 0 && p.Skills.Numbers(spam).range > 1.5f) reach = Mathf.Max(reach, Mathf.Min(p.Skills.Numbers(spam).range * 0.85f, 6f));
+            float reach = CombatReach(p, spam);
             if (dist > reach) { MeasureDecision("approach"); WalkTo(p, pos, reach * 0.8f); return; }
+            if (!p.Skills.IsCasting && !CanUseHunter(p, spam) && !BasicContact(p, target))
+            { MeasureDecision("approach_basic_contact"); WalkTo(p, pos, dist * .8f); return; }
             MeasureDecision("fight_in_reach");
             lastProgressAt = Time.time;
             if (MeasureSkilled) { SkilledTurn(p, spam); return; }
@@ -185,6 +208,7 @@ namespace DotRPG
                     if (slot == spam || gem == null || !p.Skills.IsReady(slot) || !Affordable(p, slot)) continue;
                     // [FIGHTER] 검기 태세 is a toggle: switch it on once and never press it again while it is on.
                     if (gem.id == "f_stance" && CareerCombat.For(p).StanceOn) continue;
+                    if (!HasNinjaLeapTarget(p, gem, slot)) continue;
                     input.next.skillSlot = slot;
                     MeasureSkillRequest(p, slot);
                     skillSlot = (skillSlot + i + 1) % SkillKeys.Length;
@@ -248,6 +272,7 @@ namespace DotRPG
                     var gem = p.Data.Progression.Active(slot);
                     if (stationary && gem != null && MeasureMovesHero(p, gem.id)) continue;
                     if (gem != null && gem.id == "f_stance" && CareerCombat.For(p).StanceOn) continue;
+                    if (!HasNinjaLeapTarget(p, gem, slot)) continue;
                     input.next.skillSlot = slot;
                     MeasureSkillRequest(p, slot);
                     skillSlot = (skillSlot + i + 1) % SkillKeys.Length;
@@ -305,6 +330,8 @@ namespace DotRPG
             if (stuck > GiveUpSeconds) { Stop(L.T("길이 막혀 자동 진행을 멈췄습니다.")); return; }
             if (stuck > NpcStuckSeconds) PassThroughNpcs(p);
             if (stuck > StuckSeconds) dir = (dir + new Vector2(-dir.y, dir.x) * (((int)(stuck / 1.5f) % 2 == 0) ? 1f : -1f)).normalized;
+            dir = AvoidHuntPortals(p, dir, to);
+            if (!on) return;
             input.next.move = dir;
             input.next.aim = dir;
         }

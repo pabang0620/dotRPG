@@ -72,7 +72,14 @@ namespace DotRPG
                 var bg = Panel(content, "Tab" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(i * 210f, 0f), new Vector2(200f, 48f), Color.clear);
                 bg.raycastTarget = true;
                 bg.gameObject.AddComponent<PointerRelay>().onClick = _ => { tab = (TabId)index; Game.Audio.PlaySfx("select"); Refresh(); };
-                Label(bg.transform, "Text", names[i], 24, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 48f), TextAnchor.MiddleCenter);
+                var tabLabel = Label(bg.transform, "Text", names[i], 24, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(200f, 48f), TextAnchor.MiddleCenter);
+                UIFactory.FitInFrame(tabLabel, 10f, 5f);
+                if (i == 2)
+                {
+                    var icon = UIFactory.Image(bg.transform, "SpecializationIcon", Game.Art.Get("menuicon_spec"), Color.white);
+                    UIFactory.Place(icon.rectTransform, new Vector2(0f, .5f), new Vector2(.5f, .5f), new Vector2(40f, 0f), new Vector2(28f, 28f));
+                    icon.raycastTarget = false;
+                }
                 tabBg[i] = bg;
             }
             tabKeyHint = Label(content, "TabHint", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(640f, 0f), new Vector2(400f, 48f), TextAnchor.MiddleLeft);
@@ -92,6 +99,10 @@ namespace DotRPG
                 var row = Panel(gemPage, "Slot" + s, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -rowIndex * (RowHeight + RowGap)), new Vector2(800f, RowHeight),
                     ult ? new Color32(52, 44, 30, 240) : UiTheme.Panel);
                 slotTitle[s] = Label(row.transform, "Title", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(84f, RowHeight - 4f), TextAnchor.MiddleCenter);
+                slotTitle[s].resizeTextForBestFit = true;
+                slotTitle[s].resizeTextMaxSize = slotTitle[s].fontSize;
+                slotTitle[s].resizeTextMinSize = 9;
+                slotTitle[s].verticalOverflow = VerticalWrapMode.Truncate;
                 // Link bar behind the three sockets.
                 var link = Img(row.transform, "Link", "ui_white", new Color32(150, 120, 70, 255));
                 UIFactory.Place(link.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(130f, 0f), new Vector2(130f, 5f));
@@ -105,7 +116,8 @@ namespace DotRPG
                     var icon = UIFactory.SharpIcon(bg.transform, "Icon", Color.white);
                     UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.7f, size * 0.7f));
                     var label = UIFactory.Text(bg.transform, "Label", k == 0 ? L.T("스킬") : L.T("보조"), UiTheme.FontMin, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
-                    UIFactory.Stretch(label.rectTransform);
+                    UIFactory.FitInFrame(label, 4f, 4f);
+                    label.resizeTextMinSize = 8;
                     var view = new SocketView { slot = s, socket = k, bg = bg, icon = icon, label = label };
                     int index = sockets.Count;
                     var relay = bg.gameObject.AddComponent<PointerRelay>();
@@ -117,6 +129,11 @@ namespace DotRPG
                 }
                 slotInfo[s] = Label(row.transform, "Info", "", 13, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(278f, 0f), new Vector2(512f, RowHeight - 2f), TextAnchor.MiddleLeft);
                 slotInfo[s].lineSpacing = 1.0f;
+                slotInfo[s].horizontalOverflow = HorizontalWrapMode.Wrap;
+                slotInfo[s].verticalOverflow = VerticalWrapMode.Truncate;
+                slotInfo[s].resizeTextForBestFit = true;
+                slotInfo[s].resizeTextMinSize = 11;
+                slotInfo[s].resizeTextMaxSize = 13;
                 slotLock[s] = Img(row.transform, "Lock", "ui_white", new Color(0.02f, 0.03f, 0.06f, 0.55f));
                 UIFactory.Stretch(slotLock[s].rectTransform);
                 slotLockText[s] = Label(row.transform, "LockText", "", 16, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(360f, 34f), TextAnchor.MiddleRight);
@@ -177,7 +194,7 @@ namespace DotRPG
             {
                 var gem = v.socket == 0 ? prog.Active(v.slot) : SkillGems.Get(prog.SlotGem(v.slot, v.socket));
                 v.icon.enabled = gem != null;
-                if (gem != null) v.icon.sprite = Game.Art.Get(gem.icon);
+                if (gem != null) v.icon.sprite = Game.Art.Get(CareerMoves.IconKey(gem.icon));
                 v.label.enabled = gem == null;
                 bool sel = !mouse && keyboardUsed && sockets.IndexOf(v) == selectedSocket && tab == TabId.Gems;
                 v.bg.color = sel ? new Color32(255, 230, 150, 255) : Color.white;
@@ -201,7 +218,14 @@ namespace DotRPG
                 }
                 var n = CharacterStats.Skill(cls, s, gem, prog.Supports(s));
                 var career=CareerCatalog.Get(gem.id);
-                if(career!=null){slotInfo[s].text=L.F("<b>{0}</b>  <color=#ff9f43>전직 기술</color>\n{1}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>", L.T(gem.name), L.T(CareerNumbers.Summary(career,CharacterData.Session,n)));continue;}
+                if(career!=null)
+                {
+                    // The shared hint below the list already explains hover; keep each row for its name and numbers.
+                    string summary = L.F("<b>{0}</b>  <color=#ff9f43>전직 기술</color>\n{1}\n<color=#8c96a8>설명은 스킬 칸에 마우스를 올리면 보인다.</color>", L.T(gem.name), L.T(CareerNumbers.Summary(career,CharacterData.Session,n)));
+                    int hintStart = summary.LastIndexOf("\n<color=#8c96a8>", System.StringComparison.Ordinal);
+                    slotInfo[s].text = hintStart >= 0 ? summary.Substring(0, hintStart) : summary;
+                    continue;
+                }
                 var sb = new StringBuilder(L.F("<b>{0}</b>{1}\n", L.T(gem.name), (ult ? L.T("  <color=#ffd66e>[각성 기술]</color>") : "")));
                 // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
                 bool single = gem.id == "crush" || gem.id == "lance" || gem.id == "stab" || gem.id == "backstab" || gem.id == "raid";

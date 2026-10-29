@@ -146,7 +146,7 @@ def measured_kpm(path=None):
         rows = _career_rows([r for r in json.load(f).get("hunting", []) if r.get("valid", True)], CAREER)
     bands, under = {}, []
     for r in rows:
-        if r.get("kills_per_min", 0) <= 0 or r.get("driver") != "auto":
+        if r.get("kills_per_min", 0) < 0 or r.get("driver") != "auto":
             continue
         if r.get("mlv", 0) > 40:
             # 지하(hollow_*)는 MEASURED_UNDER, 3장 지상(dry_*, 2026-10-24 실측)은 Lv41~50 구간(8)
@@ -170,9 +170,9 @@ def zone_xp_per_min(zone, level, eff):
     ehp = hp * (1 + 0.12 * (mlevel - 1)) * field_hp_mul(mlevel)
     dps = player_attack(level) * pack_rate(level) * eff
     seconds = 3 * ehp / dps + TRAVEL
-    kills_per_min = (MEASURED_KPM[level] if MEASURED_KPM else None) or FIXED_KPM or 3 * 60 / seconds
+    kills_per_min = MEASURED_KPM[level] if MEASURED_KPM else (FIXED_KPM or 3 * 60 / seconds)
     # 3장 구간(Lv41+)만. Lv40 이하 결과(1~40 수지·시간)는 2026-10-16 기준 그대로 둔다
-    if MEASURED_KPM and MEASURED_UNDER and level > CH2_CAP and mlevel > CH2_CAP and zone.startswith("hollow_"):
+    if MEASURED_KPM and MEASURED_UNDER is not None and level > CH2_CAP and mlevel > CH2_CAP and zone.startswith("hollow_"):
         kills_per_min = MEASURED_UNDER
     return kills_per_min * xp, kills_per_min, mlevel
 
@@ -186,6 +186,8 @@ def kill_cost(mid, count, level, eff):
     rows = [z for z in ZONES if z[0] == zid]
     share = sum(z[2] for z in rows if z[1] == mid) / sum(z[2] for z in rows)
     rate, kpm, _ = zone_xp_per_min(zid, level, eff)
+    if kpm <= 0:
+        raise ValueError(f"Measured kill rate is zero for {zid} at level {level}; progression cannot be estimated from this sample")
     minutes = count / (kpm * share) / 0.8
     return minutes, rate * minutes * 0.8
 

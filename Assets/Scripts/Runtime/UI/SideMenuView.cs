@@ -75,15 +75,15 @@ namespace DotRPG
             entries.Add(rt);
             // [UNLOCK] Content the main quest has not opened reads dimmed (a press still says which quest opens it).
             var feature = ContentUnlocks.FeatureOfMenu(icon, label == L.T("일일 의뢰"), label);
-            if (feature.HasValue) locks.Add((rt.gameObject.AddComponent<CanvasGroup>(), feature.Value));
+            if (feature.HasValue) locks.Add((rt.GetComponent<UiButton>(), feature.Value));
             return rt;
         }
 
-        readonly List<(CanvasGroup group, ContentUnlocks.Feature feature)> locks = new List<(CanvasGroup, ContentUnlocks.Feature)>();
+        readonly List<(UiButton button, ContentUnlocks.Feature feature)> locks = new List<(UiButton, ContentUnlocks.Feature)>();
 
         void RefreshLocks()
         {
-            foreach (var (group, feature) in locks) if (group != null) group.alpha = ContentUnlocks.IsOpen(feature) ? 1f : .4f;
+            foreach (var (button, feature) in locks) if (button != null) button.ContentAlpha = ContentUnlocks.IsOpen(feature) ? 1f : .4f;
         }
 
         // [MAIL 10] Red dot on the menu button and on 우편 while mail waits (summary polled slowly in the background).

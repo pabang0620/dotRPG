@@ -206,7 +206,7 @@ namespace DotRPG
                 bool open = gem != null;
                 skillButtons[i].locked = !open;
                 skillIcons[i].enabled = shown != null;
-                if (shown != null) skillIcons[i].sprite = Game.Art.Get(shown.icon);
+                if (shown != null) skillIcons[i].sprite = Game.Art.Get(CareerMoves.IconKey(shown.icon));
                 if (!open)
                 {
                     skillIcons[i].color = new Color(0.45f, 0.45f, 0.52f, 0.8f);

@@ -12,6 +12,9 @@ namespace DotRPG
             if (!built) return;
             // [CONTENT] The quest tracker is hidden inside dungeons (room map + boss bar own that space).
             bool inRun = (Game.Dungeon != null && Game.Dungeon.InRun) || Game.MiniDungeon?.Active == true || Game.BossRush?.Active == true;
+            // The dungeon clock uses the top menu row on smaller canvases.
+            if (todayButton != null && todayButton.gameObject.activeSelf == inRun)
+                todayButton.gameObject.SetActive(!inRun);
             var hudRect = ((RectTransform)transform).rect;
             var bossBar = BossHpBarView.Instance;
             bool bossShown = bossBar != null && bossBar.DevVisible;
@@ -58,9 +61,6 @@ namespace DotRPG
             float toastY = bossShown ? Mathf.Max(ToastBaseBoss, bossBar.TopEdge + 4f) : dialogue != null && dialogue.IsOpen ? ToastBaseDialogue : ToastBase;
             if (!Mathf.Approximately(toastRoot.anchoredPosition.y, toastY)) toastRoot.anchoredPosition = new Vector2(0f, toastY);
             float now = Time.unscaledTime;
-            // [UI] Over the boss bar (a warning lifts the base to 344) the stack must stay under the party status line and
-            // the currency row (top 212 px): at UI size 1.3 only 1 toast fits, at 1.15 3. Older ones fade out early.
-            int maxToasts = bossShown ? Mathf.Max(1, Mathf.FloorToInt((hudRect.height - 212f - toastY - ToastHeight) / ToastStep) + 1) : 4;
             // Toast layout & fade.
             for (int i = toasts.Count - 1; i >= 0; i--)
             {
@@ -72,19 +72,22 @@ namespace DotRPG
                     toasts.RemoveAt(i);
                 }
             }
-            for (int i = 0; i < toasts.Count - maxToasts; i++)
-            {
-                // Pushed past the limit: jump to the last 0.5 s (the normal fade) instead of covering the HUD above.
-                var t = toasts[i];
-                if (now - t.bornAt < ToastLife - 0.5f) t.bornAt = now - (ToastLife - 0.5f);
-            }
-            for (int i = 0; i < toasts.Count; i++)
+            float usedHeight = 0f;
+            float availableHeight = Mathf.Max(ToastHeight, hudRect.height - (bossShown ? 212f : 16f) - toastY);
+            for (int i = toasts.Count - 1; i >= 0; i--)
             {
                 var t = toasts[i];
                 float age = now - t.bornAt;
-                int fromBottom = toasts.Count - 1 - i;
                 var rt = t.root;
-                rt.anchoredPosition = Vector2.Lerp(rt.anchoredPosition, new Vector2(0, fromBottom * ToastStep), 1f - Mathf.Exp(-14f * Time.unscaledDeltaTime));
+                bool visible = i == toasts.Count - 1 || usedHeight + rt.rect.height <= availableHeight;
+                rt.gameObject.SetActive(visible);
+                if (!visible)
+                {
+                    if (age < ToastLife - .5f) t.bornAt = now - (ToastLife - .5f);
+                    continue;
+                }
+                rt.anchoredPosition = new Vector2(0f, usedHeight);
+                usedHeight += rt.rect.height + 4f;
                 float alpha = age < ToastLife - 0.5f ? 1f : Mathf.Clamp01((ToastLife - age) / 0.5f);
                 var c = t.text.color;
                 c.a = alpha;

@@ -20,6 +20,7 @@ namespace DotRPG
         Text autoKey, huntKey; // [AUTO] hotkey badges (InputReader AutoQuest / AutoHunt)
         string autoKeyShown, huntKeyShown;
         Text todayKey; // [TODAY] 할 일 button's hotkey badge (InputReader Today)
+        RectTransform todayButton;
         string todayKeyShown;
         Button huntBtn;
         RectTransform questPanel;
@@ -146,19 +147,22 @@ namespace DotRPG
             FitLabel(huntLabel);
             huntKey = KeyBadge(huntImg.transform);
             ButtonIcon(huntImg.transform, "menuicon_autohunt"); // [ART]
-            // [TODAY] 할 일 (what to do now), left of 자동 사냥 on the same row. PC only: the phone has it in the menu sheet.
+            // Keep daily activities beside the main menu, independent of the resizing quest tracker.
+            // Phones already expose this action in their menu sheet.
             if (!TouchUi.Enabled)
             {
-                var todayImg = UIFactory.Image(questPanel, "Today", Game.Art.Get("ui_btn"), Color.white);
+                var todayImg = UIFactory.Image(root, "Today", Game.Art.Get("ui_btn"), Color.white);
+                todayButton = todayImg.rectTransform;
                 todayImg.raycastTarget = true;
-                UIFactory.Place(todayImg.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(-2f * (AutoButtonW + 6f), -4f), new Vector2(TodayButtonW, 36f));
+                UIFactory.Place(todayImg.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(466f, -16f), new Vector2(TodayButtonW, 50f));
                 var todayBtn = todayImg.gameObject.AddComponent<Button>();
                 todayBtn.targetGraphic = todayImg;
                 todayBtn.onClick.AddListener(() => { if (Game.IsPlaying) TodayScreen.Open(); });
                 UiButton.Attach(todayBtn);
                 var todayLabel = UIFactory.Text(todayImg.transform, "Text", L.T("할 일"), 17, Color.white, TextAnchor.MiddleCenter, true);
-                UIFactory.Stretch(todayLabel.rectTransform, UIFactory.FrameRim, 2f, 30f, 2f);
+                UIFactory.Stretch(todayLabel.rectTransform, 36f, 2f, 30f, 2f);
                 FitLabel(todayLabel);
+                ButtonIcon(todayImg.transform, "menuicon_quest");
                 todayKey = KeyBadge(todayImg.transform);
             }
             // [UI] As wide as the two buttons above it (W-292..W-20): clear of the skill bar and the bottom-centre boss bar.
@@ -305,11 +309,13 @@ namespace DotRPG
                 foreach (var o in Game.Quest.ObjectivesOf(sub)) { AppendObjective(sb, o); lines++; }
             }
             questBody.text = sb.ToString().TrimEnd('\n');
+            questTitle.GetComponent<UIWordWrap>().RefreshNow();
             // [UI] Height from the laid-out text (long titles and objectives wrap) instead of a line count.
             // [UI] At most two title lines (a very long title in the narrow panel is cut rather than pushing the buttons down).
             float titleH = Mathf.Clamp(questTitle.preferredHeight, 24f, 56f);
             questTitle.verticalOverflow = questTitle.preferredHeight > 56f ? VerticalWrapMode.Truncate : VerticalWrapMode.Overflow;
             questBody.rectTransform.offsetMax = new Vector2(questBody.rectTransform.offsetMax.x, -(16f + titleH));
+            questBody.GetComponent<UIWordWrap>().RefreshNow();
             float wanted = 30f + titleH + Mathf.Max(22f, questBody.preferredHeight);
             // [UI] The 자동 사냥 / 자동 진행 buttons and the status line hang 88 px under the panel: keep them above the
             // quick item bar under the right column (top at 128, +8 gap) when the canvas is short (UI size 1.15 / 1.3 =
@@ -389,7 +395,12 @@ namespace DotRPG
             var outline = text.gameObject.AddComponent<Outline>();
             outline.effectColor = new Color(0.1f, 0.06f, 0.04f, 0.9f);
             outline.effectDistance = new Vector2(2, -2);
-            UIFactory.Stretch(text.rectTransform);
+            UIFactory.Stretch(text.rectTransform, 16f, 6f, 16f, 6f);
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = UiTheme.FontMin;
+            text.resizeTextMaxSize = UiTheme.FontSubheading;
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
             var toast = new Toast { root = box, plate = plate, text = text, message = message, count = 1, bornAt = now };
             FitToast(toast);
             toasts.Add(toast);
@@ -400,21 +411,29 @@ namespace DotRPG
             }
         }
 
-        const float ToastHeight = 32f, ToastStep = 36f; // [UI]
+        const float ToastHeight = 32f; // [UI]
         // [UI] Toast base heights: normal / over the dialogue name plate (box 24..194, plate top 226) / over the
         // bottom-centre boss bar (166..258) and its groggy line (262..298).
         const float ToastBase = 200f, ToastBaseDialogue = 240f, ToastBaseBoss = 306f;
 
         static void FitToast(Toast t)
         {
-            t.plate.rectTransform.sizeDelta = new Vector2(Mathf.Min(700f, t.text.preferredWidth + 32f), ToastHeight);
+            float width = Mathf.Clamp(t.text.preferredWidth + 32f, 100f, 700f);
+            var settings = t.text.GetGenerationSettings(new Vector2(width - 32f, 0f));
+            settings.resizeTextForBestFit = false;
+            settings.horizontalOverflow = HorizontalWrapMode.Wrap;
+            settings.verticalOverflow = VerticalWrapMode.Overflow;
+            float height = new TextGenerator().GetPreferredHeight(t.text.text, settings) / t.text.pixelsPerUnit + 12f;
+            var size = new Vector2(width, Mathf.Clamp(height, ToastHeight, 120f));
+            t.root.sizeDelta = size;
+            t.plate.rectTransform.sizeDelta = size;
         }
 
         /// <summary>[UI] Long labels ("자동 진행 (3)") shrink to fit next to the key badge instead of wrapping.</summary>
         /// <summary>[UI] 자동 진행 / 자동 사냥 buttons: wide enough for "자동 진행 (12)" between the icon and the key badge.</summary>
         const float AutoButtonW = 140f;
-        /// <summary>[TODAY] 할 일 button left of 자동 사냥 (no icon: label + key badge).</summary>
-        const float TodayButtonW = 110f;
+        /// <summary>Daily activities beside the menu: icon, localized label and hotkey badge.</summary>
+        const float TodayButtonW = 140f;
 
         static void FitLabel(Text t)
         {

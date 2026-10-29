@@ -104,16 +104,25 @@ namespace DotRPG
             w.bigFrame = Img(iconBg.transform, "Frame", "ui_frame", Color.clear);
             UIFactory.Stretch(w.bigFrame.rectTransform);
             var topLeft = new Vector2(0f, 1f);
-            w.title = Label(right.transform, "Title", "", 26, topLeft, topLeft, new Vector2(172f, -24f), new Vector2(340f, 128f)); // [INHERIT] the 계승 tab sits top right
-            w.statsText = Label(right.transform, "Stats", "", 19, topLeft, topLeft, new Vector2(24f, -158f), new Vector2(610f, 92f));
-            w.costTitle = Label(right.transform, "CostTitle", "", 19, topLeft, topLeft, new Vector2(24f, -252f), new Vector2(610f, 30f));
+            w.title = Label(right.transform, "Title", "", 26, topLeft, topLeft, new Vector2(172f, -24f), new Vector2(340f, 176f)); // [INHERIT] the 계승 tab sits top right
+            w.statsText = Label(right.transform, "Stats", "", 19, topLeft, topLeft, new Vector2(24f, -204f), new Vector2(610f, 82f));
+            w.costTitle = Label(right.transform, "CostTitle", "", 19, topLeft, topLeft, new Vector2(24f, -290f), new Vector2(610f, 30f));
             for (int i = 0; i < w.costCells.Length; i++)
-                w.costCells[i] = Label(right.transform, "Cost" + i, "", 19, topLeft, topLeft, new Vector2(24f + (i % 2) * 305f, -282f - (i / 2) * 30f), new Vector2(300f, 30f));
-            w.chanceText = Label(right.transform, "Chance", "", 20, topLeft, topLeft, new Vector2(24f, -346f), new Vector2(610f, 32f));
-            w.failText = Label(right.transform, "Fail", "", 19, topLeft, topLeft, new Vector2(24f, -379f), new Vector2(610f, 30f));
-            w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 64f), TextAnchor.MiddleCenter);
+                w.costCells[i] = Label(right.transform, "Cost" + i, "", 19, topLeft, topLeft, new Vector2(24f + (i % 2) * 305f, -320f - (i / 2) * 30f), new Vector2(300f, 30f));
+            w.chanceText = Label(right.transform, "Chance", "", 20, topLeft, topLeft, new Vector2(24f, -386f), new Vector2(610f, 32f));
+            w.failText = Label(right.transform, "Fail", "", 19, topLeft, topLeft, new Vector2(24f, -419f), new Vector2(610f, 48f));
+            w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 40f), TextAnchor.MiddleCenter);
             w.enhanceButton = Button(right.transform, "Go", L.T("강화"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
+            // Keep long localized descriptions inside their own rows.
+            foreach (var text in new[] { w.title, w.statsText, w.costTitle, w.chanceText, w.failText })
+            {
+                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                text.verticalOverflow = VerticalWrapMode.Truncate;
+                text.resizeTextForBestFit = true;
+                text.resizeTextMinSize = 14;
+                text.resizeTextMaxSize = text.fontSize;
+            }
             w.BuildPromote(right.transform);
             w.BuildTicket(right.transform); // [CASH] 강화권
             w.BuildInherit(right.transform); // [INHERIT] 계승 tab

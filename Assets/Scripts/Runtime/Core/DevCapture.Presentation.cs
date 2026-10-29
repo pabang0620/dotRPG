@@ -17,6 +17,8 @@ namespace DotRPG
             var camera = Game.Camera.Camera;
             var oldTarget = camera.targetTexture; var oldActive = RenderTexture.active;
             var oldMode = canvas.renderMode; var oldCamera = canvas.worldCamera; float oldPlane = canvas.planeDistance;
+            int oldSortingOrder = canvas.sortingOrder;
+            var childOrders = canvas.GetComponentsInChildren<Canvas>(true).Where(c => c != canvas && c.overrideSorting).ToDictionary(c => c, c => c.sortingOrder);
             int width = 1280, height = 720; var args = Environment.GetCommandLineArgs();
             for (int i = 0; i < args.Length - 1; i++)
             {
@@ -24,13 +26,21 @@ namespace DotRPG
                 if (args[i] == "-screen-height") int.TryParse(args[i + 1], out height);
             }
             var scaler = Game.UI.GetComponent<CanvasScaler>(); var oldScaleMode = scaler.uiScaleMode; float oldScale = scaler.scaleFactor;
+            float renderedScale = canvas.scaleFactor;
             var rt = new RenderTexture(width, height, 24);
             var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
             try
             {
                 camera.targetTexture = rt;
                 canvas.renderMode = RenderMode.ScreenSpaceCamera; canvas.worldCamera = camera; canvas.planeDistance = 1;
-                scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize; scaler.scaleFactor = Mathf.Min(width / 1280f, height / 720f);
+                // Overlay UI normally renders after all world sprites, including combat labels at order 20010.
+                if (UiAuditRequested())
+                {
+                    canvas.sortingOrder = 24000;
+                    foreach (var entry in childOrders) entry.Key.sortingOrder = Mathf.Clamp(24000 + entry.Value - oldSortingOrder, short.MinValue, short.MaxValue);
+                }
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+                scaler.scaleFactor = UiAuditRequested() ? renderedScale : Mathf.Min(width / 1280f, height / 720f);
                 Canvas.ForceUpdateCanvases(); camera.Render(); RenderTexture.active = rt;
                 texture.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0); texture.Apply();
                 File.WriteAllBytes(Path.Combine(folder, name + ".png"), texture.EncodeToPNG());
@@ -38,6 +48,8 @@ namespace DotRPG
             finally
             {
                 camera.targetTexture = oldTarget; canvas.renderMode = oldMode; canvas.worldCamera = oldCamera; canvas.planeDistance = oldPlane;
+                canvas.sortingOrder = oldSortingOrder;
+                foreach (var entry in childOrders) entry.Key.sortingOrder = entry.Value;
                 scaler.uiScaleMode = oldScaleMode; scaler.scaleFactor = oldScale;
                 RenderTexture.active = oldActive; rt.Release(); Destroy(rt); Destroy(texture); Canvas.ForceUpdateCanvases();
             }

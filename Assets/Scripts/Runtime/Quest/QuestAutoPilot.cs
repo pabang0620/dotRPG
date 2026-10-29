@@ -96,6 +96,9 @@ namespace DotRPG
                     return mine;
                 }
                 var cmd = next;
+                // Recheck at consumption time: physics may have advanced since the navigation update.
+                if (Drives(self))
+                    cmd.move = Instance.AvoidHuntPortals(self, cmd.move, self.Position, false);
                 next.attack = false;
                 next.skillSlot = -1;
                 next.useHealing = false;

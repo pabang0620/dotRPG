@@ -76,6 +76,8 @@ namespace DotRPG
             s.portrait.preserveAspect = true;
             UIFactory.Place(s.portrait.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(16f, 0f), new Vector2(60f, 90f));
             s.text = Label(s.bg.transform, "Text", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(88f, -10f), new Vector2(196f, 88f));
+            s.text.resizeTextForBestFit = true; s.text.resizeTextMinSize = 14; s.text.resizeTextMaxSize = 18;
+            s.text.verticalOverflow = VerticalWrapMode.Truncate;
             return s;
         }
 
@@ -98,7 +100,26 @@ namespace DotRPG
             c.portrait.preserveAspect = true;
             UIFactory.Place(c.portrait.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -18f), new Vector2(72f, 108f));
             c.title = Label(c.bg.transform, "Title", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(100f, -16f), new Vector2(180f, 112f));
-            c.body = Label(c.bg.transform, "Body", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -136f), new Vector2(262f, 160f));
+            c.title.resizeTextForBestFit = true; c.title.resizeTextMinSize = 14; c.title.resizeTextMaxSize = 18;
+            c.title.verticalOverflow = VerticalWrapMode.Truncate;
+            var bodyViewport = UIFactory.Place(UIFactory.Rect(c.bg.transform, "BodyViewport"), new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -136f), new Vector2(262f, 164f));
+            bodyViewport.gameObject.AddComponent<Image>().color = Color.clear;
+            bodyViewport.gameObject.AddComponent<RectMask2D>();
+            c.body = Label(bodyViewport, "Body", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(262f, 164f));
+            c.body.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var bodyScroll = bodyViewport.gameObject.AddComponent<ScrollRect>();
+            bodyScroll.viewport = bodyViewport; bodyScroll.content = c.body.rectTransform; bodyScroll.horizontal = false;
+            bodyScroll.movementType = ScrollRect.MovementType.Clamped; bodyScroll.scrollSensitivity = 24f;
+            var track = UIFactory.Image(c.bg.transform, "BodyScrollTrack", null, new Color(1f, 1f, 1f, .15f));
+            UIFactory.Place(track.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(282f, -136f), new Vector2(6f, 164f));
+            var handle = UIFactory.Image(track.transform, "Handle", null, new Color32(184, 196, 216, 255));
+            UIFactory.Stretch(handle.rectTransform);
+            track.raycastTarget = true; handle.raycastTarget = true;
+            var scrollbar = track.gameObject.AddComponent<Scrollbar>();
+            scrollbar.handleRect = handle.rectTransform; scrollbar.targetGraphic = handle;
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            bodyScroll.verticalScrollbar = scrollbar;
+            bodyScroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
             c.button = Button(c.bg.transform, "Toggle", "", "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 14f), new Vector2(200f, 50f),
                 () => { selected = index; Toggle(def); }, 22);
             c.buttonText = c.button.GetComponentInChildren<Text>();

@@ -48,6 +48,10 @@ namespace DotRPG
                 v.icon.raycastTarget = false;
                 UIFactory.Place(v.icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(40f, 40f));
                 v.title = Label(v.bg.transform, "Title", "", 18, tl, tl, new Vector2(58f, -4f), new Vector2(ListW - 90f, 26f), TextAnchor.MiddleLeft);
+                v.title.horizontalOverflow = HorizontalWrapMode.Wrap;
+                v.title.verticalOverflow = VerticalWrapMode.Truncate;
+                // This preview deliberately clips to one row; the detail panel preserves the full title.
+                v.title.GetComponent<UIWordWrap>().enabled = false;
                 v.sub = Label(v.bg.transform, "Sub", "", 16, tl, tl, new Vector2(58f, -28f), new Vector2(ListW - 90f, 22f), TextAnchor.MiddleLeft);
                 w.rows.Add(v);
             }
@@ -60,9 +64,18 @@ namespace DotRPG
 
             var detail = Panel(w.content, "Detail", tl, tl, new Vector2(ListW + 16f, -6f), new Vector2(DetailW, Rows * RowH + 66f), new Color32(24, 36, 54, 235));
             var d = detail.transform;
-            w.title = Label(d, "Title", "", 26, tl, tl, new Vector2(24f, -16f), new Vector2(DetailW - 48f, 38f));
-            w.meta = Label(d, "Meta", "", 16, tl, tl, new Vector2(24f, -56f), new Vector2(DetailW - 48f, 24f));
-            w.body = Label(d, "Body", "", 19, tl, tl, new Vector2(24f, -90f), new Vector2(DetailW - 48f, 230f));
+            w.title = Label(d, "Title", "", 26, tl, tl, new Vector2(24f, -16f), new Vector2(DetailW - 48f, 72f));
+            w.title.horizontalOverflow = HorizontalWrapMode.Wrap;
+            w.title.verticalOverflow = VerticalWrapMode.Truncate;
+            w.title.resizeTextForBestFit = true;
+            w.title.resizeTextMinSize = 18;
+            w.title.resizeTextMaxSize = 26;
+            w.meta = Label(d, "Meta", "", 16, tl, tl, new Vector2(24f, -92f), new Vector2(DetailW - 48f, 40f));
+            w.meta.horizontalOverflow = HorizontalWrapMode.Wrap;
+            w.meta.verticalOverflow = VerticalWrapMode.Truncate;
+            w.body = Label(d, "Body", "", 19, tl, tl, new Vector2(24f, -140f), new Vector2(DetailW - 48f, 180f));
+            w.body.horizontalOverflow = HorizontalWrapMode.Wrap;
+            w.body.verticalOverflow = VerticalWrapMode.Truncate;
             Label(d, "AttHead", L.T("<b>첨부</b>"), 18, tl, tl, new Vector2(24f, -330f), new Vector2(200f, 26f));
             for (int i = 0; i < 5; i++)
             {

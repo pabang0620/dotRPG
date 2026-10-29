@@ -112,12 +112,12 @@ namespace DotRPG
                     new Vector2(CellGap + (i % MenuColumns) * (CellW + CellGap), -(CellGap * 2f + CurrencyH + (i / MenuColumns) * (CellH + CellGap))), new Vector2(CellW, CellH));
                 var icon = UIFactory.Image(img.transform, "Icon", Game.Art.Get(entry.icon), Color.white);
                 UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(42f, 42f));
-                var text = UIFactory.Text(img.transform, "Label", entry.label, 22, Color.white, TextAnchor.LowerCenter, true);
+                var text = UIFactory.Text(img.transform, "Label", entry.label, 22, Color.white, TextAnchor.MiddleCenter, true);
                 text.resizeTextForBestFit = true;
                 text.resizeTextMinSize = 12;
                 text.resizeTextMaxSize = text.fontSize;
                 text.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label
-                UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 2f, 6f, UIFactory.FrameRim - 2f, 0f); // inside the rim
+                UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 2f, 6f, UIFactory.FrameRim - 2f, 52f);
                 var button = img.gameObject.AddComponent<Button>();
                 button.targetGraphic = img;
                 UiButton.Attach(button);

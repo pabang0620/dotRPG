@@ -67,6 +67,7 @@ namespace DotRPG
                     var v = new GoodView { row = Row(colRoot, i, 0f, GoodH, GoodW) };
                     v.name = Label(v.row, "Name", "", 19, tl, tl, new Vector2(14f, -6f), new Vector2(430f, 30f), TextAnchor.MiddleLeft);
                     v.info = Label(v.row, "Info", "", 15, tl, tl, new Vector2(14f, -36f), new Vector2(430f, 28f), TextAnchor.MiddleLeft);
+                    UIFactory.OneLine(v.info, shrink: true);
                     var view = v;
                     v.buy = Button(v.row, "Buy", "", "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-10f, 0f), new Vector2(146f, 50f), () => w.AskBuy(view.id), 17);
                     w.goods.Add(v);

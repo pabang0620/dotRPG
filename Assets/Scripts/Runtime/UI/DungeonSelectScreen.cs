@@ -21,6 +21,32 @@ namespace DotRPG
         const float TabW = 200f;
         const float RaidDiffX = 520f, RaidDiffW = 110f; // [RAID] 레이드 / 영웅 buttons on the schedule line
 
+        static Sprite DungeonBanner(string dungeonId)
+        {
+            // Prefer dedicated art when available; normal dungeons currently share matching environment art.
+            string key = "banner_" + dungeonId;
+            var dedicated = Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + key);
+            if (dedicated != null) return dedicated;
+            switch (dungeonId)
+            {
+                case "normal_canyon": key = "banner_gold_vein"; break;
+                case "normal_forest": key = "banner_mana_graveyard"; break;
+                case "normal_winter": key = "banner_armory"; break;
+                default: return null;
+            }
+            // Missing banners should hide, never display SpriteLibrary's magenta debug placeholder.
+            return Resources.Load<Sprite>(SpriteLibrary.OverrideFolder + key);
+        }
+
+        static void FitDungeonText(Text text, int minimum, int maximum)
+        {
+            text.horizontalOverflow = HorizontalWrapMode.Wrap;
+            text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = minimum;
+            text.resizeTextMaxSize = maximum;
+        }
+
         sealed class Row
         {
             public DungeonDef def;
@@ -74,7 +100,8 @@ namespace DotRPG
             var d = detail.transform;
             var tl = new Vector2(0f, 1f);
             w.title = Label(d, "Title", "", 28, tl, tl, new Vector2(24f, -14f), new Vector2(530f, 40f));
-            w.desc = Label(d, "Desc", "", 17, tl, tl, new Vector2(24f, -56f), new Vector2(530f, 46f));
+            w.desc = Label(d, "Desc", "", 17, tl, tl, new Vector2(24f, -56f), new Vector2(530f, 60f));
+            FitDungeonText(w.desc, 13, 17);
             // [E4] Dungeon banner art (Art/banner_<id>) in the top-right corner of the details.
             w.banner = UIFactory.Image(d, "Banner", null, Color.white);
             w.banner.preserveAspect = true;
@@ -92,7 +119,8 @@ namespace DotRPG
             badgeText.resizeTextMinSize = 10;
             badgeText.resizeTextMaxSize = badgeText.fontSize;
             w.trailerBadge = badge.gameObject;
-            w.info = Label(d, "Info", "", 17, tl, tl, new Vector2(24f, -106f), new Vector2(780f, 46f));
+            w.info = Label(d, "Info", "", 17, tl, tl, new Vector2(24f, -120f), new Vector2(780f, 36f));
+            FitDungeonText(w.info, 12, 17);
             w.diffTitle = Label(d, "DiffTitle", L.T("<b>난이도</b>"), 19, tl, tl, new Vector2(24f, -160f), new Vector2(780f, 26f));
             for (int i = 0; i < w.diffButtons.Length; i++)
             {
@@ -116,7 +144,8 @@ namespace DotRPG
                 var icon = UIFactory.Image(frame.transform, "Icon", null, Color.white);
                 icon.preserveAspect = true;
                 UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(SlotIcon - 6f, SlotIcon - 6f));
-                var name = Label(d, "SlotName" + i, "", 16, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 34f), TextAnchor.UpperCenter);
+                var name = Label(d, "SlotName" + i, "", 16, tl, tl, new Vector2(24f + i * SlotW - 14f, -398f), new Vector2(SlotW, 44f), TextAnchor.UpperCenter);
+                FitDungeonText(name, 11, 16);
                 // [REWARD 2026-10-14] A click on a reward slot shows this dungeon's Unique / Legendary chances.
                 frame.raycastTarget = true;
                 var click = frame.gameObject.AddComponent<Button>();
@@ -290,7 +319,7 @@ namespace DotRPG
             // [RAID] A raid has 레이드 and, once cleared, 영웅 레이드.
             if (def.isRaid && (difficulty != DungeonDatabase.RaidHeroic || !progress.IsUnlocked(def, difficulty))) difficulty = DungeonDifficulty.Normal;
             var numbers = DungeonDatabase.DifficultyFor(def, difficulty);
-            banner.sprite = Game.Art.Get("banner_" + def.id);
+            banner.sprite = DungeonBanner(def.id);
             banner.enabled = banner.sprite != null;
             bool trailer = banner.enabled && BossTrailer.Has(def);
             banner.raycastTarget = trailer;
@@ -404,7 +433,10 @@ namespace DotRPG
                 var it = list2[i];
                 sl.icon.sprite = Game.Art.Get(it.icon);
                 sl.frame.color = it.special ? new Color32(96, 70, 22, 255) : new Color32(14, 20, 32, 255);
-                sl.name.text = it.special ? $"<color=#ffd34a>{L.T(it.name)}</color>" : L.T(it.name);
+                string slotLabel = L.T(it.name);
+                // Separate rarity names at the semantic divider, not inside the final Korean syllable.
+                if (it.name == L.T("유니크·레전더리")) slotLabel = slotLabel.Replace(" · ", "\n").Replace("·", "\n");
+                sl.name.text = it.special ? $"<color=#ffd34a>{slotLabel}</color>" : slotLabel;
             }
 
             string reason = Game.Dungeon != null ? Game.Dungeon.CannotEnterReason(def, difficulty, now) : L.T("준비 중");

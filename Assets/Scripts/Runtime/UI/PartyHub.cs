@@ -120,7 +120,11 @@ namespace DotRPG
             var layout = content != null && content.parent != null ? content.parent.parent as RectTransform : null;
             if (layout == null) return;
             var title = layout.Find("Title")?.GetComponent<Text>();
-            if (title != null) title.text = L.T("파티");
+            if (title != null)
+            {
+                title.text = L.T("파티");
+                title.rectTransform.sizeDelta = new Vector2(124f, title.rectTransform.sizeDelta.y);
+            }
             var tabs = window.gameObject.AddComponent<PartyHubTabs>();
             tabs.Build(layout, page);
         }

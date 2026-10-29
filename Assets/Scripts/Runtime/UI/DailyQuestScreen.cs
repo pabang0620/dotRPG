@@ -14,7 +14,7 @@ namespace DotRPG
     {
         public static DailyQuestScreen Instance { get; private set; }
         protected override bool PadNavigation => true;
-        const float RowH = 88f, Top = -104f;
+        const float RowH = 76f, Top = -134f;
         const int Rows = 6;
 
         Text header, chestTitle, chestBody;
@@ -32,10 +32,18 @@ namespace DotRPG
             w.tabWeekly = Button(w.content, "TabWeekly", L.T("주간 의뢰"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(true), 20);
             w.header = Label(w.content, "Header", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(362f, 0f), new Vector2(694f, 44f), TextAnchor.MiddleLeft);
             // [DAILY CHEST] completion chest strip (between the tabs and the job rows)
-            w.chestBg = Panel(w.content, "Chest", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -50f), new Vector2(1200f, 50f), new Color32(70, 52, 24, 235));
-            w.chestTitle = Label(w.chestBg.transform, "ChestTitle", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(12f, 0f), new Vector2(470f, 46f), TextAnchor.MiddleLeft);
-            w.chestBody = Label(w.chestBg.transform, "ChestBody", "", 15, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(490f, 0f), new Vector2(540f, 46f), TextAnchor.MiddleLeft);
+            w.chestBg = Panel(w.content, "Chest", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -50f), new Vector2(1200f, 80f), new Color32(70, 52, 24, 235));
+            w.chestTitle = Label(w.chestBg.transform, "ChestTitle", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(12f, 0f), new Vector2(470f, 72f), TextAnchor.MiddleLeft);
+            w.chestBody = Label(w.chestBg.transform, "ChestBody", "", 15, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(490f, 0f), new Vector2(540f, 72f), TextAnchor.MiddleLeft);
             w.chestOpen = Button(w.chestBg.transform, "ChestOpen", L.T("상자 열기"), "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-8f, 0f), new Vector2(150f, 42f), w.OpenChest, 18);
+            foreach (var text in new[] { w.chestTitle, w.chestBody })
+            {
+                text.horizontalOverflow = HorizontalWrapMode.Wrap;
+                text.verticalOverflow = VerticalWrapMode.Truncate;
+                text.resizeTextForBestFit = true;
+                text.resizeTextMinSize = 13;
+                text.resizeTextMaxSize = text.fontSize;
+            }
             w.refresh = Button(w.content, "Refresh", L.T("새로고침"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 44f), () => { Game.Audio.PlaySfx("select", 0.5f); DailyQuestClient.Refresh(); }, 17);
             for (int i = 0; i < Rows; i++)
             {
@@ -43,7 +51,7 @@ namespace DotRPG
                 var r = new Row();
                 r.bg = Panel(w.content, "Row" + i, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, Top - i * RowH), new Vector2(1200f, RowH - 6f), i % 2 == 0 ? RowA : RowB);
                 r.title = Label(r.bg.transform, "Title", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -6f), new Vector2(560f, 30f), TextAnchor.MiddleLeft);
-                r.text = Label(r.bg.transform, "Text", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -38f), new Vector2(620f, 44f), TextAnchor.UpperLeft);
+                r.text = Label(r.bg.transform, "Text", "", 15, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -32f), new Vector2(620f, 36f), TextAnchor.UpperLeft);
                 r.progress = Label(r.bg.transform, "Progress", "", 17, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(650f, 12f), new Vector2(360f, 30f), TextAnchor.MiddleLeft);
                 r.reward = Label(r.bg.transform, "Reward", "", 15, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(650f, -18f), new Vector2(380f, 30f), TextAnchor.MiddleLeft);
                 r.action = Button(r.bg.transform, "Action", L.T("수락"), "ui_btn", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-10f, 0f), UiSizes.ClaimButton, () => w.Act(idx), UiSizes.ClaimFont);

@@ -153,6 +153,8 @@ namespace DotRPG
                     string n = npc != null && npc.Definition != null ? npc.Definition.displayName : null;
                     if (!string.IsNullOrEmpty(n) && (speaker.EndsWith(" " + n) || n.EndsWith(" " + speaker))) { id = npc.Definition.npcId; break; }
                 }
+            // The innkeeper's portrait predates the longer NPC id; retain the existing asset and its metadata.
+            if (id == "sayab_innkeeper") id = "sayab_inn";
             return id != null ? Game.Art.Optional("Portraits/portrait_" + id) : null;
         }
     }

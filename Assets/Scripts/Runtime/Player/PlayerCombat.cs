@@ -385,6 +385,16 @@ namespace DotRPG
             return true;
         }
 
+        /// <summary>Navigation-only preview of the existing melee circle against a target's actual collider.</summary>
+        internal bool CanMeleeContact(EnemyController target, Vector2 aim)
+        {
+            var collider = target != null ? target.GetComponent<Collider2D>() : null;
+            if (collider == null || !collider.enabled) return true;
+            Vector2 dir = FacingExtensions.FromVector(aim, owner.Facing).ToVector();
+            Vector2 center = owner.Center + dir * MeleeReach;
+            return Vector2.Distance(center, collider.ClosestPoint(center)) <= Mathf.Max(0f, MeleeRadius - .02f);
+        }
+
         void ResolveHits(Vector2 dir)
         {
             Vector2 center = owner.Center + dir * MeleeReach;
