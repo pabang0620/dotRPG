@@ -265,7 +265,7 @@ namespace DotRPG
         public static float CareerMp(Career c) => c == Career.Bishop ? 1.25f : c == Career.Arcanist ? 1.2f : 1f;
 
         /// <summary>MP per second: 5% of max MP, increased by the tree.</summary>
-        public float ManaRegen => MaxMp * 0.05f * (1f + Sum(PassiveStat.ManaRegen) / 100f);
+        public float ManaRegen => MaxMp * 0.025f * (1f + Sum(PassiveStat.ManaRegen) / 100f); // [BALANCE 2026-10-30] 5% -> 2.5% of max MP a second (user: MP potions were never needed)
 
         public int IncDamage => Sum(PassiveStat.IncDamage) + (Has(Keystone.GlassCannon) ? 40 : 0) + data.BuffDamage + data.CosmeticDamage + Eq.DamageBonus;
         /// <summary>[LEGEND] Damage multiplier against a boss from the worn gear (토벌형 legendary weapons).</summary>
