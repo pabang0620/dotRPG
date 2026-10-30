@@ -15,7 +15,7 @@ export type Rarity = 'common' | 'rare' | 'epic' | 'unique' | 'legend';
 /** 높은 등급부터 */
 export const RARITIES: readonly Rarity[] = ['legend', 'unique', 'epic', 'rare', 'common'];
 
-export const RATES_VERSION = '2026-10-24.1'; // 스킨 등급 개편: 전설·히든, 전사·마법사 스킨 새 목록, 게이지 두 개, 합성·분해 표(0054)
+export const RATES_VERSION = '2026-10-30.1'; // 장비 뽑기 유니크 0.45%->0.9%, 봉인된 상자 sealed-2(+10 강화권 하향, 별조각 상자). 이전 2026-10-24.1: 스킨 등급 개편(0054)
 // 이전: 2026-10-23.2 챕터 3 병합(장비 뽑기 표는 1~40 단계만). 2026-10-23.1 도적 스킨 33종. 2026-10-14.3 컬렉션 세트 9종(0044)
 
 /** 확률 단위: 십만분율(0.001% 단위) */
