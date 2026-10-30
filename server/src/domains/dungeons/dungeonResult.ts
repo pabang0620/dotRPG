@@ -121,7 +121,7 @@ export async function validateClear(ctx: EconCtx, run: repo.RunRow, stats: RunSt
   // 2026-10-14 사용자 결정: 빠른 클리어(쩔 포함)는 운영자 확인 대기에 넣지 않는다. 판정은 아래 화력 검사 하나로 한다
   const soft: string[] = [];
   // 시험 서버 전용(TEST_OPEN_ALL_DAYS=1, DEPLOY_STAGE=test): 빨리 깬 판도 보상을 준다
-  const relaxed = process.env.DEPLOY_STAGE === 'test' && process.env.TEST_OPEN_ALL_DAYS === '1';
+  const relaxed = getConfig().testOpenAllDays;
   if (claimed > serverElapsed + ELAPSED_SLACK_SECONDS) soft.push('TIME_OVER_SERVER');
   if (!relaxed && claimed < minClearSeconds(run)) soft.push('TOO_FAST');
 

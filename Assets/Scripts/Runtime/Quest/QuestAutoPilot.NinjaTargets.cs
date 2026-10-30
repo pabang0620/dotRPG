@@ -7,6 +7,10 @@ namespace DotRPG
         // Cumulative diagnostics: callers record per-run deltas. Requests are not confirmed casts or hits.
         internal static int NinjaLeapRequests, NinjaLeapNoTargetSkips;
 
+        /// <summary>A promoted ninja (kunai thrower) whose throw at <paramref name="target"/> would hit a wall first.</summary>
+        static bool NinjaLineBlocked(PlayerController p, EnemyController target) =>
+            BasicReach(p) == NinjaReach && CareerCombat.KunaiPathBlocked(p.Center, target.Center);
+
         static bool HasNinjaLeapTarget(PlayerController player, SkillGem gem, int slot)
         {
             if (gem == null || gem.id != "leap" || player.Class != CharacterClass.Rogue

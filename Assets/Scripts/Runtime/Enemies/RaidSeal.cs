@@ -31,6 +31,8 @@ namespace DotRPG
         public const float FailHpShare = .9f, FailMpShare = .9f;
 
         static readonly Color Violet = new Color(.75f, .45f, 1f, .95f);
+        static readonly Color VioletFill = new Color(.7f, .4f, 1f, .4f);
+        static readonly Color CrowdRed = new Color(1f, .22f, .2f, 1f), CrowdFill = new Color(1f, .15f, .12f, .55f);
 
         /// <summary>Only 수호자 그라흐 holds the ritual (every raid boss has its own gimmicks).</summary>
         public static bool UsedBy(string bossId) => bossId == "boss_grah";
@@ -69,18 +71,28 @@ namespace DotRPG
             return -1;
         }
 
-        /// <summary>How many circles hold a different living member right now.</summary>
-        public static int Filled(Vector2[] circles, IEnumerable<PlayerController> members)
+        /// <summary>Living members standing in each circle right now.</summary>
+        public static int[] Occupants(Vector2[] circles, IEnumerable<PlayerController> members)
         {
-            var held = new bool[circles.Length];
-            int n = 0;
+            var count = new int[circles.Length];
             foreach (var m in members)
             {
                 if (!Alive(m)) continue;
                 // Remote members count where their PC last reported them (the host copy walks there a little later).
                 int i = CircleAt(m.NetTarget, circles);
-                if (i >= 0 && !held[i]) { held[i] = true; n++; }
+                if (i >= 0) count[i]++;
             }
+            return count;
+        }
+
+        /// <summary>
+        /// How many circles are held right now. [RAID 2026-10-29] A circle holds only with exactly one member in it: two or
+        /// more in the same circle turn it red and it does not count until only one is left.
+        /// </summary>
+        public static int Filled(Vector2[] circles, IEnumerable<PlayerController> members)
+        {
+            int n = 0;
+            foreach (int c in Occupants(circles, members)) if (c == 1) n++;
             return n;
         }
 
@@ -98,7 +110,7 @@ namespace DotRPG
             foreach (var m in party.Members)
             {
                 if (!Alive(m)) continue;
-                int i = CircleAt(m.Position, circles);
+                int i = CircleAt(m.NetTarget, circles); // [RAID 2026-10-29] where the rule counts them (Occupants)
                 if (i >= 0 && taken[i] == null) taken[i] = m;
             }
             for (int i = 0; i < taken.Length; i++) if (taken[i] == self) { spot = circles[i]; return true; }
@@ -146,7 +158,7 @@ namespace DotRPG
             {
                 circleFx.Add(SkillFx.Spawn("fx_ring", c, Violet, seconds + .3f, SkillFx.GroundOrder + 14)
                     .Scale(new Vector2(Radius, Radius * .7f), new Vector2(Radius, Radius * .7f)));
-                circleFx.Add(SkillFx.Spawn("fx_glow", c, new Color(.7f, .4f, 1f, .4f), seconds + .3f, SkillFx.GroundOrder + 13).Additive()
+                circleFx.Add(SkillFx.Spawn("fx_glow", c, VioletFill, seconds + .3f, SkillFx.GroundOrder + 13).Additive()
                     .Scale(new Vector2(Radius * 1.6f, Radius * 1.1f), new Vector2(Radius * 1.9f, Radius * 1.3f)));
             }
             presenter = new GameObject("RaidSealFx").AddComponent<Presenter>();
@@ -195,11 +207,26 @@ namespace DotRPG
                 if ((hadBrain && brain == null) || Time.time > until + 2f) { Clear(); return; }
                 if (Active == null || brain == null) return;
                 int count = Mathf.Max(0, Mathf.CeilToInt(until - Time.time));
-                int filled = Game.Party != null ? Filled(Active, Game.Party.Members) : 0;
-                if (count == lastCount && filled == lastFilled) return;
+                var occupants = Game.Party != null ? Occupants(Active, Game.Party.Members) : new int[Active.Length];
+                int filled = 0, crowded = 0;
+                for (int i = 0; i < occupants.Length; i++)
+                {
+                    if (occupants[i] == 1) filled++;
+                    bool red = occupants[i] > 1;
+                    if (red) crowded++;
+                    // [RAID 2026-10-29] A crowded circle (two or more) turns red, ring and fill; back to violet with one left.
+                    if (2 * i + 1 < circleFx.Count)
+                    {
+                        circleFx[2 * i]?.Recolor(red ? CrowdRed : Violet);
+                        circleFx[2 * i + 1]?.Recolor(red ? CrowdFill : VioletFill);
+                    }
+                }
+                int key = filled * 100 + crowded;
+                if (count == lastCount && key == lastFilled) return;
                 lastCount = count;
-                lastFilled = filled;
-                BossBrain.RaiseAnnounce(brain, L.F("마법진에 한 명씩 올라서라! {0}/{1}", filled, need), Violet, count); // [UI 2026-10-29] the count drawn big apart
+                lastFilled = key;
+                string text = crowded > 0 ? L.F("한 마법진에 둘 이상! 한 명만 남으세요 {0}/{1}", filled, need) : L.F("마법진에 한 명씩 올라서라! {0}/{1}", filled, need);
+                BossBrain.RaiseAnnounce(brain, text, crowded > 0 ? CrowdRed : Violet, count); // [UI 2026-10-29] the count drawn big apart
             }
         }
     }

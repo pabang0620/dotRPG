@@ -90,6 +90,54 @@ describe('부활 코인', () => {
     expect(r2.body.data).toMatchObject({ free: true, coins: 0 });
   });
 
+  it('미니 던전 판 중에는 context=field여도 코인을 쓴다', async () => {
+    const h = await newHero(app, 'warrior');
+    await setLevel(h, 20);
+    await getPool().query("INSERT INTO mini_dungeon_days (character_id, reset_day) VALUES ($1, '2026-10-07T06:00:00+09')", [h.dbId]);
+    await getPool().query(
+      `INSERT INTO mini_dungeon_runs (character_id, reset_day, tier, entry_level, xp_per_kill, started_at, ends_at, charged_until, credits_at)
+       VALUES ($1, '2026-10-07T06:00:00+09', 20, 20, 5, $2, $3, $2, $2)`,
+      [h.dbId, new Date(T0), new Date(Date.parse(T0) + 600_000)],
+    );
+    const r = await use(h, { context: 'field', map_id: 'forest' });
+    expect(r.status).toBe(200);
+    expect(r.body.data).toMatchObject({ free: false, coins: 0 });
+  });
+
+  it('진행 중인 보스 도전(월드·길드)이 있으면 context=field여도 코인을 쓴다. 끝난 도전은 무료', async () => {
+    const h = await newHero(app, 'warrior');
+    await setLevel(h, 20);
+    const season = await getPool().query<{ id: string }>(
+      `INSERT INTO boss_seasons (kind, week_start, week_end, boss_id, max_hp, hp_left) VALUES ('world', $1, $2, 'b', 100, 100) RETURNING id`,
+      [new Date(Date.parse(T0) - 86_400_000), new Date(Date.parse(T0) + 86_400_000)],
+    );
+    await getPool().query(
+      `INSERT INTO boss_attempts (character_id, season_id, kind, reset_day, started_at, ends_at) VALUES ($1, $2, 'world', $3, $3, $4)`,
+      [h.dbId, season.rows[0]!.id, new Date(T0), new Date(Date.parse(T0) + 600_000)],
+    );
+    const r = await use(h, { context: 'field', map_id: 'forest' });
+    expect(r.body.data).toMatchObject({ free: false, coins: 0 });
+    await getPool().query("UPDATE boss_attempts SET state = 'finished', finished_at = $2 WHERE character_id = $1", [h.dbId, new Date(T0)]);
+    const r2 = await use(h, { context: 'field', map_id: 'forest' });
+    expect(r2.body.data).toMatchObject({ free: true, coins: 0 });
+  });
+
+  it('아이템 사용 줄과 같은 request_id로 /revive를 불러도 500이 아니고 자기 결과를 만든다', async () => {
+    const h = await newHero(app, 'warrior');
+    await setLevel(h, 20);
+    const rid = randomUUID();
+    await getPool().query(
+      `INSERT INTO revive_log (character_id, request_id, context, free, coins_after, level, created_at) VALUES ($1, $2, 'item', false, 7, 20, $3)`,
+      [h.dbId, rid, new Date(T0)],
+    );
+    const a = await use(h, { request_id: rid });
+    expect(a.status).toBe(200);
+    expect(a.body.data).toMatchObject({ free: false, coins: 0 });
+    const b = await use(h, { request_id: rid });
+    expect(b.body.data).toEqual(a.body.data);
+    expect(await logCount(h)).toBe(2);
+  });
+
   it('지난 게임 일수만큼 지급하고, 상한 5에서 버려진다', async () => {
     const h = await newHero(app, 'warrior');
     await setLevel(h, 20);

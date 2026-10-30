@@ -91,5 +91,8 @@
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} n'ont pas la même rareté ou le même emplacement",
  "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Des lignes demandent des matériaux mais coreItem, shardItem ou sealItem manque",
  "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Prenez une forme d'ombre pendant 6 s : tous les dégâts d'attaque +18%, vitesse d'attaque +20%. À la fin de la forme, elle explose dans un rayon de 7m (480%).",
- "난이도는 4개(옛 형식) 또는 8개여야 합니다": "Il doit y avoir 4 difficultés (ancien format) ou 8"
+ "난이도는 4개(옛 형식) 또는 8개여야 합니다": "Il doit y avoir 4 difficultés (ancien format) ou 8",
+ "이 서버가 모르는 프레임입니다.": "Ce serveur ne reconnaît pas cette trame.",
+ "환경변수 검증 실패: TEST_OPEN_ALL_DAYS=1 은 시험 서버(DEPLOY_STAGE=test)에서만 쓸 수 있습니다": "Échec de la vérification de l'environnement : TEST_OPEN_ALL_DAYS=1 n'est autorisé que sur le serveur de test (DEPLOY_STAGE=test)",
+ "하루에 만들 수 있는 캐릭터 수를 넘었습니다. 내일 다시 시도해 주세요.": "Tu as atteint la limite quotidienne de création de personnages. Réessaie demain."
 }

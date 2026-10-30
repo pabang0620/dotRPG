@@ -173,12 +173,13 @@ namespace DotRPG
         public override void Show()
         {
             // [TEST TOOLS] The entry exists only while a test server said so (/meta test_tools), so the list is rebuilt when that changes.
-            if (TestTools.Visible != withTestTools) BuildMenu(TestTools.Visible);
+            // [NET 2026-10-30] Same for "연결 다시 맞추기" (online characters only).
+            if (TestTools.Visible != withTestTools || OnlineSession.Playing != withResync) BuildMenu(TestTools.Visible);
             base.Show();
             panel.Find("Title").GetComponent<Text>().text = Game.IsOnlineWorld ? L.T("메뉴 · 온라인 진행 중") : L.T("일시정지");
         }
 
-        bool withTestTools;
+        bool withTestTools, withResync;
 
         public static PauseScreen Create(Transform canvas, UIRoot ui)
         {
@@ -200,6 +201,9 @@ namespace DotRPG
             screen.menu.AddButton(L.T("설정"), () => ui.Push(ui.Settings));
             if (!Application.isMobilePlatform) screen.menu.AddButton(L.T("키보드 설정"), () => ui.Push(ui.KeyBind));
             screen.menu.AddButton(L.T("도움말"), () => ui.Push(ui.Help)); // [E5]
+            // [NET 2026-10-30] Rebuild chat, field and party connections without logging out or leaving the party.
+            withResync = OnlineSession.Playing;
+            if (withResync) screen.menu.AddButton(L.T("연결 다시 맞추기"), () => { NetRecovery.ResyncAll(); Game.Flow.Resume(); });
             if (GameFlow.DemoSlots) // [DEMO] the flag is set from the command line before the UI is built
                 screen.menu.AddButton(L.T("캐릭터 변경"), () => ui.Confirm(L.T("다른 체험 캐릭터로 바꿀까요?"), () => Game.Flow.SwitchCharacter()));
             screen.menu.AddButton(L.T("타이틀로"), () => ui.Confirm(L.T("타이틀로 돌아갈까요?"), () => Game.Flow.ReturnToTitle()));

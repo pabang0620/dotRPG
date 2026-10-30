@@ -19,6 +19,8 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET은 32자 이상이어야 합니다'),
   MIN_CLIENT_VERSION: z.string().regex(/^\d+\.\d+\.\d+$/),
   AUTH_DEV_ENABLED: boolStr.optional(),
+  // 시험 서버 전용: 모든 요일 개방·빠른 클리어 허용. DEPLOY_STAGE=test 가 아니면 기동하지 않는다
+  TEST_OPEN_ALL_DAYS: z.string().optional(),
   REQUEST_LOG_TTL_DAYS: posInt(7),
   GAME_DATA_DIR: z.string().optional(),
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
@@ -28,6 +30,8 @@ const envSchema = z.object({
   RATE_LOGIN_FAIL_MAX: posInt(5),
   RATE_REFRESH_ACCOUNT_MAX: posInt(10),
   RATE_CHAR_CREATE_MAX: posInt(10),
+  // 계정당 24시간 캐릭터 생성 수(삭제한 캐릭터 포함): 생성-삭제 반복으로 시작 골드·물약을 받는 것을 막는다
+  CHAR_CREATE_DAILY_MAX: posInt(10),
   RATE_STATE_SAVE_MAX: posInt(1),
   RATE_GENERAL_IP_MAX: posInt(120),
   // 3단계(경제) 속도 제한. 캐릭터별 한도는 창 길이가 코드 고정(초 단위 또는 분 단위)
@@ -241,6 +245,8 @@ const envSchema = z.object({
 });
 
 export interface AppConfig {
+  /** 시험 서버 전용 개방 스위치(TEST_OPEN_ALL_DAYS=1 이고 DEPLOY_STAGE=test 일 때만 true) */
+  testOpenAllDays: boolean;
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
   databaseUrl: string;
@@ -306,6 +312,7 @@ export interface AppConfig {
     loginFail: number;
     refreshAccount: number;
     charCreate: number;
+    charCreateDaily: number;
     stateSave: number;
     generalIp: number;
     economyIp: number;
@@ -508,6 +515,9 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error(`환경변수 검증 실패: ${detail}`);
   }
   const e = parsed.data;
+  if (e.TEST_OPEN_ALL_DAYS === '1' && e.DEPLOY_STAGE !== 'test') {
+    throw new Error('환경변수 검증 실패: TEST_OPEN_ALL_DAYS=1 은 시험 서버(DEPLOY_STAGE=test)에서만 쓸 수 있습니다');
+  }
   if (e.STEAM_AUTH_MODE === 'web_api' && (!e.STEAM_APP_ID || !e.STEAM_WEB_API_KEY)) {
     throw new Error('환경변수 검증 실패: STEAM_AUTH_MODE=web_api 에는 STEAM_APP_ID 와 STEAM_WEB_API_KEY 가 필요합니다');
   }
@@ -574,6 +584,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
     .filter((n) => Number.isInteger(n) && n > 0)
     .sort((a, b) => b - a);
   return {
+    testOpenAllDays: e.TEST_OPEN_ALL_DAYS === '1' && e.DEPLOY_STAGE === 'test',
     nodeEnv: e.NODE_ENV,
     port: e.PORT,
     databaseUrl: e.DATABASE_URL,
@@ -643,6 +654,7 @@ export function loadConfig(raw: NodeJS.ProcessEnv = process.env): AppConfig {
       loginFail: e.RATE_LOGIN_FAIL_MAX,
       refreshAccount: e.RATE_REFRESH_ACCOUNT_MAX,
       charCreate: e.RATE_CHAR_CREATE_MAX,
+      charCreateDaily: e.CHAR_CREATE_DAILY_MAX,
       stateSave: e.RATE_STATE_SAVE_MAX,
       generalIp: e.RATE_GENERAL_IP_MAX,
       economyIp: e.RATE_ECONOMY_IP_MAX,

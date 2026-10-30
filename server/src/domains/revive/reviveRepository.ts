@@ -31,7 +31,7 @@ export async function setCoins(db: Queryable, characterId: number, coins: number
 
 export async function findLog(db: Queryable, characterId: number, requestId: string): Promise<ReviveLogRow | null> {
   const r = await db.query<ReviveLogRow>(
-    'SELECT free, coins_after, created_at FROM revive_log WHERE character_id = $1 AND request_id = $2',
+    'SELECT free, coins_after, created_at FROM revive_log WHERE character_id = $1 AND request_id = $2 AND context <> \'item\'',
     [characterId, requestId],
   );
   return r.rows[0] ?? null;
@@ -48,13 +48,14 @@ export async function insertLog(
   );
 }
 
-/** 진행 중인 던전·요일던전·레이드 판(솔로 또는 파티)이 있는가: 있으면 부활은 클라이언트가 뭐라 보내든 던전 부활이다 */
-export async function inPlayingRun(db: Queryable, characterId: number): Promise<boolean> {
+/** 진행 중인 던전·요일던전·레이드 판(솔로 또는 파티), 미니 던전, 보스 도전(월드·길드)이 있는가: 있으면 부활은 클라이언트가 뭐라 보내든 던전 부활이다 */
+export async function inPlayingRun(db: Queryable, characterId: number, now: Date): Promise<boolean> {
   const r = await db.query<{ v: boolean }>(
     `SELECT EXISTS (SELECT 1 FROM dungeon_runs WHERE character_id = $1 AND state = 'playing')
          OR EXISTS (SELECT 1 FROM party_run_members m JOIN party_runs p ON p.id = m.party_run_id
-                     WHERE m.character_id = $1 AND p.state = 'playing' AND m.state IN ('joined', 'playing', 'disconnected')) AS v`,
-    [characterId],
+                     WHERE m.character_id = $1 AND p.state = 'playing' AND m.state IN ('joined', 'playing', 'disconnected')) OR EXISTS (SELECT 1 FROM mini_dungeon_runs WHERE character_id = $1 AND state = 'playing' AND ends_at > $2)
+         OR EXISTS (SELECT 1 FROM boss_attempts WHERE character_id = $1 AND state = 'open' AND ends_at > $2) AS v`,
+    [characterId, now],
   );
   return r.rows[0]?.v === true;
 }

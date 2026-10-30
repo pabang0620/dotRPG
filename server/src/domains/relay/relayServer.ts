@@ -28,7 +28,8 @@ export interface RelayHandle {
   connCount(): number;
 }
 
-const helloFrame = z.strictObject({
+// [NET 2026-10-30] 모르는 필드는 지우고 받는다(새 클라이언트의 선택 필드 하나로 hello가 거절되지 않게)
+const helloFrame = z.object({
   t: z.literal('hello'),
   v: z.number().int(),
   ticket: z.string().min(1).max(2048),
@@ -36,7 +37,7 @@ const helloFrame = z.strictObject({
   wire: z.number().int().min(0),
   resume: z.boolean().optional(),
 });
-const leaveFrame = z.strictObject({ t: z.literal('leave') });
+const leaveFrame = z.object({ t: z.literal('leave') });
 const controlFrame = z.union([helloFrame, leaveFrame]);
 
 const reject = (socket: Duplex, status: string): void => {
@@ -370,6 +371,11 @@ export async function attachRelay(server: Server): Promise<RelayHandle> {
       const r = controlFrame.safeParse(parsed);
       if (!r.success) {
         const t = (parsed as { t?: unknown } | null)?.t;
+        // [NET 2026-10-30] 인증된 연결이 보낸 모르는 제어 프레임(더 새 클라이언트)은 알리기만 하고 위반으로 세지 않는다
+        if (session && typeof t === 'string' && t !== 'hello' && t !== 'leave') {
+          err('UNKNOWN_FRAME', '이 서버가 모르는 프레임입니다.', t);
+          return;
+        }
         err('BAD_FRAME', '프레임 형식이 올바르지 않습니다.', typeof t === 'string' ? t : undefined);
         if (session ? session.badFrame() : preBad()) (session ? session.bye(CLOSE_CODE.BAD_PROTOCOL, 'BAD_PROTOCOL', false) : fail(CLOSE_CODE.BAD_PROTOCOL, 'BAD_PROTOCOL', false));
         return;

@@ -6,11 +6,12 @@ import * as service from './killService';
 import { fieldBossStatus } from './fieldBossService';
 import { successResponse } from '../../utils/response';
 import type { KillBody } from './killValidation';
+import { retryOnDeadlock } from '../../db/pool';
 
 export async function report(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { body, params } = getValidated<KillBody, { uuid: string }>(res);
-    sendStored(res, await service.reportKill(getAccount(res.locals).id, params.uuid, body));
+    sendStored(res, await retryOnDeadlock(() => service.reportKill(getAccount(res.locals).id, params.uuid, body)));
   } catch (err) {
     next(err);
   }

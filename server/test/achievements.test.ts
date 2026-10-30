@@ -118,6 +118,40 @@ describe('POST /characters/:id/title', () => {
     expect(await titleOf(h)).toBeNull();
   });
 
+  it('request_id 멱등: 같은 id 재전송은 같은 응답이고 request_log에 한 줄, 같은 id에 다른 본문은 422', async () => {
+    const h = await newHero(app);
+    await seedLevel(h, 10);
+    await list(h);
+    const rid = randomUUID();
+    const a = await equip(h, { achievement_id: 'level_10', request_id: rid });
+    getRateLimitStore().clear();
+    const b = await equip(h, { achievement_id: 'level_10', request_id: rid });
+    expect(a.status).toBe(200);
+    expect(b.body).toEqual(a.body);
+    // 해제한 뒤 같은 id를 다시 보내도 첫 응답을 돌려주고 칭호는 다시 장착되지 않는다
+    getRateLimitStore().clear();
+    await equip(h, { achievement_id: null });
+    getRateLimitStore().clear();
+    const c = await equip(h, { achievement_id: 'level_10', request_id: rid });
+    expect(c.body).toEqual(a.body);
+    expect(await titleOf(h)).toBeNull();
+    getRateLimitStore().clear();
+    const bad = await equip(h, { achievement_id: null, request_id: rid });
+    expect(bad.status).toBe(422);
+    const n = await getPool().query("SELECT count(*)::int AS n FROM request_log WHERE endpoint = 'POST /characters/:uuid/title' AND request_id = $1", [rid]);
+    expect(n.rows[0]?.n).toBe(1);
+  });
+
+  it('동시 요청 2개(같은 request_id)도 한 번만 처리된다', async () => {
+    const h = await newHero(app);
+    await seedLevel(h, 10);
+    await list(h);
+    const rid = randomUUID();
+    const rs = await Promise.all([equip(h, { achievement_id: 'level_10', request_id: rid }), equip(h, { achievement_id: 'level_10', request_id: rid })]);
+    expect(rs.map((r) => r.status)).toEqual([200, 200]);
+    expect(rs[0]!.body).toEqual(rs[1]!.body);
+  });
+
   it('달성하지 않은 업적은 409 ACHIEVEMENT_NOT_DONE, 알 수 없는 id는 404 ACHIEVEMENT_UNKNOWN', async () => {
     const h = await newHero(app);
     const a = await equip(h, { achievement_id: 'level_40' });

@@ -53,6 +53,18 @@ namespace DotRPG
 
         public bool Connected => socket.Ready;
 
+        /// <summary>[NET 2026-10-30] Down and on its way back (the status line shows it).</summary>
+        public bool Reconnecting => socket.Reconnecting;
+
+        /// <summary>[NET 2026-10-30] Manual resync: a fresh chat / town connection; the next frames send map and spot again.</summary>
+        public void Reconnect()
+        {
+            socket.Restart();
+            sentMap = null;
+            TownPeers.Reset();
+            Refresh();
+        }
+
         // ---------------- sending ----------------
 
         public string Send(ChatChannel channel, string text, string whisperTo = null)

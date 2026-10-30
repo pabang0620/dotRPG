@@ -79,6 +79,7 @@ namespace DotRPG
             QuestAutoPilot.MeasureDodge = MeasureArg("-measureDodge", "1") != "0";
             QuestAutoPilot.ResetMeasureTrace();
             var tally = new MeasureTally();
+            int[] kunaiStart = (int[])CareerCombat.KunaiStats.Clone();
             float firstDamageSeconds = -1f, nextTraceSeconds = 30f;
             float measureStarted = Time.time;
             Time.timeScale = scale;
@@ -129,6 +130,8 @@ namespace DotRPG
             row["cap_use"] = cap > 0 ? R2((float)dir.MyDamage / cap) : 0f;
             row["worn"] = string.Join(" ", worn);
             row["first_damage_s"] = R2(firstDamageSeconds);
+            row["kunai_body"] = KunaiDelta(kunaiStart, 0);
+            row["kunai_clone"] = KunaiDelta(kunaiStart, 5);
             row["dodges"] = QuestAutoPilot.MeasureDodges;
             row["cover_moves"] = QuestAutoPilot.MeasureCoverMoves;
             MeasureTraceRow(row);

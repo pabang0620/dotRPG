@@ -162,7 +162,7 @@ namespace DotRPG
             ui.Cosmetics = CosmeticShopScreen.Create(t);
             ui.Storage = StorageScreen.Create(t);
             ui.Party = PartyScreen.Create(t); // [PARTY]
-            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); DailyQuestScreen.Create(t); MailScreen.Create(t); TradeScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); ExchangeShopScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
+            PartyFinderScreen.Create(t); AuctionScreen.Create(t); MatchQueueIndicator.Create(t); NetStatusIndicator.Create(t); PartyLobbyScreen.Create(t); AchievementScreen.Create(t); LevelRewardScreen.Create(t); DailyQuestScreen.Create(t); MailScreen.Create(t); TradeScreen.Create(t); GachaScreen.Create(t); CosmeticSynthScreen.Create(t); ExchangeShopScreen.Create(t); // [ONLINE] preview windows (OnlineWindows.cs)
             SocialScreen.Create(t); // [F5] 친구 · 차단 · 신고
             TodayScreen.Create(t); // [TODAY] 할 일 (HUD button / N)
             GuildScreen.Create(t); BossRushScreen.Create(t); RankingScreen.Create(t); // [GUILD / BOSS / RANK 2026-10-20] B / V / Y

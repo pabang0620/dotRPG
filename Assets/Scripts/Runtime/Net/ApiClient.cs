@@ -140,7 +140,7 @@ namespace DotRPG
 
         // ---------------- requests ----------------
 
-        public void Get(string path, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("GET", path, null, auth, done, true));
+        public void Get(string path, Action<ApiResult> done, bool auth = true) => StartCoroutine(SendGet(path, auth, done));
         public void Post(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("POST", path, body, auth, done, true));
         public void Put(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("PUT", path, body, auth, done, true));
         public void Patch(string path, object body, Action<ApiResult> done, bool auth = true) => StartCoroutine(Send("PATCH", path, body, auth, done, true));
@@ -181,6 +181,26 @@ namespace DotRPG
             }
         }
 
+        /// <summary>
+        /// [NET 2026-10-30] A read has no side effect, so a refusal for speed (429), a restarting server (503) or a lost
+        /// answer (NETWORK) is asked again, twice at most, after the server's Retry-After (capped) or 1 s / 2 s.
+        /// 2026-10-29: party and run polls got 429 right after a departure and the run window read nothing for that turn.
+        /// </summary>
+        IEnumerator SendGet(string path, bool auth, Action<ApiResult> done)
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                ApiResult result = null;
+                yield return Send("GET", path, null, auth, r => result = r, true);
+                bool again = attempt < 2 && (result.code == "NETWORK" || result.status == 429 || result.status == 503);
+                if (!again) { done?.Invoke(result); yield break; }
+                float wait = result.retryAfter > 0f ? Mathf.Min(result.retryAfter, GetRetryCapSeconds) : attempt + 1f;
+                yield return new WaitForSecondsRealtime(wait);
+            }
+        }
+
+        const float GetRetryCapSeconds = 5f;
+
         IEnumerator Send(string method, string path, object body, bool auth, Action<ApiResult> done, bool mayRefresh)
         {
             ApiResult result = null;
@@ -204,7 +224,7 @@ namespace DotRPG
             if (refreshing)
             {
                 while (refreshing) yield return null;
-                done(!string.IsNullOrEmpty(AccessToken));
+                done(lastRefreshOk); // [NET 2026-10-30] the shared result (a failed refresh left the old expired token in place)
                 yield break;
             }
             refreshing = true;
@@ -219,9 +239,12 @@ namespace DotRPG
             {
                 ClearTokens();
             }
+            lastRefreshOk = r.ok;
             refreshing = false;
             done(r.ok);
         }
+
+        bool lastRefreshOk;
 
         IEnumerator Raw(string method, string path, object body, bool auth, Action<ApiResult> done)
         {

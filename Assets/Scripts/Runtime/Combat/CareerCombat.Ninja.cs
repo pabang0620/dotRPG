@@ -16,8 +16,9 @@ namespace DotRPG
 
         /// <summary>원거리 집중: monsters this far or farther take the bonus.</summary>
         const float FarDistance = 6f;
-        /// <summary>투척술: a throw every 0.3 s, 6 m, the kunai stays 4 s where it stops.</summary>
-        const float ThrowInterval = .3f, ThrowRange = 6f, ThrowSpeed = 18f, GroundSeconds = 4f, KunaiHalfWidth = .3f;
+        /// <summary>투척술: a throw every 0.3 s, 6 m, the kunai stays 4 s where it stops. [BALANCE 2026-10-30] Hit corridor
+        /// 0.3 -> 0.45 m: from 6 m most kunai flew past field monsters that stepped aside (a boss is hit either way).</summary>
+        const float ThrowInterval = .3f, ThrowRange = 6f, ThrowSpeed = 18f, GroundSeconds = 4f, KunaiHalfWidth = .45f;
         /// <summary>쿠나이 순간이동: 20 m/s (10 m in 0.5 s); a kunai stuck in a wall sends me to the nearest free spot within 1.5 m.</summary>
         const float PortSpeed = 20f, PortSearch = 1.5f;
         /// <summary>연발 쿠나이 / 회수 / 풍마 수리검 flight speeds.</summary>
@@ -132,10 +133,15 @@ namespace DotRPG
         /// <summary>
         /// One straight throw that sticks in the first monster (or a wall, or drops at the end). <paramref name="keep"/>:
         /// the kunai stays 4 s for 회수 (the body's own kunai; clones' kunai vanish).
+        /// [BALANCE 2026-10-30] Kunai hits on a field monster leave no hit invulnerability (like 표창 난사): the body's two
+        /// volley kunai and the clones' copies land on one monster within 0.15 s, and the monster's hit invulnerability threw
+        /// away 39% of the body's kunai while hunting (measure_20261030c diag: 195 of 501 refused). Bosses keep it: there the
+        /// ninja already dealt 89-93% of the fighter, and dropping it there too made it 117-120%.
         /// </summary>
         IEnumerator Throw(Run c, Vector2 from, Vector2 dir, float range, float speed, int damage, bool keep, NinjaClone clone, int pierce = 0)
         {
             var k = KunaiProjectile.Spawn(owner, from, dir, ThrowsStars, clone != null ? CloneTint : SpecTint(c));
+            KunaiStat(clone, 0);
             Vector2 at = from;
             float travelled = 0f;
             HashSet<EnemyController> passed = pierce > 0 ? new HashSet<EnemyController>() : null; // [ROGUE SPEC] piercing throws
@@ -144,18 +150,18 @@ namespace DotRPG
                 if (!Live(c) || k == null) { if (k != null) k.Vanish(); yield break; }
                 float step = Mathf.Min(speed * Time.deltaTime, range - travelled);
                 Vector2 next = at + dir * step;
-                if (ProjectileBlocked(next)) break;
+                if (ProjectileBlocked(next)) { KunaiStat(clone, 3); break; }
                 EnemyController victim = null;
                 foreach (var e in Corridor(at, next, KunaiHalfWidth)) { if (passed != null && passed.Contains(e)) continue; victim = e; break; }
                 if (victim != null && passed != null && passed.Count < pierce)
                 {
                     passed.Add(victim);
-                    Strike(c, victim, damage, at, 1.5f, 0, "hit");
+                    if (Strike(c, victim, damage, at, 1.5f, 0, "hit", rapid: !victim.IsBoss)) KunaiStat(clone, 1);
                     victim = null;
                 }
                 if (victim != null)
                 {
-                    Strike(c, victim, damage, at, 2f, 0, "hit");
+                    KunaiStat(clone, Strike(c, victim, damage, at, 2f, 0, "hit", rapid: !victim.IsBoss) ? 1 : 2);
                     next = victim.Center;
                     k.Place(next);
                     at = next;
@@ -166,12 +172,38 @@ namespace DotRPG
                 travelled += step;
                 yield return null;
             }
+            if (travelled >= range) KunaiStat(clone, 4);
             if (k == null) yield break;
             if (keep) k.Stick(GroundSeconds, true);
             else k.Vanish();
         }
 
+        /// <summary>[MEASURE] Kunai outcomes: [0..4] the body's throws (thrown, landed, refused by hit invulnerability or a
+        /// guard, wall, flew out of range), [5..9] the clones' the same way. Read by DevCapture.Measure.</summary>
+        internal static readonly int[] KunaiStats = new int[10];
+        static void KunaiStat(NinjaClone clone, int outcome) => KunaiStats[(clone != null ? 5 : 0) + outcome]++;
+
         readonly List<Collider2D> probeHits = new List<Collider2D>();
+        static readonly List<RaycastHit2D> lineHits = new List<RaycastHit2D>();
+
+        /// <summary>
+        /// [AUTO 2026-10-30] A kunai thrown from <paramref name="from"/> to <paramref name="to"/> would stop on a wall, cliff or
+        /// prop (the same rule as <see cref="ProjectileBlocked"/>). 자동 사냥 steps closer instead of throwing into it: from
+        /// 6 m away 45% of the ninja's kunai hit a wall in 바람칼 능선 (measure_20261030c).
+        /// </summary>
+        public static bool KunaiPathBlocked(Vector2 from, Vector2 to)
+        {
+            lineHits.Clear();
+            Physics2D.Linecast(from, to, new ContactFilter2D { useTriggers = false }, lineHits);
+            foreach (var h in lineHits)
+            {
+                var col = h.collider;
+                if (col == null || col.attachedRigidbody != null || col.gameObject.name == "Water") continue;
+                if (col.GetComponentInParent<IDamageable>() != null) continue;
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>A thrown kunai runs into a wall, cliff or prop (not water, characters or what can be hit).</summary>
         bool ProjectileBlocked(Vector2 p)
@@ -430,7 +462,10 @@ namespace DotRPG
             }
         }
 
-        /// <summary>연발 쿠나이 (main hunter): two kunai 0.17 s apart along 8 m, each sticks in the first monster.</summary>
+        /// <summary>연발 쿠나이 (main hunter): two kunai 0.17 s apart along 8 m, each goes through two monsters and sticks
+        /// in the third. [BALANCE 2026-10-30] Was single target (ninja hunted at 6 kills/min against 11-23 for the other
+        /// careers); the pierce adds pack damage only, a lone boss is hit once per kunai as before. 일직선 연발 (A) still sticks.</summary>
+        const int VolleyPierce = 2;
         IEnumerator Volley(Run c)
         {
             if (c.n.spec == 'b') { VolleyFan(c); yield break; } // [ROGUE SPEC] 부채 연발
@@ -441,8 +476,9 @@ namespace DotRPG
                 Vector2 dir = CareerFx.Tilt(c.dir, i == 0 ? 0f : 3f);
                 Pose(.1f, i % 2);
                 Sound("swing", .5f);
-                StartCoroutine(Throw(c, owner.Center + dir * .3f, dir, c.n.range, VolleySpeed, c.n.damage, true, null));
-                ForClones(clone => StartCoroutine(Throw(c, clone.Center + dir * .3f, dir, c.n.range, VolleySpeed, CloneDamage(c.n.damage), false, clone)));
+                int pierce = c.n.spec == 'a' ? 0 : VolleyPierce;
+                StartCoroutine(Throw(c, owner.Center + dir * .3f, dir, c.n.range, VolleySpeed, c.n.damage, true, null, pierce));
+                ForClones(clone => StartCoroutine(Throw(c, clone.Center + dir * .3f, dir, c.n.range, VolleySpeed, CloneDamage(c.n.damage), false, clone, pierce)));
                 if (i < throws - 1) yield return new WaitForSeconds(CutGap);
             }
         }

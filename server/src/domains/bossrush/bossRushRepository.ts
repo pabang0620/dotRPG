@@ -202,11 +202,11 @@ export async function worldBoard(db: Queryable, seasonId: number): Promise<World
     .sort((a, b) => b.best - a.best || a.at.getTime() - b.at.getTime() || a.character_id - b.character_id);
 }
 
-/** 도전을 1번 이상 끝낸 캐릭터(정산 참가 보상) */
+/** 피해가 인정된(damage_accepted > 0) 도전을 1번 이상 끝낸 캐릭터(정산 참가 보상). 0 피해로 시작하고 바로 끝낸 부캐는 세지 않는다 */
 export async function participants(db: Queryable, seasonId: number): Promise<{ character_id: number; guild_id: number | null }[]> {
   const r = await db.query<{ character_id: string; guild_id: string | null }>(
     `SELECT DISTINCT a.character_id, a.guild_id FROM boss_attempts a JOIN characters c ON c.id = a.character_id AND c.deleted_at IS NULL
-      WHERE a.season_id = $1 AND a.state = 'finished'`,
+      WHERE a.season_id = $1 AND a.state = 'finished' AND a.damage_accepted > 0`,
     [seasonId],
   );
   return r.rows.map((x) => ({ character_id: Number(x.character_id), guild_id: x.guild_id === null ? null : Number(x.guild_id) }));
@@ -259,12 +259,15 @@ export async function unequipExpiredTitles(client: PoolClient, now: Date): Promi
   return r.rowCount ?? 0;
 }
 
-/** 정산 시각에 이 길드에 있는 살아 있는 길드원(시즌이 끝나기 전에 가입한 사람만) */
-export async function guildMembersBefore(db: Queryable, guildId: number, joinedBefore: Date): Promise<number[]> {
+/** 정산 시각에 이 길드에 있는 살아 있는 길드원 중 시즌이 끝나기 전에 가입했고, 이 시즌에 이 길드로 도전을 끝낸 사람만 */
+export async function guildMembersBefore(db: Queryable, guildId: number, joinedBefore: Date, seasonId: number): Promise<number[]> {
   const r = await db.query<{ character_id: string }>(
     `SELECT m.character_id FROM guild_members m JOIN characters c ON c.id = m.character_id AND c.deleted_at IS NULL
-      WHERE m.guild_id = $1 AND m.joined_at < $2 ORDER BY m.character_id`,
-    [guildId, joinedBefore],
+      WHERE m.guild_id = $1 AND m.joined_at < $2
+        AND EXISTS (SELECT 1 FROM boss_attempts a WHERE a.character_id = m.character_id AND a.season_id = $3
+                      AND a.guild_id = $1 AND a.state = 'finished' AND a.damage_accepted > 0)
+      ORDER BY m.character_id`,
+    [guildId, joinedBefore, seasonId],
   );
   return r.rows.map((x) => Number(x.character_id));
 }

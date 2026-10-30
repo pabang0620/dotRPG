@@ -70,6 +70,23 @@ describe('부활 코인 아이템 사용', () => {
     expect(await itemLogs(h)).toBe(1);
   });
 
+  it('아이템 사용 request_id를 /revive에 다시 써도 충돌 없이 각자 처리된다', async () => {
+    const { h } = await newHeroP();
+    await seedItem(h, COIN, 2, 'bag', 'account');
+    await getPool().query('UPDATE characters SET level = 20 WHERE id = $1', [h.dbId]);
+    const id = randomUUID();
+    const a = await useCoin(h, id);
+    expect(a.status).toBe(200);
+    const rv = await go(h, '/revive', { context: 'dungeon' }, id);
+    expect(rv.status).toBe(200);
+    expect(rv.body.data).toMatchObject({ free: false, coins: 1 });
+    // 같은 id로 아이템을 다시 써도 첫 결과 그대로(재전송), 코인은 늘지 않는다
+    const a2 = await useCoin(h, id);
+    expect(a2.status).toBe(200);
+    expect(a2.body.data).toEqual(a.body.data);
+    expect(await coinsOf(h)).toBe(1);
+  });
+
   it('동시 요청 2개에 아이템이 1개면 하나만 성공한다', async () => {
     const { h } = await newHeroP();
     await seedItem(h, COIN, 1, 'bag', 'account');

@@ -168,8 +168,11 @@ export function kill(accountId: number, uuid: string, runUuid: string, body: Kil
       // General combat/quest grantXp semantics remain unchanged.
       const p = eco.progression;
       const xpToCap = p.xpToNext.slice(ctx.level - 1, levelCap(p.maxLevel) - 1).reduce((sum, xp) => sum + xp, 0) - ctx.xp;
-      const stuck = await questGate(ctx) !== null;
-      const each = stuck ? xpPerKill(p.xpToNext, run.entry_level, true) : run.xp_per_kill;
+      const gate = await questGate(ctx);
+      const stuck = gate !== null;
+      // 막힌 상태의 x10 보정은 처치마다 지금 상태로 판정하고, 게이트 레벨에 닿을 만큼까지만 준다(한 번의 처치로 게이트를 넘어가지 않는다)
+      const xpToGate = gate === null ? 0 : p.xpToNext.slice(ctx.level - 1, gate - 1).reduce((sum, xp) => sum + xp, 0) - ctx.xp;
+      const each = stuck ? Math.min(xpPerKill(p.xpToNext, run.entry_level, true), Math.max(1, xpToGate)) : run.xp_per_kill;
       const reward = await ctx.grantXp(Math.min(each, Math.max(0, xpToCap)), 'mini_dungeon', `${run.uuid}:${body.monster_ref}`);
       await repo.recordKill(ctx.client, run, body.monster_ref, ctx.requestId, reward.granted, credits - KILL_INTERVAL_MS, ctx.now);
       // 처치 골드: 사냥터의 골드 더미처럼 원장 사유 drop_claim, 드롭·재료는 없다(2026-10-21)

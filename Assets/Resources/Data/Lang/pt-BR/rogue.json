@@ -169,7 +169,7 @@
  "원거리 집중": "Foco à Distância",
  "은신": "Furtividade",
  "재사용 대기시간 없이 전방 2m 120도를 두 번 벤다(0.17초 간격).": "Sem Recarga. Corta duas vezes em arco de 120 graus a 2m à frente (0,17s de intervalo).",
- "재사용 대기시간 없이 쿠나이 두 개를 0.17초 간격으로 8m 직선에 던진다. 첫 적에게 꽂힌다.": "Sem Recarga. Lança dois kunais com 0,17s de intervalo em linha de 8m. Cravam no primeiro inimigo.",
+ "재사용 대기시간 없이 쿠나이 두 개를 0.17초 간격으로 8m 직선에 던진다. 적 2마리를 꿰뚫고 3번째 적에게 꽂힌다.": "Sem Recarga. Lança dois kunais com 0,17s de intervalo em linha de 8m. Atravessam 2 inimigos e cravam no terceiro.",
  "천영참": "Corte das Mil Sombras",
  "쿠나이 순간이동": "Teleporte do Kunai",
  "쿠나이를 10m 일직선으로 던져 지나간 적을 벤다. 한 번 더 누르면 쿠나이 위치로 이동한다(날아가는 중에도, 멈춘 뒤 3초까지). 벽에 박히면 근처 걸을 수 있는 자리로.": "Lança um kunai em linha reta por 10m, cortando inimigos no caminho. Aperte de novo para ir até o kunai (enquanto voa e até 3s depois de parar). Se atingir uma parede, você cai num ponto transitável próximo.",

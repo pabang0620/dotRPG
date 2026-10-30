@@ -19,7 +19,7 @@ namespace DotRPG.EditorTools
             j.Arr("rows", InheritRules.Rows(), (o, r) =>
             {
                 o.Obj().Str("from", r.from.id).Str("to", r.to.id);
-                o.Arr("gold", Enumerable.Range(0, EquipmentDatabase.MaxEnhance + 1), (g, lv) => g.Val(InheritRules.GoldFor(r.to, lv)));
+                o.Arr("gold", Enumerable.Range(0, EquipmentDatabase.MaxEnhance + 1), (g, lv) => g.Val(InheritRules.GoldFor(r.from, r.to, lv)));
                 var m = InheritRules.MaterialCost(r.to.reqLevel, r.to.rarity).Value;
                 if (m.cores + m.shards + m.seals > 0) o.Num("cores", m.cores).Num("shards", m.shards).Num("seals", m.seals);
                 return o.End();

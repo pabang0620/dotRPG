@@ -106,13 +106,14 @@ async function processInherit(ctx: EconCtx, body: InheritBody) {
   // 뽑기 사본(계정 귀속)이면 뽑기 몫도 새 기본 id로 옮긴다(상점 판매 금지·분해 허용이 따라간다)
   if (bind === 'account') await moveGachaCredit(ctx.client, ctx.char.id, parsed.base, row.to, 1);
 
-  // 5. 보호권(강화 보정) 이력은 결과 장비로 옮긴다. 같은 키의 다른 사본이 남아 있으면 옛 키 쪽도 지우지 않는다
+  // 5. 보호권(강화 보정) 이력은 아이템 키별로 저장된다. 같은 키의 다른 사본이 남아 있으면 이력은 그 사본 몫이라
+  //    옮기지 않는다(복사하면 한 이력이 둘로 늘어난다). 마지막 사본이 떠날 때만 결과 장비로 옮기고 옛 키를 지운다
   let pity = await pityRepo.getPity(ctx.client, ctx.char.id, newKey);
   const oldPity = await pityRepo.getPity(ctx.client, ctx.char.id, key);
-  if (oldPity > 0) {
+  if (oldPity > 0 && !(await stillHeld(ctx, key))) {
     pity = Math.max(pity, oldPity);
     await pityRepo.setPity(ctx.client, ctx.char.id, newKey, pity, ctx.now);
-    if (!(await stillHeld(ctx, key))) await pityRepo.clearPity(ctx.client, ctx.char.id, key);
+    await pityRepo.clearPity(ctx.client, ctx.char.id, key);
   }
 
   return {

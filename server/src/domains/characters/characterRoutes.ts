@@ -36,7 +36,18 @@ export function createCharacterRouter(): Router {
     validate({ params: characterParams, body: renameCharacterBody }),
     controller.rename,
   );
-  r.delete('/characters/:uuid', validate({ params: characterParams }), controller.remove);
+  // 삭제도 생성과 같은 속도 제한(생성-삭제 반복 방지)
+  r.delete(
+    '/characters/:uuid',
+    rateLimit({
+      name: 'char-delete',
+      limit: (c) => c.rate.charCreate,
+      windowMs: MINUTE,
+      key: (_req, locals) => String(getAccount(locals).id),
+    }),
+    validate({ params: characterParams }),
+    controller.remove,
+  );
   r.put(
     '/characters/:uuid/state',
     rateLimit({

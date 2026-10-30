@@ -277,6 +277,25 @@ describe('daily XP-only mini dungeon HTTP', () => {
     const after = await kill(h, run.id);
     expect(after.body.data).toMatchObject({ accepted: true, catch_up_applied: false, granted_xp: xpPerKill(bars, 19) });
   });
+  test('catch-up is decided per kill from the current level and never carries past the gate level; base XP stays', async () => {
+    const h = await hero(19);
+    await seedClaims(h, ['c1_morning', 'c1_festival', 'c1_burning', 'c1_ashes', 'c1_rise', 'c1_rebuild', 'c1_trail', 'c1s_patrol', 'c1s_ruins',
+      'c1s_firstdungeon', 'c1s_depths', 'c1_crossing', 'c2s_trader', 'c2s_trader_guard', 'c2s_trader_ore', 'c1_quarry', 'c1_scout', 'career_path']);
+    const entry = await enter(h, 10);
+    const run = entry.body.data.active_run;
+    const bars = getGameData().economy.progression.xpToNext;
+    // 레벨 20까지 3 경험치만 남기면 막힌 상태의 x10 처치도 3만 받고 게이트 레벨(20)에서 멈춘다
+    await getPool().query('UPDATE characters SET xp = $2 WHERE id = $1', [h.dbId, bars[18]! - 3]);
+    advance(5);
+    const up = await kill(h, run.id);
+    expect(up.body.data).toMatchObject({ accepted: true, catch_up_applied: true, granted_xp: 3 });
+    expect(up.body.data.delta.level).toBe(20);
+    expect(up.body.data.delta.xp).toBe(0);
+    advance(2);
+    const after = await kill(h, run.id);
+    expect(after.body.data).toMatchObject({ accepted: true, catch_up_applied: false, granted_xp: xpPerKill(bars, 19) });
+    expect(after.body.data.active_run).toMatchObject({ xp_per_kill: run.xp_per_kill });
+  });
   test('regular reward reports and dungeon entry cannot bypass the XP-only mode', async () => {
     const { h } = await entered();
     expect((await post(app, h, '/kills', { map_id: 'forest', monster_id: 'skeleton' })).body.errors.code).toBe('MINI_DUNGEON_ACTIVE');

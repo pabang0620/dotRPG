@@ -63,9 +63,13 @@ namespace DotRPG
             retryAt = 0f;
         }
 
+        /// <summary>Bumped by Stop: receive loops of older sockets end quietly.</summary>
+        volatile int gen;
+
         public void Stop()
         {
             stopped = true;
+            gen++;
             SetReady(false);
             var socket = ws;
             ws = null;
@@ -76,6 +80,26 @@ namespace DotRPG
             }
             open = false;
         }
+
+        /// <summary>[NET 2026-10-30] Down but coming back by itself (not stopped, not told to stay away).</summary>
+        public bool Reconnecting => !stopped && StopReason == null && !Ready;
+
+        /// <summary>
+        /// [NET 2026-10-30] Manual resync: close this connection and connect again now. A stop for the account itself
+        /// (another login, ban, outdated game, withdrawal) stays; a stop after a protocol or auth hiccup is cleared.
+        /// </summary>
+        public void Restart()
+        {
+            if (StopReason != null && accountStop) return;
+            Stop();
+            StopReason = null;
+            attempt = 0;
+            heardAt = Time.realtimeSinceStartup;
+            Start();
+        }
+
+        /// <summary>The server ended this account's session (no resync brings it back).</summary>
+        bool accountStop;
 
         public void Send(string type, Dictionary<string, object> fields)
         {
@@ -177,7 +201,8 @@ namespace DotRPG
                 ["caps"] = new Dictionary<string, object> { ["steam_p2p"] = SteamBridge.Current != null && SteamBridge.Current.Ready },
             };
             _ = Task.Run(() => SendLoop(socket, MiniJson.Write(hello), source.Token));
-            _ = Task.Run(() => ReceiveLoop(socket, source.Token));
+            int g = gen;
+            _ = Task.Run(() => ReceiveLoop(socket, source.Token, g));
         }
 
         async Task SendLoop(ClientWebSocket socket, string first, CancellationToken token)
@@ -197,7 +222,7 @@ namespace DotRPG
         static Task SendText(ClientWebSocket socket, string text, CancellationToken token) =>
             socket.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(text)), WebSocketMessageType.Text, true, token);
 
-        async Task ReceiveLoop(ClientWebSocket socket, CancellationToken token)
+        async Task ReceiveLoop(ClientWebSocket socket, CancellationToken token, int myGen)
         {
             var buffer = new byte[8192];
             var sb = new StringBuilder();
@@ -219,6 +244,8 @@ namespace DotRPG
                 }
             }
             catch (Exception) { }
+            // [NET 2026-10-30] A socket given up by Stop / Restart reports nothing: its late close used to mark the new connection down.
+            if (gen != myGen) return;
             open = false;
             closes.Enqueue(code);
         }
@@ -230,17 +257,39 @@ namespace DotRPG
             if (stopped) return;
             switch (code)
             {
-                case 4001: StopReason = StopReason ?? L.T("다른 곳에서 접속했습니다."); break;
-                case 4003: StopReason = StopReason ?? L.T("이용이 정지되었습니다."); break;
-                case 4004: case 4005: case 4010: StopReason = StopReason ?? L.T("채팅 서버 인증에 실패했습니다."); break;
-                case 4426: StopReason = StopReason ?? L.T("게임을 업데이트해 주세요."); break;
+                case 4001: StopReason = StopReason ?? L.T("다른 곳에서 접속했습니다."); accountStop = true; break;
+                case 4003: StopReason = StopReason ?? L.T("이용이 정지되었습니다."); accountStop = true; break;
+                case 4010: StopReason = StopReason ?? L.T("채팅 서버 인증에 실패했습니다."); break;
+                case 4426: StopReason = StopReason ?? L.T("게임을 업데이트해 주세요."); accountStop = true; break;
                 case 4012: // the account asked to be withdrawn: no reconnect, back to the login screen
                     StopReason = StopReason ?? L.T("탈퇴 요청이 접수되어 접속이 종료되었습니다.");
+                    accountStop = true;
                     OnlineSession.EndByWithdrawal(openLogin: true);
                     break;
+                case 4005:
+                    // [NET 2026-10-30] A frame the server did not accept (older server, a value out of range). It used to stop chat,
+                    // town and party pushes until the next login; now it comes back after the normal backoff (never faster than 4 s).
+                    StopReason = null;
+                    attempt = Mathf.Max(attempt, 2);
+                    break;
                 case 4002: // token expired: refresh, then come back right away
+                case 4004: // [NET 2026-10-30] token refused (rotated by a refresh elsewhere in this game): same, refresh first
                     var api = ApiClient.Instance;
-                    api.StartCoroutine(api.RefreshOnce(ok => { retryAt = 0f; if (!ok) StopReason = L.T("다시 로그인해 주세요."); }));
+                    StopReason = null;
+                    retryAt = Time.realtimeSinceStartup + 30f; // the refresh answer sets the real time
+                    api.StartCoroutine(api.RefreshOnce(ok =>
+                    {
+                        if (ok)
+                        {
+                            // Right away the first time; a token refused again and again backs off like any other drop.
+                            retryAt = attempt == 0 ? 0f : Time.realtimeSinceStartup + Backoff[Mathf.Min(attempt, Backoff.Length - 1)];
+                            attempt++;
+                            return;
+                        }
+                        // Only a refused refresh token ends it (the vault was cleared); a lost answer tries again later.
+                        if (!api.HasRefreshToken) { StopReason = L.T("다시 로그인해 주세요."); GameEvents.RaiseToast(StopReason); }
+                        else ScheduleRetry();
+                    }));
                     return;
             }
             if (StopReason != null) { GameEvents.RaiseToast(StopReason); return; }

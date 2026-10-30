@@ -100,7 +100,8 @@ namespace DotRPG
                 {
                     count.TryGetValue(e, out int n);
                     if (n >= hits || (next.TryGetValue(e, out float t) && Time.time < t)) continue;
-                    if (Strike(c, e, damage, at, 1.5f, 0, "c_slash") || !c.authority) { count[e] = n + 1; next[e] = Time.time + CutGap; }
+                    // [BALANCE 2026-10-30] A clone's star leaves no hit invulnerability on a field monster, so it never blocks my own hits.
+                    if (Strike(c, e, damage, at, 1.5f, 0, "c_slash", rapid: clone != null && !e.IsBoss) || !c.authority) { count[e] = n + 1; next[e] = Time.time + CutGap; }
                 }
                 yield return null;
             }

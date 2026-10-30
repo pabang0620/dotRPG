@@ -190,6 +190,10 @@ export async function createCharacter(
         throw new AppError(422, '캐릭터 슬롯이 가득 찼습니다.', 'CHARACTER_LIMIT_REACHED');
       }
 
+      if ((await repo.countCreatedLastDay(client, accountId)) >= getConfig().rate.charCreateDaily) {
+        throw new AppError(429, '하루에 만들 수 있는 캐릭터 수를 넘었습니다. 내일 다시 시도해 주세요.', 'CHARACTER_CREATE_DAILY_LIMIT');
+      }
+
       let character: repo.CharacterRow;
       try {
         character = await repo.insertCharacter(client, accountId, input.name, input.class);

@@ -117,6 +117,24 @@ export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>)
   }
 }
 
+/**
+ * [NET 2026-10-30] 교착(40P01)·직렬화 실패(40001)로 진 쪽 요청을 짧게 기다렸다가 통째로 다시 실행한다.
+ * 2026-10-29 파티 플레이 중 GET /party, 파티 런 하트비트, 처치 보고가 교착으로 500을 6번 냈다(진 트랜잭션은 이미 롤백됐다).
+ * 요청 전체를 다시 부르는 것이라 클라이언트가 같은 요청을 다시 보낸 것과 같다: 읽기와 request_id 멱등 경로에만 쓴다.
+ */
+export async function retryOnDeadlock<T>(fn: () => Promise<T>, tries = 3): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const code = (err as PgErrorLike | null)?.code;
+      if (attempt >= tries || (code !== '40P01' && code !== '40001')) throw err;
+      logger.warn({ code, attempt }, 'db.retry_deadlock');
+      await new Promise((r) => setTimeout(r, 20 + Math.floor(Math.random() * 60) * attempt));
+    }
+  }
+}
+
 export interface PgErrorLike {
   code?: string;
   constraint?: string;

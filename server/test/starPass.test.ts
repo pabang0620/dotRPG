@@ -2,7 +2,8 @@
 // 기간 상한(60일), 환불 시 기간 회수. 가짜 Steam(mock)으로 결제한다.
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
-import { getPool } from '../src/db/pool';
+import { getPool, withTransaction } from '../src/db/pool';
+import { debit } from '../src/domains/starshop/starWallet';
 import { setClockOverride } from '../src/utils/clock';
 import { post } from './economyHelpers';
 import { resetDb, shutdown } from './helpers';
@@ -94,7 +95,7 @@ describe('별빛 정기권', () => {
     expect(await offerOf(app, p, 'stars_300')).toMatchObject({ purchasable: true });
   });
 
-  it('5. 환불: 그 주문이 더한 기간만 뺀다(별조각 회수는 기존 경로), 받은 일일 지급은 그대로', async () => {
+  it('5. 환불: 그 주문이 더한 기간만 뺀다(별조각 회수는 기존 경로), 받은 일일 지급은 아래 6~8에서 회수', async () => {
     const p = await newPayer(app);
     const hero = await heroOf(app, p);
     const first = await purchase(app, p, PASS);
@@ -114,5 +115,63 @@ describe('별빛 정기권', () => {
     await sync(app, p, first.id);
     expect((await status(p)).body.data.days_left).toBe(30);
     await expectWalletConsistent(p.accountId);
+  });
+
+  async function claimDays(p: Awaited<ReturnType<typeof newPayer>>, hero: Awaited<ReturnType<typeof heroOf>>, days: number): Promise<void> {
+    const base = Date.now();
+    for (let i = 0; i < days; i++) {
+      setClockOverride(() => new Date(base + i * DAY));
+      expect((await post(app, hero, '/star-pass/daily', {})).body.data.granted).toBe(true);
+    }
+  }
+
+  it('6. 환불: 받은 일일 별조각(30/일)도 회수하고 받지 않은 상자 우편은 폐기, 재확인해도 두 번 걷지 않는다', async () => {
+    const p = await newPayer(app);
+    const hero = await heroOf(app, p);
+    const o = await purchase(app, p, PASS);
+    await claimDays(p, hero, 3);
+    expect(await walletState(p.accountId)).toMatchObject({ balance: 390, paid: 300 });
+    mock.setStatus(o.steam_order_id, 'Refunded');
+    expect((await sync(app, p, o.id)).body.data.order).toMatchObject({ state: 'refunded' });
+    expect(await walletState(p.accountId)).toMatchObject({ balance: 0, paid: 0, debt: 0 });
+    expect(await ledgerCount(p.accountId, 'pass_daily_revoke')).toBe(1);
+    const m = await getPool().query<{ n: string }>("SELECT count(*) AS n FROM mails WHERE character_id = $1 AND item_key = 'box_sealed' AND expired_at IS NOT NULL", [hero.dbId]);
+    expect(Number(m.rows[0]!.n)).toBe(3);
+    await sync(app, p, o.id);
+    expect(await ledgerCount(p.accountId, 'pass_daily_revoke')).toBe(1);
+    await expectWalletConsistent(p.accountId);
+  });
+
+  it('7. 환불: 이미 쓴 일일 별조각은 부채로 남는다', async () => {
+    const p = await newPayer(app);
+    const hero = await heroOf(app, p);
+    const o = await purchase(app, p, PASS);
+    await claimDays(p, hero, 3);
+    await withTransaction((db) => debit(db, { accountId: p.accountId, reason: 'gacha', price: 100, ref: null, requestId: null })); // 무료 90 + 유료 10
+    mock.setStatus(o.steam_order_id, 'Refunded');
+    await sync(app, p, o.id);
+    expect(await walletState(p.accountId)).toMatchObject({ balance: 0, paid: 0, debt: 100 });
+    await expectWalletConsistent(p.accountId);
+  });
+
+  it('8. 환불 남용 판정이 받은 일일 지급을 소비로 센다(전액 수령 후 환불 = refund_after_spend)', async () => {
+    const p = await newPayer(app);
+    const hero = await heroOf(app, p);
+    const o = await purchase(app, p, PASS);
+    await claimDays(p, hero, 10);
+    mock.setStatus(o.steam_order_id, 'Refunded');
+    await sync(app, p, o.id);
+    const f = await getPool().query<{ n: string }>("SELECT count(*) AS n FROM payment_flags WHERE account_id = $1 AND kind = 'refund_after_spend'", [p.accountId]);
+    expect(Number(f.rows[0]!.n)).toBe(1);
+  });
+
+  it('9. 일일 지급이 없던 정기권을 환불하면 별조각 회수 줄은 없고 플래그도 없다', async () => {
+    const p = await newPayer(app);
+    const o = await purchase(app, p, PASS);
+    mock.setStatus(o.steam_order_id, 'Refunded');
+    await sync(app, p, o.id);
+    expect(await ledgerCount(p.accountId, 'pass_daily_revoke')).toBe(0);
+    const f = await getPool().query<{ n: string }>("SELECT count(*) AS n FROM payment_flags WHERE account_id = $1 AND kind = 'refund_after_spend'", [p.accountId]);
+    expect(Number(f.rows[0]!.n)).toBe(0);
   });
 });

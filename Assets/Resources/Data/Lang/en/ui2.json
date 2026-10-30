@@ -703,5 +703,6 @@
  "눌러서 열기": "Tap to open",
  "자동 뽑기": "Auto Draw",
  "탭하여 계속": "Tap to continue",
- "카드를 모두 확인해 주세요": "Open all the cards first."
+ "카드를 모두 확인해 주세요": "Open all the cards first.",
+ "한 마법진에 둘 이상! 한 명만 남으세요 {0}/{1}": "Two or more on one circle! Only one may stay {0}/{1}"
 }

@@ -81,6 +81,12 @@ export async function countAlive(client: PoolClient, accountId: number): Promise
   return Number((r.rows[0] as { n: string }).n);
 }
 
+/** 최근 24시간에 만든 캐릭터 수(삭제한 것 포함) */
+export async function countCreatedLastDay(client: PoolClient, accountId: number): Promise<number> {
+  const r = await client.query<{ n: string }>('SELECT count(*) AS n FROM characters WHERE account_id = $1 AND created_at >= now() - interval \'24 hours\'', [accountId]);
+  return Number(r.rows[0]?.n ?? 0);
+}
+
 export async function insertCharacter(
   client: PoolClient,
   accountId: number,

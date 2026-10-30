@@ -179,6 +179,8 @@ namespace DotRPG
             int spam = SpamSlot(p);
             float reach = CombatReach(p, spam);
             if (dist > reach) { MeasureDecision("approach"); WalkTo(p, pos, reach * 0.8f); return; }
+            // [NINJA 2026-10-30] A wall or prop between me and the monster stops every kunai: walk in until the line is clear.
+            if (dist > AttackReach * 1.5f && NinjaLineBlocked(p, target)) { MeasureDecision("ninja_line_blocked"); WalkTo(p, pos, AttackReach); return; }
             if (!p.Skills.IsCasting && !CanUseHunter(p, spam) && !BasicContact(p, target))
             { MeasureDecision("approach_basic_contact"); WalkTo(p, pos, dist * .8f); return; }
             MeasureDecision("fight_in_reach");

@@ -76,7 +76,7 @@ export async function revive(accountId: number, uuid: string, body: ReviveBody):
     // 3~4. 무료 구간 또는 코인 1개 소모
     // 사냥터(필드) 부활은 항상 무료, 코인은 던전·요일던전·레이드에서만 쓴다
     // 판정은 서버가 한다: 진행 중인 던전 판이 있으면 클라이언트가 'field'라고 보내도 던전 부활이다
-    const context = (await repo.inPlayingRun(db, c.id)) ? 'dungeon' : body.context;
+    const context = (await repo.inPlayingRun(db, c.id, now)) ? 'dungeon' : body.context;
     const free = context === 'field' || c.level <= REVIVE_FREE_UNTIL_LEVEL;
     if (!free) {
       if (coins <= 0) {

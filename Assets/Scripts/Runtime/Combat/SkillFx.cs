@@ -81,6 +81,8 @@ namespace DotRPG
 
         /// <summary>Degrees per second; negative = clockwise.</summary>
         public SkillFx Spin(float degreesPerSecond) { spin = degreesPerSecond; return this; }
+        /// <summary>[RAID 2026-10-29] Changes the colour of a running effect (a 결계 circle turning red while crowded).</summary>
+        public SkillFx Recolor(Color c) { color = c; return this; }
 
         /// <summary>Rocks back and forth around the pivot (a ringing bell): <paramref name="degrees"/> either side, dying out.</summary>
         public SkillFx Swing(float degrees, float hz) { swingDeg = degrees; swingHz = hz; return this; }

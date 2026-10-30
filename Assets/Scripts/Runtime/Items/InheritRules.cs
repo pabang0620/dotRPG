@@ -95,12 +95,27 @@ namespace DotRPG
             return sum;
         }
 
-        /// <summary>Gold to inherit a +level piece into <paramref name="to"/> (0 up to +10).</summary>
-        public static int GoldFor(EquipmentItem to, int level)
+        /// <summary>
+        /// Gold to inherit a +level piece <paramref name="from"/> into <paramref name="to"/>: the enhancement share above (0 up to +10),
+        /// but never less than the shop price gap of the two pieces. Without the floor a shop piece bought cheap at Lv.10 walked
+        /// to a Lv.40 shop piece for free at low +levels (the gap is 0 for gear the shop does not sell).
+        /// </summary>
+        public static int GoldFor(EquipmentItem from, EquipmentItem to, int level)
         {
-            if (to == null || level <= FreeLevel) return 0;
+            if (to == null) return 0;
+            int floor = ShopGap(from, to);
+            if (level <= FreeLevel) return floor;
             double x = EnhanceRules.TierGold(to.levelTier) * (to.category == EquipCategory.Weapon ? 1.0 : NonWeaponGoldPercent / 100.0);
-            return (int)Math.Round(CostShare * x * (CostUnits(level) - CostUnits(FreeLevel)), MidpointRounding.AwayFromZero);
+            int formula = (int)Math.Round(CostShare * x * (CostUnits(level) - CostUnits(FreeLevel)), MidpointRounding.AwayFromZero);
+            return Math.Max(formula, floor);
+        }
+
+        /// <summary>Shop buy price of <paramref name="to"/> minus that of <paramref name="from"/> (0 when either is not sold).</summary>
+        public static int ShopGap(EquipmentItem from, EquipmentItem to)
+        {
+            if (from == null || to == null) return 0;
+            int a = ItemPrices.BuyPrice(from.id), b = ItemPrices.BuyPrice(to.id);
+            return a > 0 && b > a ? b - a : 0;
         }
 
         /// <summary>
@@ -168,7 +183,7 @@ namespace DotRPG
             r.keepPercent = KeepPercent(r.oldLevel);
             r.keptLevel = ResultLevel(r.oldLevel, r.oldCount, true);
             r.failLevel = ResultLevel(r.oldLevel, r.oldCount, false);
-            r.gold = GoldFor(r.to, r.oldLevel);
+            r.gold = GoldFor(item, r.to, r.oldLevel);
             var m = MaterialCost(r.to.reqLevel, r.to.rarity).Value;
             r.cores = m.cores;
             r.shards = m.shards;

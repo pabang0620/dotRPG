@@ -9,6 +9,13 @@ namespace DotRPG
 {
     public partial class DevCapture
     {
+        /// <summary>[MEASURE] Ninja kunai outcomes since <paramref name="start"/>: thrown / landed / refused / wall / out of range.</summary>
+        static string KunaiDelta(int[] start, int at)
+        {
+            var k = CareerCombat.KunaiStats;
+            return $"{k[at] - start[at]}/{k[at + 1] - start[at + 1]}/{k[at + 2] - start[at + 2]}/{k[at + 3] - start[at + 3]}/{k[at + 4] - start[at + 4]}";
+        }
+
         // =====================================================================================================
         // [MEASURE] -dotrpgMeasure <folder>: plays the game by itself and times it (Docs/PLAN_PLAYTEST_MEASURE_2026-10-12.md).
         // M1 hunting (20 grounds), M2 weekday dungeons and M3 raids (normal + heroic), each alone and with three AI
@@ -313,6 +320,7 @@ namespace DotRPG
                         int strays = 0;
                         int ninjaLeapRequestsStart = QuestAutoPilot.NinjaLeapRequests;
                         int ninjaLeapSkipsStart = QuestAutoPilot.NinjaLeapNoTargetSkips;
+                        int[] kunaiStart = (int[])CareerCombat.KunaiStats.Clone();
                         float recoverySeconds = 0f;
                         bool recoveryFailed = false;
                         while (setupValid && Time.time - t0 < minutes * 60f)
@@ -370,6 +378,7 @@ namespace DotRPG
                             ("potions_per_min", R2(tally.potions / mins)), ("deaths", tally.deaths), ("hero_hp", Game.Player != null ? Game.Player.Health.Max : 0), ("strays", strays),
                             ("ninja_leap_requests", QuestAutoPilot.NinjaLeapRequests - ninjaLeapRequestsStart),
                             ("ninja_leap_no_target_skips", QuestAutoPilot.NinjaLeapNoTargetSkips - ninjaLeapSkipsStart),
+                            ("kunai_body", KunaiDelta(kunaiStart, 0)), ("kunai_clone", KunaiDelta(kunaiStart, 5)),
                             ("recovery_s", R1(recoverySeconds)), ("valid", setupValid && !recoveryFailed && !rowTimedOut), ("row_timeout", rowTimedOut));
                         MeasureTraceRow(huntRow);
                         rows.Add(huntRow);

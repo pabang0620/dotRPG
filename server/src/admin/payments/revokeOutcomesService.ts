@@ -114,6 +114,15 @@ async function buildPlan(db: Queryable, order: payRepo.OrderRow, include: Revoke
     );
     g.rows.forEach(addGear);
   }
+  // 정기권 일일 지급: 이 주문 환불 때 회수 표시된 일일 상자 중 이미 받아 간 것은 가방·창고에 남은 만큼 회수한다(받지 않은 우편은 환불 때 폐기됨)
+  const dailyBoxes = await db.query<{ uuid: string; character_id: string; item_key: string; delta: number }>(
+    `SELECT c.uuid, i.character_id, i.item_key, i.delta FROM star_pass_daily d
+       JOIN mails m ON m.id = d.mail_id JOIN item_ledger i ON i.ref = m.uuid::text AND i.reason = 'mail_claim' AND i.delta > 0
+       JOIN characters c ON c.id = i.character_id
+      WHERE d.reclaimed_order_id = $1 ORDER BY i.id`,
+    [order.id],
+  );
+  dailyBoxes.rows.forEach(addGear);
   const plan: Plan = {
     order: order.uuid,
     cosmetics: include.cosmetics ? [...cos].map(([item_id, v]) => ({ item_id, ...v })).sort((a, b) => a.item_id.localeCompare(b.item_id)) : [],

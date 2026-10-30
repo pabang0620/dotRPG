@@ -66,6 +66,17 @@ describe('T1 입장 티켓과 hello', () => {
     c.close();
   });
 
+  it('[NET 2026-10-30] hello의 모르는 필드는 무시하고, 인증 뒤 모르는 제어 프레임은 끊지 않는다', async () => {
+    const r = await room(2, false);
+    const host = await joinRoom(app, srv.port, r.heroes[0] as Hero, 'run', r.runId, { future_field: 1 });
+    expect(host.ready).toMatchObject({ t: 'ready', seat: 0 });
+    for (let i = 0; i < 4; i++) host.c.sendText({ t: 'future.ctrl', n: i });
+    expect(await host.c.waitText((f) => f.t === 'error' && f.code === 'UNKNOWN_FRAME')).toBeTruthy();
+    await sleep(100);
+    expect(host.c.closed).toBeNull();
+    host.c.close();
+  });
+
   it('입력 오류: T1 본문에 값을 보내면 400, 남의 방·없는 방은 404 ROOM_NOT_FOUND', async () => {
     const r = await room(2, false);
     const bad = await request(app).post(`/characters/${(r.heroes[0] as Hero).id}/rooms/run/${r.runId}/relay-ticket`).set(auth((r.heroes[0] as Hero).s)).send({ seat: 2 });

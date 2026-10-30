@@ -269,7 +269,7 @@ async function i6(): Promise<CheckResult> {
   await add(
     'debt_without_revoke',
     `SELECT a.uuid AS account, w.debt FROM star_wallets w JOIN accounts a ON a.id = w.account_id
-      WHERE w.debt > 0 AND NOT EXISTS (SELECT 1 FROM star_ledger l WHERE l.account_id = w.account_id AND l.reason IN ('refund_revoke', 'chargeback_revoke') AND l.debt_delta > 0)
+      WHERE w.debt > 0 AND NOT EXISTS (SELECT 1 FROM star_ledger l WHERE l.account_id = w.account_id AND l.reason IN ('refund_revoke', 'chargeback_revoke', 'pass_daily_revoke') AND l.debt_delta > 0)
       ORDER BY w.account_id`,
   );
   return { count: parts.reduce((a, [, r]) => a + r.count, 0), samples: parts.flatMap(([, r]) => r.samples).slice(0, SAMPLE_MAX) };

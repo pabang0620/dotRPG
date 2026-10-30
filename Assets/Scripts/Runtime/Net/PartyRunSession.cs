@@ -171,7 +171,8 @@ namespace DotRPG
             roomKills.Clear();
             if (!amHost) return; // a member follows the host's RunStart
             var def = DungeonDatabase.Get(dungeonId);
-            if (def != null && Game.Dungeon != null) Game.Dungeon.StartPartyRun(def, (DungeonDifficulty)difficulty);
+            // [NET 2026-10-30] A session rebuilt by a resync inside the running dungeon keeps it (no second start).
+            if (def != null && Game.Dungeon != null && !Game.Dungeon.InRun) Game.Dungeon.StartPartyRun(def, (DungeonDifficulty)difficulty);
         }
 
         void Update()
@@ -192,6 +193,7 @@ namespace DotRPG
                 heartbeatTimer = HeartbeatSeconds;
                 Heartbeat();
             }
+            WatchConnection();
             // Host gone from the fight connection: ask the server whether I take over (§6.7).
             // On the relay the server decides by itself and says host.changed.
             // [PARTY 9] Not once the run is over: the host going home from the result window is no reason to take over.
@@ -203,10 +205,68 @@ namespace DotRPG
             else hostLostFor = 0f;
         }
 
+        /// <summary>
+        /// [NET 2026-10-30] Manual resync while this PC is still inside a party dungeon but the run session is gone
+        /// (finished here by a lost answer while the server keeps the run): the next party poll may start it again.
+        /// </summary>
+        public static void AllowRejoin()
+        {
+            if (Instance != null || Game.Dungeon == null || !Game.Dungeon.InRun || Game.Dungeon.RunOver) return;
+            finishedRunId = null;
+        }
+
         /// <summary>[SERVER 5] The chat socket said this run changed: read it now.</summary>
         public void FetchNow() => Fetch();
 
-        void Fetch() => Api.Get($"{Char}/party-runs/{runId}", r => { if (r.ok) Read(MiniJson.Obj(r.data, "run")); else if (r.status == 404) Finish(null); });
+        bool fetching;
+
+        // [NET 2026-10-30] One read at a time: the poll, the chat push and the start answer asked within the same second and the
+        // second ask got 429 at every departure on 2026-10-29 (GET now retries, so overlapping reads would only pile up).
+        void Fetch()
+        {
+            if (fetching) return;
+            fetching = true;
+            string id = runId;
+            Api.Get($"{Char}/party-runs/{id}", r =>
+            {
+                fetching = false;
+                if (Instance != this || id != runId) return;
+                if (r.ok) Read(MiniJson.Obj(r.data, "run"));
+                else if (r.status == 404) Finish(null);
+            });
+        }
+
+        // ---------------- recovery [NET 2026-10-30] ----------------
+
+        /// <summary>A member without the host this long during the fight gets a fresh connection (the transport's own retries stalled).</summary>
+        const float HostMissingSeconds = 20f;
+        float hostMissingFor, nextAutoResyncAt;
+
+        void WatchConnection()
+        {
+            bool missing = state == "playing" && PartyNet.IsMember && !RunFinished && !PartyNet.Current.Transport.IsConnected;
+            if (!missing) { hostMissingFor = 0f; return; }
+            hostMissingFor += Time.unscaledDeltaTime;
+            if (hostMissingFor < HostMissingSeconds || Time.unscaledTime < nextAutoResyncAt) return;
+            Debug.LogWarning("[PARTY] no host connection for " + HostMissingSeconds + " s: rebuilding the fight connection");
+            nextAutoResyncAt = Time.unscaledTime + 45f;
+            Resync();
+        }
+
+        /// <summary>
+        /// [NET 2026-10-30] Manual "연결 다시 맞추기" (or the check above): read the run again and rebuild the fight connection.
+        /// The fight stays; a member greets the host again, the host waits for the greetings (same as a transport switch).
+        /// A run that is already over only reads again.
+        /// </summary>
+        public void Resync()
+        {
+            hostLostFor = 0f;
+            hostMissingFor = 0f;
+            Fetch();
+            if (RunFinished || !PartyNet.Active || PartyNet.Current.FieldMode) return;
+            if (PartyNet.Current.Transport is RelayTransport relay && relay.ClosedReason == null) { relay.Reconnect(); return; }
+            SwitchTransport();
+        }
 
         void Join()
         {

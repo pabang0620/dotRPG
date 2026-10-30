@@ -4,6 +4,7 @@ import { getValidated } from '../../middleware/validationMiddleware';
 import { successResponse } from '../../utils/response';
 import { sendStored } from '../economy/economyController';
 import * as service from './partyService';
+import { retryOnDeadlock } from '../../db/pool';
 import type {
   ApplicationParams, CreatePartyBody, ListQuery, PartyParams, PatchPartyBody, PollQuery, ReadyBody, RequestOnlyBody, RespondBody, TargetBody,
 } from './partyValidation';
@@ -33,7 +34,7 @@ export async function create(_req: Request, res: Response, next: NextFunction): 
 export async function mine(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { params, query } = getValidated<unknown, P, PollQuery>(res);
-    successResponse(res, await service.getMyParty(acc(res), params.uuid, query));
+    successResponse(res, await retryOnDeadlock(() => service.getMyParty(acc(res), params.uuid, query)));
   } catch (err) {
     next(err);
   }

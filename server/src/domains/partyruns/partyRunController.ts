@@ -6,6 +6,7 @@ import { sendStored } from '../economy/economyController';
 import * as live from './partyRunLiveService';
 import * as service from './partyRunService';
 import type { ClaimBody, HeartbeatBody, HostReportBody, JoinBody, RequestOnlyBody, RunParams, StartBody } from './partyRunValidation';
+import { retryOnDeadlock } from '../../db/pool';
 
 type P = { uuid: string };
 const acc = (res: Response) => getAccount(res.locals).id;
@@ -49,7 +50,7 @@ export async function begin(_req: Request, res: Response, next: NextFunction): P
 export async function heartbeat(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { body, params } = getValidated<HeartbeatBody, RunParams>(res);
-    successResponse(res, await live.heartbeat(acc(res), params.uuid, params.id, body));
+    successResponse(res, await retryOnDeadlock(() => live.heartbeat(acc(res), params.uuid, params.id, body)));
   } catch (err) {
     next(err);
   }

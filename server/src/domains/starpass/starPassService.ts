@@ -60,7 +60,25 @@ export async function grantPassForOrder(client: PoolClient, o: OrderRow, now: Da
   await repo.insertGrant(client, { accountId: o.account_id, orderId: o.id, kind: 'grant', seconds: Math.round(added / 1000), expiresAfter: at });
 }
 
-/** 환불·차지백 트랜잭션 안: 그 주문이 더한 기간을 뺀다(지금보다 앞으로는 당기지 않는다). 이미 받은 일일 지급은 회수하지 않는다 */
+/**
+ * 환불·차지백 트랜잭션 안(기간을 뺀 뒤): 그 주문 기간에 이미 받은 일일 지급을 되돌린다.
+ * 무료 별조각은 부채 방식으로 걷고(쓴 몫은 부채), 받지 않은 상자 우편은 폐기한다. 이미 받아 간 상자는 owner 회수 도구(gear)가 처리한다.
+ * 돌려주는 stars 는 환불 남용 판정에서 "이미 받은 몫"으로 센다
+ */
+export async function reclaimDailiesForOrder(client: PoolClient, o: OrderRow): Promise<{ days: number; stars: number; mailsExpired: number }> {
+  const none = { days: 0, stars: 0, mailsExpired: 0 };
+  const g = await repo.grantOf(client, o.id, 'grant');
+  if (!g || g.createdAt === null || g.expiresAfter === null) return none;
+  const rows = await repo.unreclaimedDailies(client, o.account_id, g.createdAt, g.expiresAfter);
+  if (rows.length === 0) return none;
+  const stars = rows.reduce((a, r) => a + r.stars, 0);
+  await wallets.reverseFree(client, { accountId: o.account_id, amount: stars, ref: o.uuid });
+  const mailsExpired = await repo.expireUnclaimedMails(client, rows.flatMap((r) => (r.mail_id === null ? [] : [r.mail_id])), getNow());
+  await repo.markReclaimed(client, o.account_id, rows.map((r) => r.day_start), o.id);
+  return { days: rows.length, stars, mailsExpired };
+}
+
+/** 환불·차지백 트랜잭션 안: 그 주문이 더한 기간을 뺀다(지금보다 앞으로는 당기지 않는다). 일일 지급 회수는 reclaimDailiesForOrder */
 export async function revokePassForOrder(client: PoolClient, o: OrderRow, now: Date): Promise<void> {
   const g = await repo.grantOf(client, o.id, 'grant');
   if (!g || (await repo.grantOf(client, o.id, 'revoke'))) return;

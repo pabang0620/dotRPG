@@ -239,6 +239,7 @@ namespace DotRPG
                 case "ready":
                     ready = true;
                     failures = 0;
+                    Failed = false; // [NET 2026-10-30] back: a later run check must not read the old failure (it stayed true for good)
                     resume = true;
                     heardAt = Time.realtimeSinceStartup;
                     // Packets queued while the socket was down belong to the old connection (the member greets again,
@@ -389,6 +390,23 @@ namespace DotRPG
             catch (Exception) { }
             open = false;
             closes.Enqueue(code);
+        }
+
+        /// <summary>
+        /// [NET 2026-10-30] Manual resync: drop this socket and connect again soon with a fresh ticket (the seat is kept,
+        /// the server swaps the old connection for the new one). Does nothing once the room is over.
+        /// </summary>
+        public void Reconnect()
+        {
+            if (disposed || ClosedReason != null) return;
+            failures = 0;
+            Failed = false;
+            retryAt = 0f;
+            if (open || connecting)
+            {
+                ready = false;
+                try { ws?.Abort(); } catch (Exception) { } // the receive loop reports 1006 and the first backoff step (about 1.5 s) connects
+            }
         }
 
         /// <summary>Leaves the room on purpose (seat given back) and closes.</summary>

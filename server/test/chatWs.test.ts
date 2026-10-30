@@ -108,8 +108,37 @@ describe('인증과 연결', () => {
     expect((await c.waitT('error')).code).toBe('BAD_FRAME');
     const [b] = await heroes(1);
     const flood = (await join(b as Hero)).c;
-    for (let i = 0; i < 15; i++) flood.send({ t: 'ping', n: i });
+    // 한도는 3초 창으로 센다(초당 10 x 3초 = 30)
+    for (let i = 0; i < 35; i++) flood.send({ t: 'ping', n: i });
     expect(await flood.waitClose()).toBe(4006);
+  });
+
+  it('[NET 2026-10-30] 짧은 몰림(와이파이 복구 직후 15프레임)은 끊지 않는다', async () => {
+    const [a] = await heroes(1);
+    const { c } = await join(a as Hero);
+    for (let i = 0; i < 15; i++) c.send({ t: 'ping', n: i });
+    expect((await c.waitFor((f) => f.t === 'pong' && f.n === 14)).n).toBe(14);
+    expect(c.closed).toBeNull();
+  });
+
+  it('[NET 2026-10-30] 새 클라이언트의 모르는 필드·모르는 프레임·범위 밖 town.pos는 연결을 끊지 않는다', async () => {
+    const [a] = await heroes(1);
+    const { c } = await join(a as Hero);
+    // 아는 프레임에 모르는 필드: 그대로 처리
+    c.send({ t: 'ping', n: 1, future_field: 'x' });
+    expect((await c.waitT('pong')).n).toBe(1);
+    // 모르는 프레임 종류: UNKNOWN_FRAME만 알리고 위반으로 세지 않는다(예전에는 3번이면 4005)
+    for (let i = 0; i < 4; i++) c.send({ t: 'future.thing', v: i });
+    expect((await c.waitT('error')).code).toBe('UNKNOWN_FRAME');
+    // 범위 밖 마을 좌표·모르는 필드가 섞인 town.pos: 그 프레임만 버린다
+    for (let i = 0; i < 4; i++) c.send({ t: 'town.pos', map_id: 'village', x: 9999, y: 1, f: 0, m: false, cls: 0, title: 'new' });
+    await sleep(150);
+    c.send({ t: 'ping', n: 2 });
+    expect((await c.waitFor((f) => f.t === 'pong' && f.n === 2)).n).toBe(2);
+    expect(c.closed).toBeNull();
+    // 형식이 틀린 아는 프레임은 여전히 위반이다
+    for (let i = 0; i < 3; i++) c.send({ t: 'chat.send', cid: 'x', channel: 'general', text: 'hi' });
+    expect(await c.waitClose()).toBe(4005);
   });
 });
 

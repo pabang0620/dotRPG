@@ -61,13 +61,13 @@ async function settleGuild(client: PoolClient, s: repo.Season, now: Date): Promi
       for (const id of winners) await repo.grantTitle(client, id, s.id, 'rank_guild_1', null, until);
     }
   }
-  // 1~10위 길드원 순위 보상(2026-10-30): 정산 시각에 그 길드에 있고 주가 끝나기 전에 가입한 길드원 전원.
+  // 1~10위 길드원 순위 보상(2026-10-30): 정산 시각에 그 길드에 있고 주가 끝나기 전에 가입했으며 이 시즌에 그 길드로 도전을 끝낸 길드원만.
   // 한 사람은 한 길드에만 속하지만, 같은 정산에서 두 번 받지 않게 순위 높은 길드부터 한 번만 준다
   const rewarded = new Set<number>();
   for (let i = 0; i < rows.length && i < 10; i++) {
     const tier = guildTierReward(i + 1);
     if (!tier) continue;
-    for (const id of await repo.guildMembersBefore(client, (rows[i] as { key: number }).key, s.week_end)) {
+    for (const id of await repo.guildMembersBefore(client, (rows[i] as { key: number }).key, s.week_end, s.id)) {
       if (rewarded.has(id)) continue;
       rewarded.add(id);
       await mailGold(client, id, 'guild_boss', tier.gold, now);

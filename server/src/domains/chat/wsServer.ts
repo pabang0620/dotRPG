@@ -25,7 +25,7 @@ import { pushMyPresence, sendAllPresence } from './presenceService';
 import { registry } from './realtimeNotifier';
 import { handleTownPos, leaveTown } from './townPresence';
 import { checkBan, refreshAccount, startSanctionListener, stopSanctionListener } from './sanctionService';
-import { CLOSE, PROTOCOL_VERSION, clientFrame, type ClientFrame, type Frame } from './wsProtocol';
+import { CLOSE, KNOWN_FRAME_TYPES, PROTOCOL_VERSION, clientFrame, type ClientFrame, type Frame } from './wsProtocol';
 import { incomingInvites } from '../partyinvites/partyInvitesService';
 import { startSessionListener, stopSessionListener } from '../antiabuse/sessionListener';
 
@@ -57,6 +57,9 @@ function rawBye(ws: WebSocket, code: number, reason: string, reconnect: boolean)
   rawSend(ws, { t: 'bye', code, reason, reconnect });
   ws.close(code, reason);
 }
+
+/** 프레임 수를 세는 창(이 창 안에서 WS_FRAMES_PER_SEC x 초 수를 넘으면 FLOOD) */
+const FLOOD_WINDOW_MS = 3000;
 
 export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
   const cfg = getConfig();
@@ -303,9 +306,11 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
     ws.on('message', (data: RawData, isBinary: boolean) => {
       const now = Date.now();
       if (session) session.lastFrameAt = now;
-      while (stamps.length > 0 && now - (stamps[0] as number) >= 1000) stamps.shift();
+      // [NET 2026-10-30] 초당 한도를 3초 창으로 본다(평균은 같다). 와이파이가 1~2초 멈췄다 풀리면 그동안 쌓인 town.pos가
+      // 한꺼번에 도착해 1초 창에서는 정상 클라이언트도 FLOOD로 끊겼다
+      while (stamps.length > 0 && now - (stamps[0] as number) >= FLOOD_WINDOW_MS) stamps.shift();
       stamps.push(now);
-      if (stamps.length > sc.wsFramesPerSec) return closeWith(CLOSE.FLOOD, 'FLOOD', true);
+      if (stamps.length > sc.wsFramesPerSec * (FLOOD_WINDOW_MS / 1000)) return closeWith(CLOSE.FLOOD, 'FLOOD', true);
       if (isBinary) {
         err(undefined, 'BAD_FRAME', '텍스트(JSON) 프레임만 받습니다.');
         strike();
@@ -322,6 +327,13 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
       const r = clientFrame.safeParse(parsed);
       if (!r.success) {
         const t = (parsed as { t?: unknown } | null)?.t;
+        // [NET 2026-10-30] 더 새 클라이언트의 모르는 프레임 종류는 알리기만 한다(위반으로 세면 3번 만에 영구 끊김)
+        if (session && typeof t === 'string' && !KNOWN_FRAME_TYPES.has(t)) {
+          err(t, 'UNKNOWN_FRAME', '이 서버가 모르는 프레임입니다.');
+          return;
+        }
+        // 마을 위치는 표시용이고 초당 여러 번 온다: 값 하나가 범위를 벗어나도(새 맵 좌표 등) 그 프레임만 버린다
+        if (session && t === 'town.pos') return;
         err(typeof t === 'string' ? t : undefined, 'BAD_FRAME', '프레임 형식이 올바르지 않습니다.');
         strike();
         return;
@@ -334,11 +346,15 @@ export async function attachRealtime(server: Server): Promise<RealtimeHandle> {
     });
 
     ws.on('error', () => undefined);
-    ws.on('close', () => {
+    ws.on('close', (code: number, reason: Buffer) => {
       clearTimeout(helloTimer);
       total--;
       uncount();
       const s = session;
+      // [NET 2026-10-30] 끊김 원인을 로그로 남긴다(2026-10-29 끊김 조사 때 채팅 연결 기록이 하나도 없었다). 정상 종료(1000·1001)는 debug
+      const why = { account: s?.accountUuid, code, reason: reason.toString().slice(0, 40) };
+      if (code === 1000 || code === 1001) logger.debug(why, 'ws.closed');
+      else logger.info(why, 'ws.closed');
       if (s) {
         leaveTown(s);
         s.closed = true;

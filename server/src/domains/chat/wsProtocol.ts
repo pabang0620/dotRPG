@@ -47,7 +47,12 @@ export interface Frame {
 
 const uuid = z.uuid();
 
-export const helloFrame = z.strictObject({
+// [NET 2026-10-30] 프레임 스키마는 모르는 필드를 지우고 받는다(z.object). 새 클라이언트가 선택 필드를 하나 더 보내도
+// BAD_FRAME 3번(10초) = BAD_PROTOCOL로 채팅·마을 연결이 영구히 끊기지 않게 한다. 아는 필드의 값 검사는 그대로다.
+/** 서버가 아는 프레임 종류. 모르는 종류(더 새 클라이언트)는 오류만 알리고 위반으로 세지 않는다 */
+export const KNOWN_FRAME_TYPES: ReadonlySet<string> = new Set(['hello', 'auth', 'ping', 'chat.send', 'presence.set', 'town.pos']);
+
+export const helloFrame = z.object({
   t: z.literal('hello'),
   v: z.literal(PROTOCOL_VERSION),
   token: z.string().min(1).max(2048),
@@ -55,11 +60,11 @@ export const helloFrame = z.strictObject({
   character_id: uuid,
   since: z.number().int().min(0).nullable().optional(),
   /** 8단계: 클라이언트 능력(모르는 서버는 무시한다) */
-  caps: z.strictObject({ steam_p2p: z.boolean().optional() }).optional(),
+  caps: z.object({ steam_p2p: z.boolean().optional() }).optional(),
 });
 
 /** 마을에서 내 모습과 위치(같은 마을·같은 채널 사람에게 중계). 전투·보상과 무관한 표시용 */
-export const townPosFrame = z.strictObject({
+export const townPosFrame = z.object({
   t: z.literal('town.pos'),
   map_id: z.string().min(1).max(40),
   x: z.number().finite().min(-50).max(500),
@@ -79,7 +84,7 @@ export const townPosFrame = z.strictObject({
   k: z.number().int().min(-1).max(15).optional(),
 });
 
-export const chatSendFrame = z.strictObject({
+export const chatSendFrame = z.object({
   t: z.literal('chat.send'),
   cid: uuid,
   channel: z.string().max(20),
@@ -90,10 +95,10 @@ export const chatSendFrame = z.strictObject({
 
 export const clientFrame = z.discriminatedUnion('t', [
   helloFrame,
-  z.strictObject({ t: z.literal('auth'), token: z.string().min(1).max(2048) }),
-  z.strictObject({ t: z.literal('ping'), n: z.number().int().optional() }),
+  z.object({ t: z.literal('auth'), token: z.string().min(1).max(2048) }),
+  z.object({ t: z.literal('ping'), n: z.number().int().optional() }),
   chatSendFrame,
-  z.strictObject({ t: z.literal('presence.set'), map_id: z.string().min(1).max(40) }),
+  z.object({ t: z.literal('presence.set'), map_id: z.string().min(1).max(40) }),
   townPosFrame,
 ]);
 

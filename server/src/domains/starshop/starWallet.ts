@@ -223,6 +223,19 @@ export async function reversePaid(
   return { taken, owed, already: false };
 }
 
+/**
+ * 정기권 환불·차지백: 그 주문 기간에 받은 무료 별조각(일일 지급)을 되돌린다. 무료분 잔액에서 걷고, 이미 쓴 몫은 부채로 남긴다
+ * (reversePaid 뒤에 부른다: 유료분은 이미 걷혀 balance - paid 가 무료 잔액이다). 걷은 양과 부채 양을 돌려준다
+ */
+export async function reverseFree(db: Queryable, o: { accountId: number; amount: number; ref: string }): Promise<{ taken: number; owed: number }> {
+  if (o.amount <= 0) return { taken: 0, owed: 0 };
+  const w = await lockWallet(db, o.accountId);
+  const taken = Math.min(Math.max(0, w.balance - w.paidBalance), o.amount);
+  const owed = o.amount - taken;
+  await apply(db, { accountId: o.accountId, delta: -taken, paidDelta: 0, debtDelta: owed, reason: 'pass_daily_revoke', ref: o.ref, requestId: null });
+  return { taken, owed };
+}
+
 /** 승인된 부채 탕감(전액만). 부채가 없으면 0 */
 export async function forgiveDebt(db: Queryable, o: { accountId: number; ref: string }): Promise<number> {
   const w = await lockWallet(db, o.accountId);

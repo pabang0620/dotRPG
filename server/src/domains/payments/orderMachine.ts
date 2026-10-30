@@ -11,7 +11,7 @@ import { logger } from '../../utils/logger';
 import * as holdsRepo from '../antiabuse/holdsRepository';
 import { creditPaid, reversePaid } from '../starshop/starWallet';
 import { reverseCrystalsForOrder } from '../starshop/crystalWallet';
-import { grantPassForOrder, revokePassForOrder } from '../starpass/starPassService';
+import { grantPassForOrder, reclaimDailiesForOrder, revokePassForOrder } from '../starpass/starPassService';
 import * as repo from './paymentsRepository';
 import type { EventKind, FlagKind, OrderRow, OrderState } from './paymentsRepository';
 import { RESTRICT_DAYS } from './payTier';
@@ -393,6 +393,7 @@ async function reverseOrder(o: OrderRow, ctx: Ctx, kind: Reversal): Promise<void
     const toState: OrderState = kind === 'chargeback' ? 'chargeback' : 'refunded';
     let taken = 0;
     let owed = 0;
+    let passDailyStars = 0;
     if (cur.state === 'refunded') {
       // 환불 뒤 차지백으로 승격: 회수는 이미 끝났다
       await repo.updateFenced(client, cur.id, ctx.token, 'refunded', { state: 'chargeback', last_checked_at: new Date(), next_check_at: null, needs_review: false, review_reason: null });
@@ -405,6 +406,7 @@ async function reverseOrder(o: OrderRow, ctx: Ctx, kind: Reversal): Promise<void
         // 0044: 그 주문의 별조각으로 뽑은 외형·장비를 분해해 받은 별의 결정도 걷는다(이미 쓴 몫은 결정 부채)
         await reverseCrystalsForOrder(client, { accountId: cur.account_id, orderId: cur.id, orderUuid: cur.uuid, kind: kind === 'chargeback' ? 'chargeback' : 'refund' });
         await revokePassForOrder(client, cur, now); // 정기권이면 그 주문이 더한 기간을 뺀다
+        passDailyStars = (await reclaimDailiesForOrder(client, cur)).stars; // 그 기간에 받은 일일 지급(무료 별조각·상자)도 되돌린다
       }
       const partial = kind === 'partial';
       const ok = await repo.updateFenced(client, cur.id, ctx.token, cur.state, {
@@ -422,7 +424,7 @@ async function reverseOrder(o: OrderRow, ctx: Ctx, kind: Reversal): Promise<void
       await repo.insertEvent(client, cur.id, { kind: toState === 'chargeback' ? 'chargeback' : 'refunded', from: cur.state, to: toState, actor: ctx.actor, detail: { granted: wasGranted, partial } });
       if (wasGranted) await repo.insertEvent(client, cur.id, { kind: 'revoked_stars', actor: ctx.actor, detail: { taken, owed } });
     }
-    await reversalPolicy(client, cur, kind, taken, owed, wasGranted);
+    await reversalPolicy(client, cur, kind, taken, owed, wasGranted, passDailyStars);
     return { taken, owed, kind };
   });
   if (result) logger.warn({ order: o.uuid, kind: result.kind, taken: result.taken, owed: result.owed }, 'payment.reversal');
@@ -431,7 +433,8 @@ async function reverseOrder(o: OrderRow, ctx: Ctx, kind: Reversal): Promise<void
 type Tx = Parameters<Parameters<typeof withTransaction>[0]>[0];
 
 /** 9.2 정책표의 계정 조치. 차지백 = 결제 정지 + 경제 정지(payment, 전파 없음) + 연결 계정 제한 + 검토. 환불 = 소비 후 환불 패턴 탐지 */
-async function reversalPolicy(client: Tx, o: OrderRow, kind: Reversal, taken: number, owed: number, wasGranted: boolean): Promise<void> {
+/** passDailyStars: 정기권 주문이 환불 전에 일일 지급으로 이미 받은 무료 별조각(소비한 것과 같이 센다) */
+async function reversalPolicy(client: Tx, o: OrderRow, kind: Reversal, taken: number, owed: number, wasGranted: boolean, passDailyStars = 0): Promise<void> {
   const pay = getConfig().pay;
   const now = getNow();
   if (kind === 'chargeback') {
@@ -461,7 +464,7 @@ async function reversalPolicy(client: Tx, o: OrderRow, kind: Reversal, taken: nu
   }
   if (!wasGranted || o.stars <= 0) return;
   // 사서 뽑고 환불: 환불 시점 소비율이 기준 이상이면 플래그, 반복하면 제한·정지(9.6)
-  if (owed / o.stars < pay.refundSpendRatio) return;
+  if ((owed + passDailyStars) / o.stars < pay.refundSpendRatio) return;
   let severity: 2 | 3 = 2;
   if (o.granted_at) {
     const burnEnd = new Date(o.granted_at.getTime() + pay.burnMinutes * 60_000);
@@ -470,9 +473,9 @@ async function reversalPolicy(client: Tx, o: OrderRow, kind: Reversal, taken: nu
         WHERE a.order_id = $1 AND l.reason IN ('gacha', 'exchange', 'sealed_pull', 'pass_buy', 'skill_style_buy', 'item_buy') AND l.created_at <= $2`,
       [o.id, burnEnd],
     );
-    if (Number(burned.rows[0]?.s ?? 0) >= o.stars * 0.9) severity = 3;
+    if (Number(burned.rows[0]?.s ?? 0) + passDailyStars >= o.stars * 0.9) severity = 3;
   }
-  await repo.insertFlag(client, { accountId: o.account_id, orderId: o.id, kind: 'refund_after_spend', severity, detail: { owed, stars: o.stars }, dedupeMinutes: 0 });
+  await repo.insertFlag(client, { accountId: o.account_id, orderId: o.id, kind: 'refund_after_spend', severity, detail: { owed, stars: o.stars, pass_daily_stars: passDailyStars }, dedupeMinutes: 0 });
   const n = await repo.countFlags(client, o.account_id, 'refund_after_spend', new Date(now.getTime() - 90 * DAY_MS));
   if (n >= pay.refundBlockCount) {
     await repo.blockProfile(client, o.account_id, 'refund_abuse', 'system', null);

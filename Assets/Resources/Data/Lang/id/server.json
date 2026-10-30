@@ -91,5 +91,8 @@
  "{0} -> {1} 의 등급·부위가 다릅니다": "{0} -> {1} berbeda tingkat atau slot",
  "재료를 받는 줄이 있는데 coreItem·shardItem·sealItem이 없습니다": "Ada baris yang meminta bahan tetapi coreItem, shardItem, atau sealItem tidak ada",
  "그림자 모습으로 변신해 6초 동안 모든 공격 피해 +18%, 공격 속도 +20%. 변신이 풀릴 때 반경 7m를 터뜨린다(480%).": "Berubah ke wujud bayangan selama 6 dtk: semua damage serangan +18%, kecepatan serangan +20%. Saat wujud berakhir, meledak dalam radius 7m (480%).",
- "난이도는 4개(옛 형식) 또는 8개여야 합니다": "Tingkat kesulitan harus 4 (format lama) atau 8"
+ "난이도는 4개(옛 형식) 또는 8개여야 합니다": "Tingkat kesulitan harus 4 (format lama) atau 8",
+ "이 서버가 모르는 프레임입니다.": "Server ini tidak mengenali frame ini.",
+ "환경변수 검증 실패: TEST_OPEN_ALL_DAYS=1 은 시험 서버(DEPLOY_STAGE=test)에서만 쓸 수 있습니다": "Pemeriksaan lingkungan gagal: TEST_OPEN_ALL_DAYS=1 hanya boleh di server uji (DEPLOY_STAGE=test)",
+ "하루에 만들 수 있는 캐릭터 수를 넘었습니다. 내일 다시 시도해 주세요.": "Batas pembuatan karakter hari ini telah tercapai. Coba lagi besok."
 }

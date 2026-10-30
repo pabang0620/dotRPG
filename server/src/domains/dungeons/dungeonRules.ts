@@ -1,4 +1,5 @@
 // 솔로 던전의 순수 규칙. C# 원본: DungeonRanking, DungeonRewards, ResetClock.IsOpen
+import { getConfig } from '../../config/env';
 import { tierOfLevel } from '../../utils/gearTier';
 import type { DifficultyDef, DungeonDef, EconomyData } from '../../gamedata/economyData';
 import { RARITY_ORDER } from '../../gamedata/economyData';
@@ -454,7 +455,7 @@ export function diffOf(eco: EconomyData, d: DungeonDef, index: number): DiffNumb
 /** ResetClock.IsOpen: 레이드는 openDays만 본다. 요일 던전은 토·일 전부 개방(weekendOpensAll), 아니면 openDays에 오늘 요일 */
 export function isOpenToday(eco: EconomyData, d: DungeonDef, now: Date): boolean {
   // 시험 서버 전용: TEST_OPEN_ALL_DAYS=1 이고 DEPLOY_STAGE=test 이면 요일과 상관없이 모두 연다(운영에서는 두 값이 같이 있을 수 없다)
-  if (process.env.DEPLOY_STAGE === 'test' && process.env.TEST_OPEN_ALL_DAYS === '1') return true;
+  if (getConfig().testOpenAllDays) return true;
   const day = gameWeekday(now);
   if (d.isRaid) return d.openDays.includes(day);
   if (d.always) return true;

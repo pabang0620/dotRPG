@@ -142,19 +142,48 @@ async function main(): Promise<void> {
       while (metrics.runningTotal() > 0 && Date.now() < end) await sleep(50);
       mark('ticks_ms', t);
       // 6. HTTP 서버 닫기, 풀 닫기
+      // [NET 2026-10-30] 배포 때마다 여기서 30초 제한(shutdown.timeout)까지 멈춰 그동안 접속이 전부 끊겨 있었다
+      // (2026-10-29 재시작 6회 모두). 단계마다 상한을 두고 넘으면 다음 단계로 간다(남은 소켓·연결은 exit가 정리한다)
       t = Date.now();
-      await new Promise<void>((resolve) => {
-        server.close(() => resolve());
-        server.closeIdleConnections();
-        setTimeout(() => server.closeAllConnections(), 2000).unref();
-      });
-      if (adminServer) {
-        await new Promise<void>((resolve) => {
-          adminServer.close(() => resolve());
-          adminServer.closeAllConnections();
+      const capped = (p: Promise<void>, ms: number, name: string): Promise<void> =>
+        new Promise<void>((resolve) => {
+          const cap = setTimeout(() => {
+            timing[`${name}_capped`] = 1;
+            resolve();
+          }, ms);
+          cap.unref();
+          p.then(
+            () => {
+              clearTimeout(cap);
+              resolve();
+            },
+            () => {
+              clearTimeout(cap);
+              resolve();
+            },
+          );
         });
+      await capped(
+        new Promise<void>((resolve) => {
+          server.close(() => resolve());
+          server.closeIdleConnections();
+          setTimeout(() => server.closeAllConnections(), 1000).unref();
+        }),
+        3000,
+        'http',
+      );
+      mark('http_ms', t);
+      if (adminServer) {
+        await capped(
+          new Promise<void>((resolve) => {
+            adminServer.close(() => resolve());
+            adminServer.closeAllConnections();
+          }),
+          1000,
+          'admin',
+        );
       }
-      await closePool();
+      await capped(closePool(), 3000, 'pool');
       mark('close_ms', t);
       logger.info({ signal, total_ms: Date.now() - t0, drained, in_flight_left: inFlightCount(), ...timing }, 'shutdown.done');
       clearTimeout(force);

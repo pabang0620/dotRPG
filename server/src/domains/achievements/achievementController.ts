@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { getAccount } from '../../middleware/authMiddleware';
 import { getValidated } from '../../middleware/validationMiddleware';
-import { successResponse } from '../../utils/response';
+import { replayResponse, successResponse } from '../../utils/response';
 import * as service from './achievementService';
 import type { CharParams, TitleBody } from './achievementValidation';
 
@@ -19,7 +19,9 @@ export async function list(_req: Request, res: Response, next: NextFunction): Pr
 export async function equip(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { params, body } = getValidated<TitleBody, CharParams>(res);
-    successResponse(res, await service.equipTitle(acc(res), params.uuid, body.achievement_id));
+    const r = await service.equipTitle(acc(res), params.uuid, body.achievement_id, body.request_id);
+    if (r.replay) replayResponse(res, r.status, r.body);
+    else successResponse(res, r.body.data, r.body.message, r.status);
   } catch (err) {
     next(err);
   }

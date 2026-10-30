@@ -86,3 +86,18 @@ describe('운영 기동 가드: DEPLOY_STAGE 명시', () => {
     expect(loadConfig({ ...base, NODE_ENV: 'development' }).aa.devicePepper.length).toBeGreaterThanOrEqual(32);
   });
 });
+
+describe('TEST_OPEN_ALL_DAYS 기동 가드', () => {
+  const base = (extra: Record<string, string>): NodeJS.ProcessEnv => ({ ...process.env, ...extra });
+  it('DEPLOY_STAGE가 test가 아니면(live·없음) TEST_OPEN_ALL_DAYS=1이 있을 때 기동 실패', () => {
+    const noStage: NodeJS.ProcessEnv = { ...process.env, TEST_OPEN_ALL_DAYS: '1' };
+    delete noStage.DEPLOY_STAGE;
+    expect(() => loadConfig(noStage)).toThrow('TEST_OPEN_ALL_DAYS');
+    expect(() => loadConfig(base({ DEPLOY_STAGE: 'live', TEST_OPEN_ALL_DAYS: '1' }))).toThrow('TEST_OPEN_ALL_DAYS');
+  });
+  it('test면 플래그가 켜지고, 값이 없거나 0이면 꺼진다', () => {
+    expect(loadConfig(base({ DEPLOY_STAGE: 'test', TEST_OPEN_ALL_DAYS: '1' })).testOpenAllDays).toBe(true);
+    expect(loadConfig(base({ DEPLOY_STAGE: 'test', TEST_OPEN_ALL_DAYS: '0' })).testOpenAllDays).toBe(false);
+    expect(loadConfig(base({ DEPLOY_STAGE: 'live' })).testOpenAllDays).toBe(false);
+  });
+});

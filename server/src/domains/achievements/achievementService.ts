@@ -1,4 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { getPool } from '../../db/pool';
+import { runEconomy, type StoredResult } from '../economy/economyService';
 import { AppError } from '../../utils/AppError';
 import { getNow } from '../../utils/clock';
 import * as charRepo from '../characters/characterRepository';
@@ -64,18 +66,29 @@ export async function listAchievements(accountId: number, characterUuid: string)
   };
 }
 
-/** 칭호 장착(달성한 업적만) 또는 해제(null) */
-export async function equipTitle(accountId: number, characterUuid: string, achievementId: string | null) {
-  const c = await myCharacter(accountId, characterUuid);
-  const db = getPool();
-  if (achievementId !== null && isRankTitle(achievementId)) {
-    const ranks = await activeTitles(db, c.id, getNow());
-    if (!ranks.some((t) => t.title_id === achievementId)) throw new AppError(409, '지금 가진 랭킹 칭호가 아닙니다.', 'ACHIEVEMENT_NOT_DONE');
-  } else if (achievementId !== null) {
-    if (!ACHIEVEMENT_BY_ID.has(achievementId)) throw new AppError(404, '알 수 없는 업적입니다.', 'ACHIEVEMENT_UNKNOWN');
-    const done = await repo.achievedOf(db, c.id);
-    if (!done.has(achievementId)) throw new AppError(409, '아직 달성하지 않은 업적입니다.', 'ACHIEVEMENT_NOT_DONE');
-  }
-  await repo.setTitle(db, c.id, achievementId);
-  return { title: achievementId ? { id: achievementId, name: titleName(achievementId) } : null };
+/**
+ * 칭호 장착(달성한 업적만) 또는 해제(null). 값이 오가진 않지만 다른 쓰기와 같이 request_id 멱등과 request_log 기록을 남긴다
+ * (request_id를 안 보내는 옛 클라이언트는 서버가 새 id를 만든다)
+ */
+export function equipTitle(accountId: number, characterUuid: string, achievementId: string | null, requestId: string = randomUUID()): Promise<StoredResult> {
+  return runEconomy({
+    accountId,
+    characterUuid,
+    endpoint: 'POST /characters/:uuid/title',
+    requestId,
+    payload: { achievement_id: achievementId },
+    handler: async (ctx) => {
+      const db = ctx.client;
+      if (achievementId !== null && isRankTitle(achievementId)) {
+        const ranks = await activeTitles(db, ctx.char.id, ctx.now);
+        if (!ranks.some((t) => t.title_id === achievementId)) throw new AppError(409, '지금 가진 랭킹 칭호가 아닙니다.', 'ACHIEVEMENT_NOT_DONE');
+      } else if (achievementId !== null) {
+        if (!ACHIEVEMENT_BY_ID.has(achievementId)) throw new AppError(404, '알 수 없는 업적입니다.', 'ACHIEVEMENT_UNKNOWN');
+        const done = await repo.achievedOf(db, ctx.char.id);
+        if (!done.has(achievementId)) throw new AppError(409, '아직 달성하지 않은 업적입니다.', 'ACHIEVEMENT_NOT_DONE');
+      }
+      await repo.setTitle(db, ctx.char.id, achievementId);
+      return { status: 200, data: { title: achievementId ? { id: achievementId, name: titleName(achievementId) } : null } };
+    },
+  });
 }

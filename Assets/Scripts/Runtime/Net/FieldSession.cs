@@ -91,7 +91,9 @@ namespace DotRPG
             entering = true;
             mapId = map;
             var body = new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId(), ["map_id"] = map };
-            Api.Post(Char + "/field-sessions/enter", body, r =>
+            // [NET 2026-10-30] Same request_id resent on a lost answer or a 429 (2026-10-29: enter and leave refused by the
+            // 1 per second limit left a member hunting alone next to the partner for over a minute).
+            Api.PostIdempotent(Char + "/field-sessions/enter", body, r =>
             {
                 entering = false;
                 var spawner = EnemySpawner.Current;
@@ -172,7 +174,7 @@ namespace DotRPG
             amHost = false;
             // sessionId is cleared above, so each session is left once; a slow earlier leave must not swallow this one.
             if (OnlineSession.Playing)
-                Api.Post($"{Char}/field-sessions/{id}/leave", new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId() }, _ => { });
+                Api.PostIdempotent($"{Char}/field-sessions/{id}/leave", new Dictionary<string, object> { ["request_id"] = ApiClient.NewRequestId() }, _ => { });
         }
 
         // ---------------- running ----------------
@@ -212,6 +214,8 @@ namespace DotRPG
                 joinRetryAt = 0f;
                 return;
             }
+            WatchRoster();
+            if (sessionId == null) return;
             heartbeatTimer -= Time.unscaledDeltaTime;
             if (heartbeatTimer <= 0f && Time.unscaledTime - lastHeartbeatAt >= HeartbeatMinGap) { heartbeatTimer = HeartbeatSeconds; Heartbeat(); }
             if (amHost)
@@ -219,6 +223,45 @@ namespace DotRPG
                 observeTimer -= Time.unscaledDeltaTime;
                 if (observeTimer <= 0f) { observeTimer = ObserveSeconds; SendObserve(sessionId); }
             }
+        }
+
+        // ---------------- recovery [NET 2026-10-30] ----------------
+
+        /// <summary>The server says a partner is online on this map, but the sync has nobody this long: build it again.</summary>
+        const float RosterMismatchSeconds = 20f;
+        float mismatchFor, autoResyncGap = 60f, nextAutoResyncAt;
+
+        /// <summary>
+        /// A partner on the same field the sync does not see (no peer as host, never welcomed as member): the room or the
+        /// session went stale without any close reaching us. Re-enter the field session (backoff 60 s doubling to 240 s).
+        /// </summary>
+        void WatchRoster()
+        {
+            bool alone = PartyNet.Active && PartyNet.Current.FieldMode
+                && (PartyNet.IsHost ? PartyNet.Current.Transport.Peers.Count == 0 : !PartyNet.Current.Welcomed);
+            if (!alone && PartyNet.Active && PartyNet.Current.FieldMode) autoResyncGap = 60f; // synced again: next time starts short
+            if (!alone || !PartnerHere(mapId)) { mismatchFor = 0f; return; }
+            mismatchFor += Time.unscaledDeltaTime;
+            if (mismatchFor < RosterMismatchSeconds || Time.unscaledTime < nextAutoResyncAt) return;
+            Debug.LogWarning("[FIELD] partner on this map but not in the sync for " + RosterMismatchSeconds + " s: entering the field session again");
+            nextAutoResyncAt = Time.unscaledTime + autoResyncGap;
+            autoResyncGap = Mathf.Min(autoResyncGap * 2f, 240f);
+            Resync();
+        }
+
+        /// <summary>
+        /// [NET 2026-10-30] Leave this field session and enter it again (manual "연결 다시 맞추기" or the roster check).
+        /// The party stays; on a hunting map without a session it only asks to share again.
+        /// </summary>
+        public void Resync()
+        {
+            mismatchFor = 0f;
+            if (sessionId != null)
+            {
+                Leave();
+                GoSolo();
+            }
+            joinRetryAt = 0f;
         }
 
         void Heartbeat()

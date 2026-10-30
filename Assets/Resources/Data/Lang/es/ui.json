@@ -1413,5 +1413,6 @@
  "눌러서 열기": "Toca para abrir",
  "자동 뽑기": "Tirada automática",
  "탭하여 계속": "Toca para continuar",
- "카드를 모두 확인해 주세요": "Revela todas las cartas primero."
+ "카드를 모두 확인해 주세요": "Revela todas las cartas primero.",
+ "한 마법진에 둘 이상! 한 명만 남으세요 {0}/{1}": "¡Dos o más en un círculo! Solo puede quedar uno {0}/{1}"
 }

@@ -192,14 +192,14 @@ describe('POST /characters/:id/inherit', () => {
     expect(await goldOf(h)).toBe(1_000_000 - GOLD_10_TO_20_P12);
   });
 
-  it('보호권(강화 보정) 이력은 결과 장비로 옮긴다. 같은 키 사본이 남으면 옛 키 이력도 남긴다', async () => {
+  it('보호권(강화 보정) 이력은 마지막 사본이 넘어갈 때만 결과 장비로 옮긴다(사본이 남으면 복사하지 않는다)', async () => {
     const h = await hero();
     await seedItem(h, 'eq_sword_10_r+11', 2);
     await getPool().query("INSERT INTO character_enhance_pity (character_id, item_key, pity) VALUES ($1, 'eq_sword_10_r+11', 30)", [h.dbId]);
     roll(0);
     const a = await inherit(h, bag('eq_sword_10_r+11'));
-    expect(a.body.data).toMatchObject({ new_key: 'eq_sword_20_r+11^1', pity: 30 });
-    expect(await pityOf(h, 'eq_sword_20_r+11^1')).toBe(30);
+    expect(a.body.data).toMatchObject({ new_key: 'eq_sword_20_r+11^1', pity: 0 });
+    expect(await pityOf(h, 'eq_sword_20_r+11^1')).toBeNull(); // 복사하지 않는다(이력이 둘로 늘지 않는다)
     expect(await pityOf(h, 'eq_sword_10_r+11')).toBe(30); // 한 자루 남음
     roll(0);
     await inherit(h, bag('eq_sword_10_r+11'));

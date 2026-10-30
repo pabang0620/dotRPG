@@ -9,7 +9,7 @@ import {
 import { settleDueSeasons } from '../src/domains/bossrush/bossRushSettle';
 import { clearRankingCache } from '../src/domains/rankings/rankingService';
 import { GUILD_CREATE_GOLD } from '../src/domains/guilds/guildRules';
-import { auth, buildApp, openDungeonToday, resetDb, shutdown } from './helpers';
+import { auth, buildApp, createChar, openDungeonToday, randomName, resetDb, shutdown } from './helpers';
 import { formParty } from './partyHelpers';
 import { unequipExpiredRankTitles } from '../src/domains/bossrush/bossRushSettle';
 import { anomalyKinds, get, newHero, post, seedGold, seedLevel, type Hero } from './economyHelpers';
@@ -304,9 +304,9 @@ describe('weekly settlement', () => {
     await fight(leader, 700, 'guild');
     now = new Date('2026-10-21T21:05:00Z');
     await settleDueSeasons();
-    // 참가 골드(도전한 사람) + 1위 길드원 보상(정산 시각 길드원 전원, 2026-10-30)
+    // 참가 골드(도전한 사람) + 1위 길드원 보상(그 길드로 도전한 길드원만)
     expect(await mails(leader, 'guild_boss')).toEqual([{ gold: GUILD_JOIN_GOLD, item: null, count: null }, ...tierMails(1)]);
-    expect(await mails(m, 'guild_boss')).toEqual(tierMails(1)); // 도전하지 않은 길드원도 순위 보상은 받는다
+    expect(await mails(m, 'guild_boss')).toEqual([]); // 도전하지 않은 길드원은 순위 보상도 없다
     const g = await getPool().query("SELECT honor_color FROM guilds WHERE uuid = $1", [guildId]);
     expect(g.rows[0]?.honor_color).toBe('gold');
     // 1위 칭호는 그 주에 그 길드로 도전한 사람만: 도전 안 한 길드원 m은 못 받는다
@@ -436,10 +436,10 @@ describe('guild boss top 10 member rewards', () => {
   }
   const join = { gold: GUILD_JOIN_GOLD, item: null, count: null };
 
-  test('top 10 guilds only, every member at settlement, once even if settled again', async () => {
+  test('top 10 guilds only, only members who attempted, once even if settled again', async () => {
     const guilds: { leader: Hero; guildId: string }[] = [];
     for (let i = 0; i < 11; i++) guilds.push(await inGuild());
-    const member = await hero(); // 1위 길드의 도전 안 한 길드원
+    const member = await hero(); // 1위 길드의 도전 안 한 길드원(보상 없음)
     await post(app, member, '/guild/apply', { guild_id: guilds[0]!.guildId });
     advance(24 * 3600);
     for (let i = 0; i < 11; i++) await fight(guilds[i]!.leader, 20_000 - i * 1000, 'guild'); // 0번이 1위 ... 10번이 11위
@@ -449,7 +449,7 @@ describe('guild boss top 10 member rewards', () => {
     await settleDueSeasons();
     for (let i = 0; i < 11; i++) expect(await mailsOf(guilds[i]!.leader)).toEqual([join, ...tierMails(i + 1)]);
     expect(tierMails(11)).toEqual([]);
-    expect(await mailsOf(member)).toEqual(tierMails(1));
+    expect(await mailsOf(member)).toEqual([]);
     expect(await mailsOf(late)).toEqual([]);
     expect(guildTierReward(2)).toEqual(guildTierReward(3));
     expect(guildTierReward(4)).toEqual(guildTierReward(10));
@@ -458,7 +458,7 @@ describe('guild boss top 10 member rewards', () => {
     expect(await mailsOf(guilds[0]!.leader)).toHaveLength(1 + tierMails(1).length);
   });
 
-  test('someone who switched guilds during the week gets one tier reward, from the guild they are in', async () => {
+  test('someone who switched guilds during the week gets no tier reward (attempted for a guild they left)', async () => {
     const a = await inGuild();
     const b = await inGuild();
     const mover = await hero();
@@ -471,9 +471,48 @@ describe('guild boss top 10 member rewards', () => {
     expect((await post(app, mover, '/guild/apply', { guild_id: b.guildId })).body.data.joined).toBe(true);
     now = new Date('2026-10-21T21:05:00Z');
     await settleDueSeasons();
-    // 참가 골드 한 번 + 지금 길드(B, 2위) 보상 한 번. 떠난 길드(A, 1위)의 순위 보상은 없다(1위 칭호는 기여로 받는다)
-    expect(await mailsOf(mover)).toEqual([join, ...tierMails(2)]);
+    // 참가 골드 한 번. 지금 길드(B)로는 도전하지 않았고 떠난 길드(A)에는 없으니 순위 보상은 없다(1위 칭호는 기여로 받는다)
+    expect(await mailsOf(mover)).toEqual([join]);
     const t = await getPool().query("SELECT count(*)::int AS n FROM rank_titles WHERE character_id = $1 AND title_id = 'rank_guild_1'", [mover.dbId]);
     expect(t.rows[0]?.n).toBe(1);
+  });
+
+  test('participant member gets the tier reward, non-participant none, alt characters only if each attempted', async () => {
+    const g = await inGuild();
+    const main = await hero();
+    const alt1 = await hero();
+    const sameAcc = await createChar(app, main.s, randomName(), 'warrior');
+    expect(sameAcc.status).toBe(201);
+    const altId = Number((await getPool().query<{ id: string }>('SELECT id FROM characters WHERE uuid = $1', [sameAcc.body.data.character.id])).rows[0]!.id);
+    const alt2: Hero = { s: main.s, id: sameAcc.body.data.character.id as string, dbId: altId, cls: 'warrior' };
+    await seedLevel(alt2, CHAPTER2_LEVEL_CAP);
+    for (const h of [main, alt1, alt2]) expect((await post(app, h, '/guild/apply', { guild_id: g.guildId })).status).toBe(200);
+    advance(24 * 3600);
+    await fight(g.leader, 20_000, 'guild');
+    await fight(main, 10_000, 'guild'); // main 만 도전, 같은 계정의 alt2 와 다른 계정의 alt1 은 도전 안 함
+    now = new Date('2026-10-21T21:05:00Z');
+    await settleDueSeasons();
+    expect(await mailsOf(main)).toEqual([join, ...tierMails(1)]);
+    expect(await mailsOf(alt1)).toEqual([]);
+    expect(await mailsOf(alt2)).toEqual([]);
+    expect(await mailsOf(g.leader)).toEqual([join, ...tierMails(1)]);
+    expect((await settleDueSeasons()).seasons).toBe(0);
+    expect(await mailsOf(main)).toHaveLength(1 + tierMails(1).length);
+  });
+
+  test('zero-damage attempts are not participation (guild top 10 reward and join gold; world join reward)', async () => {
+    const g = await inGuild();
+    const alt = await hero();
+    await post(app, alt, '/guild/apply', { guild_id: g.guildId });
+    advance(24 * 3600);
+    await fight(g.leader, 20_000, 'guild');
+    await fight(alt, 0, 'guild');
+    await fight(alt, 0, 'world');
+    now = new Date('2026-10-28T21:05:00Z');
+    await settleDueSeasons();
+    expect(await mailsOf(alt)).toEqual([]);
+    const w = await getPool().query("SELECT count(*)::int AS n FROM mails WHERE character_id = $1", [alt.dbId]);
+    expect(w.rows[0]?.n).toBe(0);
+    expect(await mailsOf(g.leader)).toEqual([join, ...tierMails(1)]);
   });
 });

@@ -220,6 +220,32 @@ describe('POST /characters', () => {
   });
 });
 
+describe('생성-삭제 반복 방지', () => {
+  it('삭제도 속도 제한: 분당 한도 초과 429', async () => {
+    const limited = buildApp({ RATE_CHAR_CREATE_MAX: '2' });
+    const s = await registerAccount(limited);
+    const id = randomUUID();
+    expect((await request(limited).delete(`/characters/${id}`).set(auth(s))).status).toBe(404);
+    expect((await request(limited).delete(`/characters/${id}`).set(auth(s))).status).toBe(404);
+    expect((await request(limited).delete(`/characters/${id}`).set(auth(s))).status).toBe(429);
+    buildApp();
+  });
+
+  it('계정당 24시간 생성 한도: 삭제한 캐릭터도 센다(429), 같은 request_id 재전송은 그대로', async () => {
+    const capped = buildApp({ CHAR_CREATE_DAILY_MAX: '3' });
+    const s = await registerAccount(capped);
+    for (let i = 0; i < 3; i++) {
+      const c = await createChar(capped, s, randomName());
+      expect(c.status).toBe(201);
+      expect((await request(capped).delete(`/characters/${c.body.data.character.id}`).set(auth(s))).status).toBe(200);
+    }
+    const r = await createChar(capped, s, randomName());
+    expect(r.status).toBe(429);
+    expect(r.body.errors.code).toBe('CHARACTER_CREATE_DAILY_LIMIT');
+    buildApp();
+  });
+});
+
 describe('버전 검사와 인증 (/characters*)', () => {
   it('데이터 버전 불일치 426 DATA_OUTDATED, 없으면 400', async () => {
     const s = await registerAccount(app);
