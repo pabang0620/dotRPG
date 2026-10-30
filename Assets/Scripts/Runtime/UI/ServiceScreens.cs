@@ -107,7 +107,11 @@ namespace DotRPG
             w.bigKind.color = UiTheme.TextSecondary;
             w.bigDesc = Label(right.transform, "Desc", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -212f), new Vector2(452f, 170f));
             w.bigPrice = Label(right.transform, "PriceLine", "", 22, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(24f, -392f), new Vector2(452f, 34f));
-            w.result = Label(right.transform, "Result", "", 20, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 90f), new Vector2(460f, 30f), TextAnchor.MiddleCenter);
+            w.result = Label(right.transform, "Result", "", 20, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 86f), new Vector2(460f, 52f), TextAnchor.MiddleCenter);
+            w.result.resizeTextForBestFit = true; // [UI 2026-10-30] long messages take two lines (14 px floor) instead of running out
+            w.result.resizeTextMinSize = UIFactory.ReadableFloor;
+            w.result.resizeTextMaxSize = 20;
+            w.result.verticalOverflow = VerticalWrapMode.Truncate;
             w.buyOne = Button(right.transform, "One", L.T("1개 구매"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(1f, 0f), new Vector2(-6f, 18f), new Vector2(214f, 62f), () => w.Trade(1), 26);
             w.buyMany = Button(right.transform, "Many", L.T("10개 구매"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0f, 0f), new Vector2(6f, 18f), new Vector2(214f, 62f), () => w.Trade(w.selling ? int.MaxValue : 10), 26);
             // [UX] 최대: as many as the gold buys (buy tab only; the sell tab keeps its two buttons).

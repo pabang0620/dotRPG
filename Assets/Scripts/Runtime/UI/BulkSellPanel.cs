@@ -54,6 +54,17 @@ namespace DotRPG
             UIFactory.Place(p.summary.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 76f), new Vector2(520f, 30f));
             MakeButton(bg.transform, L.T("판매"), "ui_btn", new Vector2(-6f, 16f), new Vector2(1f, 0f), p.AskSell);
             MakeButton(bg.transform, L.T("닫기"), "ui_btngray", new Vector2(6f, 16f), new Vector2(0f, 0f), () => p.gameObject.SetActive(false));
+            // [UI 2026-10-30] P9: the × of every popup panel (top-right, 44 x 44), next to the 닫기 button.
+            var x = UIFactory.Image(bg.transform, "CloseX", Game.Art.Get("ui_btngray"), Color.white);
+            x.preserveAspect = false;
+            x.raycastTarget = true;
+            UIFactory.Place(x.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-8f, -8f), new Vector2(44f, 44f));
+            var xb = x.gameObject.AddComponent<Button>();
+            xb.targetGraphic = x;
+            xb.onClick.AddListener(() => p.gameObject.SetActive(false));
+            UiButton.Attach(xb);
+            var xt = UIFactory.Text(x.transform, "Text", "×", 26, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(xt.rectTransform);
             p.Load();
             bg.gameObject.SetActive(false);
             return p;

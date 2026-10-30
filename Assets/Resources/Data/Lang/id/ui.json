@@ -539,7 +539,7 @@
  "자동 사냥": "Berburu Otomatis",
  "자동 중지": "Hentikan Otomatis",
  "자동 진행": "Maju Otomatis",
- "자동 진행 ({0})": "Maju Otomatis ({0})",
+ "자동 진행 ({0})": "Otomatis ({0})",
  "준비": "Siap",
  "<color=#78d6ff>서브 · {0}</color>": "<color=#78d6ff>Sampingan · {0}</color>",
  "가방 {0}   지도 {1}   메뉴 {2}": "Tas {0}   Peta {1}   Menu {2}",
@@ -1410,5 +1410,8 @@
  "모두 수락": "Terima semua",
  "모두 수락: {0}건": "Terima semua: {0}",
  "받을 것이 없습니다.": "Tidak ada yang bisa diklaim.",
- "눌러서 열기": "Ketuk untuk membuka"
+ "눌러서 열기": "Ketuk untuk membuka",
+ "자동 뽑기": "Tarik Otomatis",
+ "탭하여 계속": "Ketuk untuk lanjut",
+ "카드를 모두 확인해 주세요": "Buka semua kartu terlebih dahulu."
 }

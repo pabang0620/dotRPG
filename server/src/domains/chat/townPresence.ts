@@ -40,6 +40,7 @@ function frameOf(s: ChatSession, t: TownLook): Frame {
     ...(s.profile?.guildName ? { guild_name: s.profile.guildName } : {}),
     ...(s.profile?.guildColor ? { guild_color: s.profile.guildColor } : {}),
     ...(s.profile?.nameColor ? { name_color: s.profile.nameColor } : {}),
+    ...(s.profile?.titleId ? { title_id: s.profile.titleId, title: s.profile.title ?? '' } : {}),
   };
 }
 
@@ -85,6 +86,8 @@ export async function loadProfile(s: ChatSession): Promise<void> {
   profile.guildName = plate.guild_name;
   profile.guildColor = plate.guild_color;
   profile.nameColor = plate.name_color;
+  profile.titleId = plate.title_id;
+  profile.title = plate.title;
   s.profile = profile;
   s.profileAt = Date.now();
 }

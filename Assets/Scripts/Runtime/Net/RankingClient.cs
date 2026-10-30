@@ -21,6 +21,8 @@ namespace DotRPG
         public sealed class Board
         {
             public string board, week;
+            /// <summary>[2026-10-30] The season this board covers (world boss: two weeks). Null for the power board.</summary>
+            public DateTime? seasonStart, seasonEnd;
             public readonly List<Entry> entries = new List<Entry>();
             public int myRank;
             public long myValue;
@@ -64,7 +66,8 @@ namespace DotRPG
                 Busy = false;
                 if (context != generation) return;
                 if (!r.ok) { done?.Invoke(r.code == "NETWORK" ? L.T("서버에 연결할 수 없습니다.") : string.IsNullOrEmpty(r.message) ? L.T("요청이 실패했습니다.") : r.message); Changed?.Invoke(); return; }
-                var b = new Board { board = board, week = week, updatedAt = GuildClient.ParseTime(MiniJson.Str(r.data, "updated_at")) };
+                var b = new Board { board = board, week = week, updatedAt = GuildClient.ParseTime(MiniJson.Str(r.data, "updated_at")),
+                    seasonStart = GuildClient.ParseTime(MiniJson.Str(r.data, "season_start")), seasonEnd = GuildClient.ParseTime(MiniJson.Str(r.data, "season_end")) };
                 foreach (var o in MiniJson.Arr(r.data, "entries") ?? new List<object>())
                     b.entries.Add(new Entry
                     {

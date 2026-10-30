@@ -18,7 +18,7 @@ namespace DotRPG
         // [UI] Top right, left of the room map (W-196): x W-528..W-208, so at UI size 1.3 (985 wide) it starts at 457, clear of
         // the status bars (x <= 390) and the menu button (SideMenuView, x 404..454); 1.15: 585..905, 1.0: 752..1072.
         public const float ClockWidth = 320f, ClockHeight = 50f, ClockTop = 12f, ClockRight = 208f;
-        const float Cell = 30f, CellGap = 10f, MapWidth = 176f;
+        const float Cell = 30f, CellGap = 10f, MapWidth = 176f, CoinRowWidth = 240f;
 
         RectTransform clock, roomMap, banner, revive;
         // [FEEL] Combo counter (dungeons rank on combo): the count, a pop on each hit, a bar for the time left.
@@ -60,14 +60,16 @@ namespace DotRPG
             // Room map (where the round minimap sits).
             // [UI 2026-10-29] Revive coins under the 마을로 button (room map 16..112, button 120..164, coins 172..206): they were
             // squeezed into the clock box ("내 부활 · 파티 부활") and wrapped over other UI. The combo moves under them.
-            coinRow = UIFactory.Place(UIFactory.Rect(root, "Coins"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -172f), new Vector2(MapWidth, 34f));
+            // [UI 2026-10-30] Wider than the room map (it grows left over the empty world): "Eigene 3 · Gesamt 9" shrank to 11 px.
+            coinRow = UIFactory.Place(UIFactory.Rect(root, "Coins"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -172f), new Vector2(CoinRowWidth, 34f));
             UIFactory.Stretch(UIFactory.Panel(coinRow, "Bg", true).rectTransform);
             var coinIcon = UIFactory.Image(coinRow, "Coin", Game.Art.Get("icon_revive_coin"), Color.white);
             coinIcon.preserveAspect = true; coinIcon.raycastTarget = false;
             UIFactory.Place(coinIcon.rectTransform, new Vector2(0f, .5f), new Vector2(0f, .5f), new Vector2(8f, 0f), new Vector2(26f, 26f));
             coinText = UIFactory.Text(coinRow, "Text", "", 18, UIColors.Cream, TextAnchor.MiddleLeft, true);
             UIFactory.Stretch(coinText.rectTransform, 40f, 0f, 6f, 0f);
-            coinText.resizeTextForBestFit = true; coinText.resizeTextMinSize = 11; coinText.resizeTextMaxSize = coinText.fontSize;
+            coinText.resizeTextForBestFit = true; coinText.resizeTextMinSize = UIFactory.ReadableFloor; coinText.resizeTextMaxSize = coinText.fontSize;
+            coinText.verticalOverflow = VerticalWrapMode.Truncate;
             coinRow.gameObject.SetActive(false);
             comboRoot = UIFactory.Place(UIFactory.Rect(root, "Combo"), new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -214f), new Vector2(MapWidth, 64f)); // under the coins
             comboText = UIFactory.Text(comboRoot, "Count", "", 30, UIColors.Highlight, TextAnchor.MiddleRight, true);
@@ -107,6 +109,9 @@ namespace DotRPG
             UIFactory.Place(coin.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(16f, -12f), new Vector2(48f, 48f));
             reviveTitle = UIFactory.Text(revive, "Title", L.T("부활하시겠습니까?"), 30, Color.white, TextAnchor.UpperCenter, true);
             UIFactory.Place(reviveTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -18f), new Vector2(480f, 40f));
+            // [UI 2026-10-30] "파티 전멸 · 부활하시겠습니까?  12" ran past the panel in German / Russian: shrink on one line instead.
+            reviveTitle.resizeTextForBestFit = true; reviveTitle.resizeTextMinSize = 18; reviveTitle.resizeTextMaxSize = reviveTitle.fontSize;
+            reviveTitle.verticalOverflow = VerticalWrapMode.Truncate;
             reviveBody = UIFactory.Text(revive, "Body", "", 20, UIColors.Cream, TextAnchor.UpperCenter, true);
             UIFactory.Place(reviveBody.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -66f), new Vector2(480f, 56f));
             MakeButton(revive, L.T("부활"), "ui_btn", new Vector2(-110f, 22f), () => Game.Dungeon?.AcceptRevive());

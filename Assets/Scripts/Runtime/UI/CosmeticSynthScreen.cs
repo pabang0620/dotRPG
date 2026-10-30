@@ -21,7 +21,7 @@ namespace DotRPG
         // [SKIN TIERS] Four rules now (unique -> legend added), so each card is shorter with its buttons stacked on the right.
         const float RuleH = 114f, RuleGap = 8f, RuleW = 600f, SpareX = 616f, SpareW = 604f, SpareH = 50f, SetH = 88f, RuleTextW = 436f;
 
-        sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; }
+        sealed class RuleView { public Text title, info, pity; public Button one, all; public Image bar; public UiHelpTip pityHelp; }
         sealed class SpareView { public RectTransform row; public Image icon; public Text name; public Button dismantle, dismantleOne; public string id; }
         sealed class SetView { public RectTransform row; public Text title, members; public Button register; public string id; }
 
@@ -49,9 +49,10 @@ namespace DotRPG
                 () => { if (ExchangeShopScreen.Instance != null) Game.Flow.OpenWindow(ExchangeShopScreen.Instance); }, 20);
 
             // ---------- 합성 ----------
-            w.synthTab = UIFactory.Place(UIFactory.Rect(w.content, "Synth"), tl, tl, new Vector2(0f, -66f), new Vector2(1220f, 528f));
-            Label(w.synthTab, "Help", L.T("같은 외형이 또 나오면 <color=#ffd34a>여분</color>으로 쌓입니다. 같은 등급 여분 4개로 한 등급 위 외형에 도전하거나, 여분을 별조각으로 분해할 수 있습니다."), 18,
-                tl, tl, Vector2.zero, new Vector2(1220f, 30f), TextAnchor.MiddleLeft);
+            // [UI 2026-10-30] P5: the help line (it ran past the window in other languages) is a "?" tip next to the tabs,
+            // and the cards move up into its place.
+            w.synthTab = UIFactory.Place(UIFactory.Rect(w.content, "Synth"), tl, tl, new Vector2(0f, -26f), new Vector2(1220f, 568f));
+            UiHelpTip.Create(w.synthTab, "Help", tl, new Vector2(424f, 16f), L.T("같은 외형이 또 나오면 <color=#ffd34a>여분</color>으로 쌓입니다. 같은 등급 여분 4개로 한 등급 위 외형에 도전하거나, 여분을 별조각으로 분해할 수 있습니다."));
             string[] froms = { "common", "rare", "epic", "unique" };
             for (int i = 0; i < froms.Length; i++)
             {
@@ -59,14 +60,16 @@ namespace DotRPG
                 var card = Panel(w.synthTab, "Rule" + i, tl, tl, new Vector2(0f, -40f - i * (RuleH + RuleGap)), new Vector2(RuleW, RuleH), new Color32(24, 36, 54, 235));
                 var v = new RuleView();
                 v.title = Label(card.transform, "Title", "", 20, tl, tl, new Vector2(16f, -8f), new Vector2(RuleTextW, 28f));
-                v.info = Label(card.transform, "Info", "", 15, tl, tl, new Vector2(16f, -36f), new Vector2(RuleTextW, 42f));
+                v.info = Label(card.transform, "Info", "", 16, tl, tl, new Vector2(16f, -36f), new Vector2(RuleTextW, 42f)); // [UI 2026-10-30] renders 14 px
                 var barBg = UIFactory.Image(card.transform, "PityBg", Game.Art.Get("ui_white"), new Color32(10, 12, 20, 230));
                 barBg.preserveAspect = false; barBg.raycastTarget = false;
                 UIFactory.Place(barBg.rectTransform, tl, tl, new Vector2(16f, -78f), new Vector2(280f, 5f));
                 v.bar = UIFactory.Image(barBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(197, 140, 255, 255));
                 v.bar.preserveAspect = false; v.bar.raycastTarget = false;
                 UIFactory.Place(v.bar.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 3f));
-                v.pity = Label(card.transform, "Pity", "", 14, tl, tl, new Vector2(16f, -86f), new Vector2(RuleTextW, 18f));
+                v.pity = Label(card.transform, "Pity", "", 16, tl, tl, new Vector2(16f, -84f), new Vector2(RuleTextW - 36f, 24f));
+                UIFactory.OneLine(v.pity, true); // [UI 2026-10-30] P2 "n / total" on one line, the rule in the "?" tip
+                v.pityHelp = UiHelpTip.Create(card.transform, "PityHelp", tl, new Vector2(16f + RuleTextW - 32f, -76f), ""); // right end of the text column, left of the buttons
                 v.one = Button(card.transform, "One", L.T("1회 합성"), "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -10f), new Vector2(124f, 42f), () => w.DoSynth(from, false), 17);
                 v.all = Button(card.transform, "All", L.T("모두 합성"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -60f), new Vector2(124f, 42f), () => w.DoSynth(from, true), 17);
                 w.rules.Add(v);
@@ -75,6 +78,10 @@ namespace DotRPG
 
             var sparePanel = Panel(w.synthTab, "Spares", tl, tl, new Vector2(SpareX, -40f), new Vector2(SpareW, 72f + SpareRows * SpareH + 16f), new Color32(18, 26, 40, 240));
             w.spareHead = Label(sparePanel.transform, "Head", "", 19, tl, tl, new Vector2(16f, -8f), new Vector2(420f, 60f));
+            w.spareHead.resizeTextForBestFit = true; // [UI 2026-10-30] three lines at 14 px for the long translations
+            w.spareHead.resizeTextMinSize = UIFactory.ReadableFloor;
+            w.spareHead.resizeTextMaxSize = 19;
+            w.spareHead.verticalOverflow = VerticalWrapMode.Truncate;
             w.sparePager = Pager(sparePanel.transform, new Vector2(-10f, -6f), d => { w.sparePage += d; w.Refresh(); });
             for (int i = 0; i < SpareRows; i++)
             {
@@ -92,6 +99,7 @@ namespace DotRPG
             // ---------- 컬렉션 ----------
             w.collectionTab = UIFactory.Place(UIFactory.Rect(w.content, "Collection"), tl, tl, new Vector2(0f, -66f), new Vector2(1220f, 528f));
             w.bonusText = Label(w.collectionTab, "Bonus", "", 20, tl, tl, Vector2.zero, new Vector2(860f, 32f), TextAnchor.MiddleLeft);
+            UIFactory.OneLine(w.bonusText, true); // [UI 2026-10-30] one line, shrinks to 14 px at most
             w.hiddenSetsBtn = Button(w.collectionTab, "HiddenSets", L.T("히든 컬렉션"), "ui_btngray", tl, tl, new Vector2(872f, 2f), new Vector2(170f, 34f), () => { w.showHiddenSets = !w.showHiddenSets; w.setPage = 0; w.Refresh(); }, 16);
             w.setPager = Pager(w.collectionTab, new Vector2(-20f, 0f), d => { w.setPage += d; w.Refresh(); });
             for (int i = 0; i < SetRows; i++)
@@ -152,10 +160,12 @@ namespace DotRPG
                 v.info.text = L.F("성공 <color=#ffd34a>{0:0.#}%</color> · 결과: {1}", r.rate, target) + "\n" + L.F("실패 시 1개 반환 · 히든 제외 · <color=#b8c4d8>보유 여분 {0}개</color>", have);
                 bool hasPity = r.pity > 0;
                 v.bar.transform.parent.gameObject.SetActive(hasPity);
+                v.pityHelp.gameObject.SetActive(hasPity);
                 if (hasPity)
                 {
                     v.bar.rectTransform.sizeDelta = new Vector2(276f * Mathf.Clamp01(r.fails / (float)r.pity), 3f);
-                    v.pity.text = r.fails >= r.pity ? L.T("<color=#ffd34a><b>다음 합성은 성공 확정!</b></color>") : L.F("연속 실패 {0}/{1} · {1}번 실패하면 다음은 확정", r.fails, r.pity);
+                    v.pity.text = r.fails >= r.pity ? L.T("<color=#ffd34a><b>다음 합성은 성공 확정!</b></color>") : L.F("연속 실패 {0} / {1}", r.fails, r.pity);
+                    v.pityHelp.SetText(L.F("연속 실패 {0}/{1} · {1}번 실패하면 다음은 확정", r.fails, r.pity));
                 }
                 else v.pity.text = "";
                 bool can = !busy && StarShopClient.Loaded && have >= r.count;
@@ -311,13 +321,17 @@ namespace DotRPG
                 if (!ok) { resultText.text = $"<color=#ff9f7a>{msg}</color>"; Game.Audio.PlaySfx("cancel"); Refresh(); return; }
                 int wins = 0;
                 var got = new List<string>();
+                var gotCount = new List<int>(); // [UI 2026-10-30] P8: the same cosmetic twice reads "name x2"
                 foreach (var r in list)
                 {
                     if (!r.success) continue;
                     wins++;
                     var p = CosmeticCatalog.Find(r.itemId);
-                    got.Add($"<color={Hex(r.rarity)}>{L.T(p?.Name ?? r.itemId)}</color>" + (r.byPity ? L.T(" (확정)") : ""));
+                    string label = $"<color={Hex(r.rarity)}>{L.T(p?.Name ?? r.itemId)}</color>" + (r.byPity ? L.T(" (확정)") : "");
+                    int k = got.IndexOf(label);
+                    if (k >= 0) gotCount[k]++; else { got.Add(label); gotCount.Add(1); }
                 }
+                for (int g = 0; g < got.Count; g++) if (gotCount[g] > 1) got[g] += $" x{gotCount[g]}";
                 if (wins > 0)
                 {
                     Game.Audio.PlaySfx("quest");

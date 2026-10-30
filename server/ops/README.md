@@ -57,7 +57,7 @@ curl -s https://도메인/health/ready    # 200 {"status":"ok"}
 | `OAUTH_PUBLIC_BASE`, `KAKAO_CLIENT_ID`/`KAKAO_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` | 카카오·Google 로그인(0045). 공개 주소는 https, 공급자는 ID와 비밀이 둘 다 있을 때만 켜진다. 콘솔 설정은 `Docs/server/OAUTH_LOGIN.md` |
 | `MIN_CLIENT_VERSION` | 출시 클라이언트 버전(배포마다 확인) |
 | `CHAPTER3_OPEN` | 출시 `false`. 한 줄로 여닫기: 개발 PC에서 `server/ops/chapter.sh open 3` / `close 3` / `status`(시험 서버, SSH 키 필요). 손으로 여는 절차: env를 `true`로 → `systemctl restart dotrpg-api` → `/meta`의 `chapter3_open`·`level_cap` 확인 → 공지. 재빌드·데이터 버전 변경 없음. 열리면 `GET /content/chapter3`이 3장 이야기 묶음(`data/chapter3.json`)을 내준다(닫힘 422). 배포 때 `data/chapter3.json`도 함께 올린다 |
-| `WORLD_BOSS_HP` | 선택. 월드보스 주간 공유 체력, 기본 40,000,000(실측 1회 110,000 x 하루 3회 x 7일 x 참여율 0.5 = 한 사람당 주 115만, 35명이면 1주 격파. 참가자 100명 수준이면 160,000,000). 새 주의 시즌을 만들 때만 읽으므로 바꿔도 진행 중인 주에는 영향 없음 |
+| `WORLD_BOSS_HP` | 선택. 월드보스 한 시즌(2주, 2026-10-30) 공유 체력, 기본 80,000,000(실측 1회 110,000 x 하루 3회 x 7일 x 참여율 0.5 = 한 사람당 주 115만, 35명이면 시즌 첫 주 끝 무렵 격파. 참가자 100명 수준이면 320,000,000). 보스 레벨 50 시즌은 x2.0. 새 시즌을 만들 때만 읽으므로 바꿔도 진행 중인 시즌에는 영향 없음. 운영 env에 예전 주간 값 40,000,000이 적혀 있으면 지우거나 80,000,000으로 바꾼다 |
 | `ALERT_WEBHOOK_URL`, `OPS_HEARTBEAT_URL`, `BACKUP_*` | 자리표시. 업체·서비스가 정해지면 채운다(비면 해당 기능만 꺼지고 경고 로그) |
 
 Steam 연동 전 외부 시험(운영자가 발급한 개발용 계정만): `STEAM_AUTH_MODE=off`, `PARTY_TRANSPORT=dev`, `AUTH_DEV_ENABLED=true`, `ALLOW_DEV_AUTH_IN_PRODUCTION=true`, `AUTH_DEV_REGISTER_ENABLED=false`. 계정은 `dotrpg-admin account dev-create <아이디>` 로 발급한다(공개 가입 없음).

@@ -7,7 +7,7 @@
  "<color=#ffd76a>별조각 상품</color> {0}": "<color=#ffd76a>Articles en éclats d'étoile</color> {0}",
  "{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>": "{0}\nAcheter pour {1:N0} éclats d'étoile.\n<size=18>Ils arrivent dans le sac. Chaque pièce utilisée ajoute 1 pièce de résurrection à ce personnage. (Max. {2})</size>",
  "구매 완료 · {0}": "Achat effectué · {0}",
- "별조각 상품": "Articles en éclats d'étoile",
+ "별조각 상품": "Boutique d'éclats",
  "없는 상품입니다.": "Produit introuvable.",
  "부활 코인 1개": "1 pièce de résurrection",
  "부활 코인 10개": "10 pièces de résurrection",

@@ -17,7 +17,7 @@ import { rankOf, ranked } from '../rankings/rankingService';
 import * as repo from './bossRushRepository';
 import {
   ATTEMPTS_PER_DAY, ATTEMPT_SECONDS, BOSS_MIN_LEVEL, bossLevel, FINISH_GRACE_SECONDS, GUILD_BOSS_ID, ROOM_HP_MUL,
-  WORLD_BOSS_ID, attemptDamageCap, worldSeasonHp, type BossKind,
+  WORLD_BOSS_ID, attemptDamageCap, worldSeasonBounds, worldSeasonHp, type BossKind,
 } from './bossRushRules';
 import type { FinishBody, StartBody } from './bossRushValidation';
 
@@ -25,14 +25,21 @@ const WORLD_NAME = '심연의 거신 지파크';
 const GUILD_NAME = '심연의 거신 지파크'; // 길드보스도 같은 보스(GUILD_BOSS_ID): 창 라벨과 전투 중 이름을 하나로
 
 /**
- * 이번 주 시즌(없으면 만든다). 보스 레벨은 시즌을 만들 때의 levelCap()(3장 닫힘 40, 열림 50)이고 그 주 내내 그대로다.
- * 보스 레벨 50 시즌의 월드보스 체력은 x2.0(LIVE_CONTENT.md 2절)
+ * 지금 시즌(없으면 만든다). 길드보스는 주간(목요일 06:00 KST), 월드보스는 2주(기준점 WORLD_SEASON_ANCHOR_MS부터 격주 목요일 06:00 KST).
+ * 보스 레벨은 시즌을 만들 때의 levelCap()(3장 닫힘 40, 열림 50)이고 시즌 내내 그대로다. 보스 레벨 50 시즌의 월드보스 체력은 x2.0(LIVE_CONTENT.md 2절).
+ * 월드보스는 now를 포함하는 시즌 행이 이미 있으면 그것을 쓴다(2주 전환 전에 만든 1주 시즌이 끝날 때까지)
  */
 export async function currentSeason(db: Queryable, kind: BossKind, now: Date): Promise<repo.Season> {
   const b = resetBoundaries(now);
   const level = bossLevel();
-  const hp = kind === 'world' ? worldSeasonHp(getConfig().policy.worldBossHp, level) : 0; // 길드보스는 체력 없이 점수만 쌓는다
-  return repo.ensureSeason(db, kind, new Date(b.weeklyStartAt), new Date(b.nextWeeklyAt), kind === 'world' ? WORLD_BOSS_ID : GUILD_BOSS_ID, hp, level);
+  if (kind === 'guild') {
+    // 길드보스는 체력 없이 점수만 쌓는다
+    return repo.ensureSeason(db, kind, new Date(b.weeklyStartAt), new Date(b.nextWeeklyAt), GUILD_BOSS_ID, 0, level);
+  }
+  const covering = await repo.seasonCovering(db, 'world', now);
+  if (covering) return covering;
+  const w = worldSeasonBounds(Date.parse(b.weeklyStartAt));
+  return repo.ensureSeason(db, kind, w.start, w.end, WORLD_BOSS_ID, worldSeasonHp(getConfig().policy.worldBossHp, level), level);
 }
 
 async function attemptsLeft(db: Queryable, characterId: number, kind: BossKind, now: Date): Promise<number> {
@@ -63,6 +70,8 @@ async function snapshot(db: Queryable, characterId: number, now: Date) {
       defeated_at: world.defeated_at?.toISOString() ?? null,
       attempts_left: await attemptsLeft(db, characterId, 'world', now), attempts_per_day: ATTEMPTS_PER_DAY.world,
       my_best: await repo.bestOf(db, world.id, characterId), my_rank: rankOf(worldRows, characterId),
+      // 월드보스 시즌 끝(2주 시즌, 2026-10-30). 길드보스 주간 끝은 최상위 week_ends_at
+      season_ends_at: world.week_end.toISOString(), season_weeks: Math.round((world.week_end.getTime() - world.week_start.getTime()) / (7 * 86_400_000)),
     },
     guild,
     week_ends_at: b.nextWeeklyAt,
@@ -159,7 +168,7 @@ export function finish(accountId: number, uuid: string, kind: BossKind, attemptU
       }
       await repo.closeAttempt(ctx.client, a.id, 'finished', body.damage_dealt, accepted, capped, ctx.now);
       const out: Record<string, unknown> = { accepted_damage: accepted, capped, expired: false, best: await repo.bestOf(ctx.client, season.id, ctx.char.id) };
-      // 정산이 끝난 지난 주 시즌에는 기록만 남기고 체력은 건드리지 않는다
+      // 정산이 끝난 지난 시즌에는 기록만 남기고 체력은 건드리지 않는다
       const live = season.settled_at === null;
       if (kind === 'world') {
         const s = live && accepted > 0 ? await repo.hitWorld(ctx.client, season.id, accepted, ctx.now) : season;

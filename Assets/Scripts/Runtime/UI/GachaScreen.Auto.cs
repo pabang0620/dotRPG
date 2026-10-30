@@ -17,6 +17,8 @@ namespace DotRPG
         AutoStop autoStop = AutoStop.Legend;
         float autoNextAt = -1f;
         Button autoBtn, autoStopBtn, autoCountBtn, autoPageStop;
+        /// <summary>The page shows a 1회 / 10+1회 purchase (not a gauge or ceiling pick): it offers 자동 뽑기.</summary>
+        bool purchaseResult;
         const float AutoGap = 0.8f; // after a reveal ends, so the cards can be seen
 
         void BuildAuto(Transform bigBox, Transform page)
@@ -25,8 +27,20 @@ namespace DotRPG
             autoCountBtn = Button(bigBox, "AutoCount", "", "ui_btngray", br, br, new Vector2(-228f, 64f), new Vector2(190f, 40f), CycleAutoCount, 16);
             autoStopBtn = Button(bigBox, "AutoStop", "", "ui_btngray", br, br, new Vector2(-18f, 64f), new Vector2(200f, 40f), CycleAutoStop, 16);
             autoBtn = Button(bigBox, "Auto", "", "ui_btn", br, br, new Vector2(-18f, 14f), new Vector2(400f, 44f), ToggleAuto, 18);
-            autoPageStop = Button(page, "AutoStopNow", L.T("자동 뽑기 멈춤"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -20f), new Vector2(200f, 48f), () => StopAuto(null), 18);
+            // Top right of the result page: 자동 뽑기 멈춤 while it runs, else [GACHA VFX] 자동 뽑기 after a purchase (so
+            // players find it). One button for both, so the two never stack.
+            autoPageStop = Button(page, "AutoStopNow", L.T("자동 뽑기 멈춤"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-24f, -20f), new Vector2(200f, 48f), () => { if (autoOn) StopAuto(null); else AutoFromResult(); }, 18);
             autoPageStop.gameObject.SetActive(false);
+        }
+
+        /// <summary>자동 뽑기 from the result page: once every card is seen, closes it and starts 자동 뽑기 on this banner with
+        /// this draw's count and the saved stop grade (the usual confirm first).</summary>
+        void AutoFromResult()
+        {
+            if (!AllSeen()) { NotYet(); return; }
+            autoCount = lastCount == 10 ? 10 : 1;
+            CloseResults();
+            ToggleAuto();
         }
 
         void CycleAutoCount() { if (autoOn) return; autoCount = autoCount == 1 ? 10 : 1; Game.Audio.PlaySfx("select"); Refresh(); }
@@ -95,7 +109,7 @@ namespace DotRPG
                 if (pullSerial == autoSerial) { StopAuto(null); return; } // the draw failed (its error was shown)
                 if (AutoStopHit()) { StopAuto(autoStop == AutoStop.Unique ? L.T("유니크 이상이 나와 자동 뽑기를 멈췄습니다.") : L.T("전설이 나와 자동 뽑기를 멈췄습니다.")); return; }
             }
-            if (Revealing) { autoNextAt = -1f; return; }
+            if (!AllSeen()) { autoNextAt = -1f; return; } // [GACHA VFX] the spotlight too
             if (autoNextAt < 0f) { autoNextAt = Time.unscaledTime + AutoGap; return; }
             if (Time.unscaledTime < autoNextAt) return;
             autoNextAt = -1f;
@@ -110,7 +124,7 @@ namespace DotRPG
             TextOf(autoStopBtn).text = AutoStopName;
             autoBtn.interactable = autoOn || (online && StarShopClient.Loaded && !busy);
             autoCountBtn.interactable = !autoOn;
-            autoPageStop.gameObject.SetActive(autoOn);
+            RefreshLocks(); // [GACHA VFX] the result page top-right button (자동 뽑기 멈춤 / 자동 뽑기)
         }
 
         // Closing the window or leaving the scene stops it (the object is disabled or destroyed).

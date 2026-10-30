@@ -15,6 +15,7 @@ namespace DotRPG
         readonly Button[] enters = new Button[CardCount];
         readonly Text[] gates = new Text[CardCount];
         readonly RectTransform[] cards = new RectTransform[CardCount];
+        readonly Image[] locks = new Image[CardCount]; // [UI 2026-10-30] P7 lock on a card above my level
         int laidOut = -1;
         Text remaining, status, recap, rule;
         Image budget;
@@ -25,7 +26,8 @@ namespace DotRPG
             var w = CreateWindow<MiniDungeonScreen>(parent, "MiniDungeon", L.T("성장의 틈 · 미니던전"), "menuicon_dungeon");
             var top = Panel(w.content, "DailyBudget", TL, TL, Vector2.zero, new Vector2(1220, 88), UiTheme.HudPlate);
             Label(top.transform, "Title", L.T("경험치 집중 수련"), 26, TL, TL, new Vector2(22, -11), new Vector2(490, 36));
-            w.rule = Label(top.transform, "Rule", L.T("매일 06:00 갱신 · 전체 구간 하루 총 30분 · 1인 자동사냥"), 17, TL, TL, new Vector2(22, -51), new Vector2(750, 26));
+            w.rule = Label(top.transform, "Rule", L.T("매일 06:00 갱신 · 전체 구간 하루 총 30분 · 1인 자동사냥"), 17, TL, TL, new Vector2(22, -51), new Vector2(836, 26));
+            UIFactory.OneLine(w.rule, true); // [UI 2026-10-30] up to the time bar, shrinks to 14 px at most
             Button(top.transform, "RefreshBudget", L.T("새로고침"), "ui_btngray", TL, TL, new Vector2(650, -15), new Vector2(140, 34), () => Game.MiniDungeon?.Refresh(), 16);
             w.remaining = Label(top.transform, "Remaining", "", 25, new Vector2(1, 1), new Vector2(1, 1), new Vector2(-22, -12), new Vector2(380, 36), TextAnchor.MiddleRight);
             var track = UIFactory.Image(top.transform, "Track", Game.Art.Get("ui_white"), new Color32(15, 24, 38, 255));
@@ -38,8 +40,8 @@ namespace DotRPG
             for (int n = 0; n < CardCount; n++) w.BuildCard(n);
             w.status = Label(w.content, "Status", "", 19, TL, TL, new Vector2(8, -462), new Vector2(1204, 54));
             w.recap = Label(w.content, "SessionSummary", "", 19, TL, TL, new Vector2(8, -518), new Vector2(1204, 35));
-            Label(w.content, "Tip", L.T("중도 퇴장해도 남은 시간으로 재입장할 수 있습니다. 이동·공격을 직접 입력하면 자동사냥이 멈춥니다."), 16,
-                TL, TL, new Vector2(8, -567), new Vector2(1204, 24));
+            // [UI 2026-10-30] P5: the bottom small-print line is a "?" tip next to the title.
+            UiHelpTip.Create(top.transform, "TipHelp", TL, new Vector2(600, -14), L.T("중도 퇴장해도 남은 시간으로 재입장할 수 있습니다. 이동·공격을 직접 입력하면 자동사냥이 멈춥니다."));
             return w;
         }
 
@@ -62,11 +64,16 @@ namespace DotRPG
             FitCardText(name, 16, 24);
             Label(p.transform, "Band", $"Lv.{def.MinLevel} ~ {def.MaxLevel}", 22, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -168), new Vector2(354, 30), TextAnchor.MiddleCenter);
             var description = Label(p.transform, "Description", L.T(Descriptions[index]), 17, new Vector2(.5f, 1), new Vector2(.5f, 1), new Vector2(0, -204), new Vector2(354, 58), TextAnchor.UpperCenter);
-            FitCardText(description, 13, 17);
+            FitCardText(description, UIFactory.ReadableFloor, 17);
             gates[index] = Label(p.transform, "Gate", "", 16, TL, TL, new Vector2(16, -264), new Vector2(354, 24), TextAnchor.MiddleCenter);
             enters[index] = Button(p.transform, "Enter", L.T("자동사냥 입장"), "ui_btn", new Vector2(1, 0), new Vector2(1, 0), new Vector2(-18, 8), new Vector2(250, 34), () => Game.MiniDungeon?.Enter(def.Tier), 18);
-            FitCardText(gates[index], 12, 16);
-            FitCardText(enters[index].GetComponentInChildren<Text>(), 12, 18);
+            FitCardText(gates[index], UIFactory.ReadableFloor, 16);
+            FitCardText(enters[index].GetComponentInChildren<Text>(), UIFactory.ReadableFloor, 18);
+            locks[index] = UIFactory.Image(crest.transform, "Lock", Game.Art.Get("ui_lock"), Color.white);
+            locks[index].preserveAspect = true;
+            locks[index].raycastTarget = false;
+            UIFactory.Place(locks[index].rectTransform, new Vector2(1, 0), new Vector2(0.5f, 0.5f), new Vector2(-6, 6), new Vector2(34, 34));
+            locks[index].gameObject.SetActive(false);
         }
 
         static void FitCardText(Text text, int min, int max)
@@ -109,6 +116,7 @@ namespace DotRPG
                     : allowed ? L.T("입장 가능 · EXP 전용") : currentLevel < def.MinLevel || currentLevel > def.MaxLevel ? $"Lv.{def.MinLevel}~{def.MaxLevel} " + L.T("전용")
                     : s.RemainingSeconds <= 0 ? L.T("오늘 이용 완료") : L.T("입장 불가");
                 gates[i].color = allowed ? Accents[i] : UiTheme.TextSecondary;
+                locks[i].gameObject.SetActive(currentLevel < def.MinLevel);
             }
             int level = Game.Session?.Progression.Level ?? 1;
             status.text = s.Active ? L.T("수련 중에는 메뉴를 열어도 자동사냥과 이용 시간이 계속 진행됩니다.")

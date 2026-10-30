@@ -50,9 +50,10 @@ namespace DotRPG
             return bg.rectTransform;
         }
 
-        // [UI] One line per cell: a grade name or a price never breaks inside a word (it may run a little past a narrow column).
+        // [UI] One line per cell: a grade name or a price never breaks inside a word. [UI 2026-10-30] Shrunk to its column
+        // (down to the 14 px readable floor) instead of running into the next column.
         protected static Text Cell(Transform row, string name, float x, float w, int size = 18, TextAnchor align = TextAnchor.MiddleLeft) =>
-            UIFactory.OneLine(Label(row, name, "", size, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(x, 0f), new Vector2(w, 34f), align));
+            UIFactory.OneLine(Label(row, name, "", size, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(x, 0f), new Vector2(w, 34f), align), true);
 
         protected override void Update()
         {
@@ -83,7 +84,7 @@ namespace DotRPG
         int filter = -1; // -1 = every dungeon
         RectTransform listRoot, createRoot;
         Button tabList, tabCreate, filterBtn, queueBtn, aiBtn, cancelQueueBtn;
-        Text queueText, pageText, emptyText;
+        Text queueText, pageText, emptyText, myPowerText;
         readonly List<(RectTransform row, Text dungeon, Text diff, Text members, Text power, Text leader, Text msg, Button apply)> rows = new List<(RectTransform, Text, Text, Text, Text, Text, Text, Button)>();
         List<PartyPost> shown = new List<PartyPost>();
         // create tab
@@ -99,17 +100,19 @@ namespace DotRPG
             Instance = w;
             PartyHub.Attach(w, w.content, PartyHub.Page.Finder); // [UX] one party window: 내 파티 | 파티 찾기 | AI 동료
             w.PreviewBanner();
-            w.tabList = Button(w.content, "TabList", L.T("모집 목록"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(150f, 42f), () => { w.createTab = false; w.Refresh(); }, 20);
-            w.tabCreate = Button(w.content, "TabCreate", L.T("모집 글 등록"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(160f, 0f), new Vector2(150f, 42f), () => { w.createTab = true; w.Refresh(); }, 20);
+            w.tabList = Button(w.content, "TabList", L.T("모집 목록"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(140f, 42f), () => { w.createTab = false; w.Refresh(); }, 20);
+            w.tabCreate = Button(w.content, "TabCreate", L.T("모집 글 등록"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(148f, 0f), new Vector2(170f, 42f), () => { w.createTab = true; w.Refresh(); }, 20);
             // Auto-match panel (top right, left of the preview banner).
-            w.queueBtn = Button(w.content, "Queue", L.T("자동 매칭"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(330f, 0f), new Vector2(130f, 42f), w.ToggleQueue, 20);
-            w.queueText = Label(w.content, "QueueText", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(470f, 0f), new Vector2(240f, 42f), TextAnchor.MiddleLeft);
-            w.aiBtn = Button(w.content, "FillAi", L.T("AI로 채워 출발"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(715f, 0f), new Vector2(160f, 42f), w.DepartWithAi, 18);
+            w.queueBtn = Button(w.content, "Queue", L.T("자동 매칭"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(326f, 0f), new Vector2(170f, 42f), w.ToggleQueue, 20);
+            w.queueText = Label(w.content, "QueueText", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(504f, 0f), new Vector2(200f, 42f), TextAnchor.MiddleLeft); // wraps to two lines
+            w.aiBtn = Button(w.content, "FillAi", L.T("AI로 채워 출발"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(712f, 0f), new Vector2(170f, 42f), w.DepartWithAi, 18); // long translations take two lines
 
             // ----- list tab -----
             w.listRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "List"));
             w.filterBtn = Button(w.listRoot, "Filter", L.T("던전: 전체"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -52f), new Vector2(260f, 38f), w.CycleFilter, 18);
-            Button(w.listRoot, "Refresh", L.T("새로고침"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -52f), new Vector2(120f, 38f), () => { w.SetStatus(L.T("목록을 새로 불러왔습니다.")); w.Refresh(); }, 18);
+            Button(w.listRoot, "Refresh", L.T("새로고침"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(270f, -52f), new Vector2(130f, 38f), () => { w.SetStatus(L.T("목록을 새로 불러왔습니다.")); w.Refresh(); }, 18);
+            // [UI 2026-10-30] P3: my power next to the "최소 전투력" column it is compared with.
+            w.myPowerText = Label(w.listRoot, "MyPower", "", 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(412f, -52f), new Vector2(360f, 38f), TextAnchor.MiddleLeft);
             var head = Panel(w.listRoot, "Head", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, ListTop + 8f), new Vector2(TableW, 30f), HeadRow);
             string[] heads = { L.T("던전"), L.T("난이도"), L.T("인원"), L.T("최소 전투력"), L.T("방장"), L.T("메시지") };
             float[] hx = { 12f, 232f, 342f, 422f, 572f, 792f };
@@ -118,9 +121,9 @@ namespace DotRPG
             {
                 var r = Row(w.listRoot, i, ListTop - 24f, RowH, TableW);
                 int idx = i;
-                var apply = Button(r, "Apply", L.T("참가 신청"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(120f, 36f), () => w.ApplyRow(idx), 17);
+                var apply = Button(r, "Apply", L.T("참가 신청"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(186f, 36f), () => w.ApplyRow(idx), 17);
                 w.rows.Add((r, Cell(r, "Dungeon", 12f, 215f), Cell(r, "Diff", 232f, 105f), Cell(r, "Members", 342f, 75f), Cell(r, "Power", 422f, 145f),
-                    Cell(r, "Leader", 572f, 215f, 17), Cell(r, "Msg", 792f, 290f, 17), apply));
+                    Cell(r, "Leader", 572f, 215f, 17), Cell(r, "Msg", 792f, 226f, 17), apply));
             }
             w.emptyText = Label(w.listRoot, "Empty", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, ListTop - 40f), new Vector2(TableW, 40f), TextAnchor.MiddleCenter);
             w.emptyText.color = new Color32(184, 196, 216, 255);
@@ -286,6 +289,7 @@ namespace DotRPG
             emptyText.gameObject.SetActive(shown.Count == 0);
             emptyText.text = filter < 0 ? L.T("등록된 모집 글이 없습니다. 모집 글을 등록하거나 자동 매칭을 써 보세요.") : L.T("이 던전의 모집 글이 없습니다.");
             int power = MyPower;
+            myPowerText.text = L.F("내 전투력 {0:N0}", power);
             for (int r = 0; r < rows.Count; r++)
             {
                 int i = page * PageSize + r;

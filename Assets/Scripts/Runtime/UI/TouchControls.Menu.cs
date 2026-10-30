@@ -60,7 +60,7 @@ namespace DotRPG
             UiButton.Attach(button);
             var text = UIFactory.Text(img.transform, "Label", label, 22, Color.white, TextAnchor.MiddleCenter, true);
             text.resizeTextForBestFit = true;
-            text.resizeTextMinSize = 12;
+            text.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12
             text.resizeTextMaxSize = text.fontSize;
             text.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label
             UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 2f, 4f, UIFactory.FrameRim - 2f, 4f); // inside the rim
@@ -114,7 +114,7 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(42f, 42f));
                 var text = UIFactory.Text(img.transform, "Label", entry.label, 22, Color.white, TextAnchor.MiddleCenter, true);
                 text.resizeTextForBestFit = true;
-                text.resizeTextMinSize = 12;
+                text.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12
                 text.resizeTextMaxSize = text.fontSize;
                 text.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label
                 UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 2f, 6f, UIFactory.FrameRim - 2f, 52f);
@@ -153,7 +153,7 @@ namespace DotRPG
                 var count = UIFactory.Text(strip, "Count_" + id, "0", 22, gold ? (Color)new Color32(255, 216, 74, 255) : UIColors.Cream, TextAnchor.MiddleLeft, true);
                 count.raycastTarget = false;
                 count.resizeTextForBestFit = true;
-                count.resizeTextMinSize = 12;
+                count.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12
                 count.resizeTextMaxSize = count.fontSize;
                 UIFactory.Place(count.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(i * cellW + 40f, 0f), new Vector2(cellW - 44f, CurrencyH - 8f));
                 currencyTexts.Add((id, count));

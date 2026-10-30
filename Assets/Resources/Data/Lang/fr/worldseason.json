@@ -1,0 +1,16 @@
+{
+ "랭킹 칭호 · 영구": "Titre de classement · Permanent",
+ "장착하면 이름이 금색": "Équipé : nom doré",
+ "장착하면 이름이 주황색": "Équipé : nom orange",
+ "이번 시즌 보스 정보가 없습니다.": "Aucune info de boss pour cette saison.",
+ "이번 시즌 월드보스 정보가 없습니다.": "Aucune info de boss mondial pour cette saison.",
+ "<b>길드보스</b> (주간, 목요일 06:00 정산)\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(우편): 이번 주 도전한 길드원 20,000 골드\n1~10위 길드원 전원: 1위 15,000 골드·장비 보호권·마력 정수 30 / 2~3위 10,000 골드·정수 20 / 4~10위 5,000 골드·정수 10\n1위 길드 도전자 칭호 '최강 길드'(다음 주 정산까지) + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Boss de guilde</b> (hebdomadaire, réglé le jeudi à 06:00)\nCe n'est pas un boss à vaincre : on accumule des points. Les dégâts infligés en 3 minutes s'ajoutent au score de guilde de la semaine (compagnons IA exclus).\n2 essais par jour et par membre, 3 minutes chacun · 24 heures après l'adhésion · Niv.40\nClassement : score total de la guilde cette semaine → à égalité, la guilde arrivée la première\nRécompenses (courrier) : les membres ayant combattu cette semaine reçoivent 20 000 or\nTous les membres des 10 meilleures guildes : 1re 15 000 or, Ticket de protection d'équipement, Essence de mana x30 / 2e-3e 10 000 or, Essence x20 / 4e-10e 5 000 or, Essence x10\nLes combattants de la 1re guilde reçoivent le titre 'Guilde suprême' (jusqu'au prochain règlement hebdomadaire) + nom de guilde doré, 2e-10e nom argenté",
+ "<b>월드보스</b> (2주 시즌, 격주 목요일 06:00 정산)\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 시즌 가장 높은 1회 피해량\n보상(우편): 참가 60,000 골드 + 강화석 10, 격파한 시즌 60,000 골드 추가\n영구 칭호: 1위 '세계를 꺾은 자'(장착하면 이름 금색), 2~10위 '거신 사냥꾼'(주황색), 11~100위 '거신에 맞선 자'": "<b>Boss mondial</b> (saison de 2 semaines, réglée un jeudi sur deux à 06:00)\nTous les aventuriers entament ensemble les mêmes PV. Seuls comptent vos dégâts dans votre salle en 3 minutes (compagnons IA exclus).\n3 essais par jour, 3 minutes chacun · Niv.40 · les dégâts infligés avant de tomber comptent\nClassement : votre meilleur essai de la saison\nRécompenses (courrier) : 60 000 or + 10 Pierres d'amélioration pour participer, +60 000 or si le boss tombe pendant la saison\nTitres permanents : 1er 'Briseur de monde' (nom doré une fois équipé), 2e-10e 'Chasseur de colosse' (orange), 11e-100e 'Rival du colosse'",
+ "격파! 이번 시즌 도전은 계속 랭킹에 기록됩니다": "Vaincu ! Les essais de cette saison comptent toujours pour le classement",
+ "시즌 정산 {0:MM-dd HH:mm} (남은 시간 {1}일 {2}시간)": "Règlement de saison {0:MM-dd HH:mm} (reste {1} j {2} h)",
+ "오늘 남은 도전 <color=#ffe066>{0}</color> / {1}   ·   이번 시즌 내 최고 {2:N0}   ·   내 순위 {3}   ·   {4}": "Essais restants aujourd'hui <color=#ffe066>{0}</color> / {1}   ·   Mon record de la saison {2:N0}   ·   Mon rang {3}   ·   {4}",
+ "시즌 {0:MM-dd} ~ {1:MM-dd}": "Saison {0:MM-dd} ~ {1:MM-dd}",
+ "이번 시즌 ▶ 지난 시즌": "Cette saison ▶ Saison passée",
+ "지난 시즌 ▶ 이번 시즌": "Saison passée ▶ Cette saison",
+ "{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 시즌 최고 {3:N0} · {4}": "{0} Dégâts retenus <color=#ffe066>{1:N0}</color>{2} · Record de la saison {3:N0} · {4}"
+}

@@ -1,0 +1,16 @@
+{
+ "랭킹 칭호 · 영구": "Título de clasificación · Permanente",
+ "장착하면 이름이 금색": "Equipado: nombre dorado",
+ "장착하면 이름이 주황색": "Equipado: nombre naranja",
+ "이번 시즌 보스 정보가 없습니다.": "No hay información del jefe en esta temporada.",
+ "이번 시즌 월드보스 정보가 없습니다.": "No hay información del jefe mundial en esta temporada.",
+ "<b>길드보스</b> (주간, 목요일 06:00 정산)\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(우편): 이번 주 도전한 길드원 20,000 골드\n1~10위 길드원 전원: 1위 15,000 골드·장비 보호권·마력 정수 30 / 2~3위 10,000 골드·정수 20 / 4~10위 5,000 골드·정수 10\n1위 길드 도전자 칭호 '최강 길드'(다음 주 정산까지) + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Jefe de gremio</b> (semanal, se liquida el jueves a las 06:00)\nNo es un jefe que derrotar: se acumulan puntos. El daño que haces en 3 minutos se suma a la puntuación del gremio de esta semana (sin compañeros IA).\n2 intentos al día por miembro, 3 minutos cada uno · desde 24 horas después de unirte · Nv.40\nClasificación: puntuación total del gremio esta semana → en empate, el gremio que llegó antes\nRecompensas (correo): los miembros que lucharon esta semana reciben 20.000 de oro\nTodos los miembros de los 10 mejores gremios: 1.º 15.000 de oro, Boleto de protección de equipo, Esencia de maná x30 / 2.º-3.º 10.000 de oro, Esencia x20 / 4.º-10.º 5.000 de oro, Esencia x10\nLos luchadores del 1.er gremio reciben el título 'Gremio supremo' (hasta la siguiente liquidación semanal) + nombre de gremio dorado, 2.º-10.º nombre plateado",
+ "<b>월드보스</b> (2주 시즌, 격주 목요일 06:00 정산)\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 시즌 가장 높은 1회 피해량\n보상(우편): 참가 60,000 골드 + 강화석 10, 격파한 시즌 60,000 골드 추가\n영구 칭호: 1위 '세계를 꺾은 자'(장착하면 이름 금색), 2~10위 '거신 사냥꾼'(주황색), 11~100위 '거신에 맞선 자'": "<b>Jefe mundial</b> (temporada de 2 semanas, se liquida cada dos jueves a las 06:00)\nTodos los aventureros reducen juntos la misma vida. Solo cuenta el daño que haces en tu sala en 3 minutos (sin compañeros IA).\n3 intentos al día, 3 minutos cada uno · Nv.40 · el daño hecho antes de caer cuenta\nClasificación: tu mejor intento de esta temporada\nRecompensas (correo): 60.000 de oro + 10 Piedras de mejora por participar, +60.000 de oro en una temporada con el jefe derrotado\nTítulos permanentes: 1.º 'Quebrantamundos' (nombre dorado al equiparlo), 2.º-10.º 'Cazacolosos' (naranja), 11.º-100.º 'Rival del coloso'",
+ "격파! 이번 시즌 도전은 계속 랭킹에 기록됩니다": "¡Derrotado! Los intentos de esta temporada siguen contando para la clasificación",
+ "시즌 정산 {0:MM-dd HH:mm} (남은 시간 {1}일 {2}시간)": "Liquidación de temporada {0:MM-dd HH:mm} (quedan {1} d {2} h)",
+ "오늘 남은 도전 <color=#ffe066>{0}</color> / {1}   ·   이번 시즌 내 최고 {2:N0}   ·   내 순위 {3}   ·   {4}": "Intentos restantes hoy <color=#ffe066>{0}</color> / {1}   ·   Mi mejor marca de la temporada {2:N0}   ·   Mi puesto {3}   ·   {4}",
+ "시즌 {0:MM-dd} ~ {1:MM-dd}": "Temporada {0:MM-dd} ~ {1:MM-dd}",
+ "이번 시즌 ▶ 지난 시즌": "Esta temporada ▶ Temporada pasada",
+ "지난 시즌 ▶ 이번 시즌": "Temporada pasada ▶ Esta temporada",
+ "{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 시즌 최고 {3:N0} · {4}": "{0} Daño contado <color=#ffe066>{1:N0}</color>{2} · Mejor de la temporada {3:N0} · {4}"
+}

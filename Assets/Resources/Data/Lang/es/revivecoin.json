@@ -7,7 +7,7 @@
  "<color=#ffd76a>별조각 상품</color> {0}": "<color=#ffd76a>Artículos de Fragmentos estelares</color> {0}",
  "{0}\n별조각 {1:N0}개로 구매합니다.\n<size=18>가방으로 받고, 쓰면 이 캐릭터의 부활 코인이 1개씩 늘어납니다. (최대 {2}개)</size>": "{0}\nComprar por {1:N0} Fragmentos estelares.\n<size=18>Llegan a la bolsa. Cada una que uses añade 1 Moneda de resurrección a este personaje. (Máx. {2})</size>",
  "구매 완료 · {0}": "Compra completada · {0}",
- "별조각 상품": "Artículos de Fragmentos estelares",
+ "별조각 상품": "Tienda de fragmentos",
  "없는 상품입니다.": "Ese producto no existe.",
  "부활 코인 1개": "1 Moneda de resurrección",
  "부활 코인 10개": "10 Monedas de resurrección",

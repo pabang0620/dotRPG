@@ -27,6 +27,17 @@ namespace DotRPG
         float lastWidth = -1f, lastHeight = -1f;
         int lastFontSize = -1;
         bool input, inputChecked, dirty = true, forcedOverflow;
+        /// <summary>[UI 2026-10-30] One-line box: a text wider than the box is cut with "…" instead of running into its neighbour.</summary>
+        bool ellipsis;
+
+        /// <summary>[UI 2026-10-30] Keeps <paramref name="t"/> on one line inside its box, cut with "…" when too long (names in narrow frames).</summary>
+        public static Text Ellipsis(Text t)
+        {
+            var w = Attach(t);
+            w.ellipsis = true;
+            w.dirty = true;
+            return t;
+        }
 
         public static UIWordWrap Attach(Text t)
         {
@@ -71,6 +82,24 @@ namespace DotRPG
             lastOut = outText;
         }
 
+        /// <summary>The longest prefix of the visible text that fits with "…"; leading / trailing rich-text tags are kept.</summary>
+        static string Cut(string s, float width, System.Func<string, float> measure)
+        {
+            int head = 0;
+            while (head < s.Length && s[head] == '<') { int close = s.IndexOf('>', head); if (close < 0) break; head = close + 1; }
+            int tail = s.Length;
+            while (tail > head && s[tail - 1] == '>') { int open = s.LastIndexOf('<', tail - 1); if (open < head) break; tail = open; }
+            string pre = s.Substring(0, head), body = s.Substring(head, tail - head), post = s.Substring(tail);
+            if (body.IndexOf('<') >= 0) return s; // tags inside: leave it to the caller
+            int lo = 0, hi = body.Length;
+            while (lo < hi)
+            {
+                int mid = (lo + hi + 1) / 2;
+                if (measure(pre + body.Substring(0, mid) + "…" + post) <= width) lo = mid; else hi = mid - 1;
+            }
+            return pre + body.Substring(0, lo).TrimEnd() + "…" + post;
+        }
+
         string Rewrap(string s, Rect rect)
         {
             if (string.IsNullOrEmpty(s)) return s;
@@ -83,6 +112,11 @@ namespace DotRPG
             // A short label in a one-line box (grade name, number with unit, column cell) slightly wider than the box:
             // never split it, let it overflow sideways. A paragraph in a box that is still small (tooltips and quest text
             // size their box from preferredHeight after a layout pass) is not a label: it keeps wrapping so the box can grow.
+            if (ellipsis && s.IndexOf('\n') < 0)
+            {
+                if (text.horizontalOverflow == HorizontalWrapMode.Wrap) { text.horizontalOverflow = HorizontalWrapMode.Overflow; forcedOverflow = true; }
+                return Width(s) <= width ? s : Cut(s, width, Width);
+            }
             bool oneLine = s.IndexOf('\n') < 0 && rect.height < text.fontSize * OneLineHeight && Width(s) <= width * ShortLabelWidth;
             if (oneLine)
             {

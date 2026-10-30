@@ -56,9 +56,10 @@ namespace DotRPG
             var t = raidShopPanel.transform;
             var tl = new Vector2(0f, 1f);
             Label(t, "Head", L.T("<b>레이드 상점</b>"), 26, tl, tl, new Vector2(24f, -14f), new Vector2(400f, 38f));
-            Label(t, "Sub", L.T("<color=#b8c4d8>레이드 재료로 무기 상자를 삽니다. 산 즉시 열려 내 직업 무기가 가방에 들어옵니다.</color>"), 16, tl, tl, new Vector2(24f, -52f), new Vector2(700f, 26f));
-            Button(t, "Close", L.T("닫기"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(110f, 40f), CloseRaidShop, 18);
-            rsPageButton = Button(t, "Page", L.T("다른 레이드"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-136f, -14f), new Vector2(150f, 40f), NextRaidShopPage, 18);
+            // [UI 2026-10-30] P5: the one-line explanation (it ran past 700 px in other languages) is a "?" tip; P9: × closes.
+            UiHelpTip.Create(t, "SubHelp", tl, new Vector2(330f, -18f), L.T("<color=#b8c4d8>레이드 재료로 무기 상자를 삽니다. 산 즉시 열려 내 직업 무기가 가방에 들어옵니다.</color>"));
+            CloseX(t, CloseRaidShop, 12f);
+            rsPageButton = Button(t, "Page", L.T("다른 레이드"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-68f, -12f), new Vector2(180f, 44f), NextRaidShopPage, 18);
 
             for (int col = 0; col < 2; col++)
             {

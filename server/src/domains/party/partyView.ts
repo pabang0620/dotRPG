@@ -5,6 +5,7 @@ import { powerOf } from '../characters/powerEstimate';
 import * as runRepo from '../partyruns/partyRunRepository';
 import { buildRunView, type RunView } from '../partyruns/runView';
 import * as repo from './partyRepository';
+import { titleName } from '../achievements/achievementService';
 
 export interface PartyView {
   id: string;
@@ -19,7 +20,7 @@ export interface PartyView {
   listed_until: string | null;
   source: string;
   start_by: string | null;
-  members: { character_id: string; name: string; class: string; level: number; power: number; ready: boolean; is_leader: boolean; is_me: boolean; online: boolean; map_id: string | null }[];
+  members: { character_id: string; name: string; class: string; level: number; power: number; ready: boolean; is_leader: boolean; is_me: boolean; online: boolean; map_id: string | null; title_id?: string; title?: string }[];
   applications: { id: string; character: { id: string; name: string; class: string; level: number; power: number }; expires_at: string }[];
   run: RunView | null;
 }
@@ -58,6 +59,8 @@ export async function buildPartyView(db: Queryable, party: repo.PartyRow, meChar
       // 채팅 접속 세션이 알려 준 지금 맵(접속 안 했거나 아직 안 알렸으면 null)
       online: registry.ofCharacter(m.character_id) !== undefined,
       map_id: registry.ofCharacter(m.character_id)?.mapId ?? null,
+      // 장착한 칭호(있을 때만). 기한이 지난 랭킹 칭호는 매일 작업이 떼므로 장착 값 그대로 싣는다
+      ...(m.title_id ? { title_id: m.title_id, title: titleName(m.title_id) ?? '' } : {}),
     });
   }
   if (isLeader) {

@@ -88,7 +88,8 @@ namespace DotRPG
             var placeholder = UIFactory.Text(box.transform, "Placeholder", L.T("Enter 보내기 · /p /g /w"), 16, new Color(1f, 1f, 1f, 0.35f), TextAnchor.MiddleLeft, false);
             UIFactory.Stretch(placeholder.rectTransform, 98f, 2f, 8f, 2f);
             placeholder.resizeTextForBestFit = true; // the narrow box at UI size 1.3 shrinks the hint instead of wrapping it
-            placeholder.resizeTextMinSize = 12;
+            placeholder.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12; past the floor the hint is cut, not shrunk
+            placeholder.verticalOverflow = VerticalWrapMode.Truncate;
             placeholder.resizeTextMaxSize = placeholder.fontSize;
             field = box.gameObject.AddComponent<InputField>();
             field.textComponent = text;
@@ -306,7 +307,7 @@ namespace DotRPG
             var sb = new StringBuilder();
             for (int i = 0; i < Tabs.Length; i++)
                 sb.Append(i == tab ? $"<color=#ffd84a>[{Tabs[i]}]</color> " : $"<color=#8a94a8>{Tabs[i]}</color> ");
-            sb.Append(L.T("<size=12><color=#8a94a8> Enter 채팅</color></size>"));
+            sb.Append(L.T("<size=14><color=#8a94a8> Enter 채팅</color></size>")); // [UI 2026-10-30] was size 12
             tabText.text = sb.ToString();
 
             var lines = Service.Lines;

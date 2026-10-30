@@ -1,0 +1,10 @@
+{
+ "<b>가방</b>": "<b>Bag</b>",
+ "거래 가능한 아이템만 등록할 수 있습니다.": "Only tradable items can be listed.",
+ "내 전투력 {0:N0}": "My Power {0:N0}",
+ "<color=#b8c4d8>목적지: <b>{0}</b></color>": "<color=#b8c4d8>Destination: <b>{0}</b></color>",
+ "월드 선택": "Choose a world",
+ "지역을 눌러 자세히 보기": "Click an area for details",
+ "{0}  <color={1}>{2}</color>   {3}/{4}명   <color=#b8c4d8>{5}</color>\n최소 전투력 {6:N0}  <color={8}>(내 {9:N0})</color>   <color=#b8c4d8>“{7}”</color>": "{0}  <color={1}>{2}</color>   {3}/{4}   <color=#b8c4d8>{5}</color>\nMin. Power {6:N0}  <color={8}>(you {9:N0})</color>   <color=#b8c4d8>“{7}”</color>",
+ "<size=14><color=#8a94a8> Enter 채팅</color></size>": "<size=14><color=#8a94a8> Enter to chat</color></size>"
+}

@@ -25,6 +25,10 @@ namespace DotRPG
             /// <summary>World: my best single attempt. Guild: this week's guild score and my share of it (no HP, no stages).</summary>
             public long myBest, score, myContribution;
             public DateTime? defeatedAt, eligibleAt;
+            /// <summary>[2026-10-30] World boss: the two-week season's settlement time (guild boss: null, it uses the weekly <see cref="WeekEndsAt"/>).</summary>
+            public DateTime? seasonEndsAt;
+            /// <summary>[2026-10-30] Season length in weeks (world 2, a one-week season made before the switch 1).</summary>
+            public int seasonWeeks = 1;
             public bool Defeated => defeatedAt.HasValue || maxHp > 0 && hpLeft <= 0;
             public float HpShare => maxHp > 0 ? (float)Math.Max(0, Math.Min(1, hpLeft / maxHp)) : 0f;
             /// <summary>Guild boss: joined less than 24 hours ago.</summary>
@@ -130,6 +134,7 @@ namespace DotRPG
                 myBest = (long)MiniJson.Num(o, "my_best"), score = (long)MiniJson.Num(o, "score"), myContribution = (long)MiniJson.Num(o, "my_contribution"),
                 myRank = MiniJson.Int(o, "my_rank"), guildRank = MiniJson.Int(o, "guild_rank"),
                 defeatedAt = GuildClient.ParseTime(MiniJson.Str(o, "defeated_at")), eligibleAt = GuildClient.ParseTime(MiniJson.Str(o, "eligible_at")),
+                seasonEndsAt = GuildClient.ParseTime(MiniJson.Str(o, "season_ends_at")), seasonWeeks = Math.Max(1, MiniJson.Int(o, "season_weeks", 1)),
             };
         }
 
@@ -142,7 +147,7 @@ namespace DotRPG
             if (!Loaded) return L.T("서버에서 보스 정보를 받는 중입니다.");
             if (kind == Guild && !GuildClient.InGuild) return L.T("길드에 들어가면 도전할 수 있어요.");
             var b = Of(kind);
-            if (b == null) return kind == Guild ? L.T("길드에 들어가면 도전할 수 있어요.") : L.T("이번 주 월드보스 정보가 없습니다.");
+            if (b == null) return kind == Guild ? L.T("길드에 들어가면 도전할 수 있어요.") : L.T("이번 시즌 월드보스 정보가 없습니다.");
             if (kind == Guild && b.Waiting) return L.F("길드 가입 24시간 뒤부터 도전할 수 있어요 ({0:MM-dd HH:mm}).", b.eligibleAt.Value);
             if (b.attemptsLeft <= 0) return L.T("오늘 도전 횟수를 모두 썼어요. 오전 6시에 다시 채워집니다.");
             return null;
@@ -158,7 +163,7 @@ namespace DotRPG
             "BOSS_ATTEMPT_OPEN" => L.T("끝나지 않은 도전이 있습니다. 잠시 뒤 다시 시도해 주세요."),
             "BOSS_ATTEMPT_CLOSED" => L.T("이미 끝난 도전입니다."),
             "BOSS_ATTEMPT_NOT_FOUND" => L.T("도전 기록을 찾을 수 없습니다."),
-            "BOSS_SEASON_NOT_FOUND" => L.T("이번 주 보스 정보가 없습니다."),
+            "BOSS_SEASON_NOT_FOUND" => L.T("이번 시즌 보스 정보가 없습니다."),
             "NETWORK" => L.T("서버에 연결할 수 없습니다."),
             _ => string.IsNullOrEmpty(r.message) ? L.T("요청이 실패했습니다.") : r.message,
         };

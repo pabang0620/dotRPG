@@ -90,7 +90,7 @@ namespace DotRPG
                 b.transition = Selectable.Transition.None;
                 b.onClick.AddListener(() => onClick());
             }
-            band = UIFactory.Text(Card.transform, "Band", "", 14, Ink, TextAnchor.MiddleCenter);
+            band = UIFactory.Text(Card.transform, "Band", "", 16, Ink, TextAnchor.MiddleCenter); // [UI 2026-10-30] renders 14 px
             UIFactory.Place(band.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -15f * scale), new Vector2(w - 16f * scale, 19f * scale));
             icon = UIFactory.Image(Card.transform, "Icon", null, Color.white);
             UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -34f * scale), new Vector2(72f * scale, 72f * scale));

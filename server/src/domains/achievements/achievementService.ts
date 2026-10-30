@@ -17,7 +17,7 @@ async function myCharacter(accountId: number, characterUuid: string) {
 /** 칭호 이름(장착한 업적 id -> 업적 이름). 없으면 null */
 export function titleName(achievementId: string | null): string | null {
   if (!achievementId) return null;
-  // 0047: 주간 랭킹 칭호(rank_*)도 같은 자리에 장착한다. 만료되면 매일 작업과 업적 조회가 떼어 낸다
+  // 0047: 랭킹 칭호(rank_*)도 같은 자리에 장착한다. 월드보스 칭호는 영구(0061), 길드보스 칭호는 만료되면 매일 작업과 업적 조회가 떼어 낸다
   if (isRankTitle(achievementId)) return RANK_TITLE_NAMES[achievementId];
   return ACHIEVEMENT_BY_ID.get(achievementId)?.title ?? null;
 }
@@ -49,8 +49,8 @@ export async function listAchievements(accountId: number, characterUuid: string)
   }
   return {
     title: title ? { id: title, name: titleName(title) } : null,
-    // 지금 장착할 수 있는 랭킹 칭호(이름 색은 장착과 무관하게 유효 기간 동안 적용된다)
-    rank_titles: ranks.map((t) => ({ id: t.title_id, title: titleName(t.title_id), name_color: t.name_color, expires_at: t.expires_at.toISOString() })),
+    // 지금 장착할 수 있는 랭킹 칭호. 월드보스 칭호는 영구(expires_at null, 2026-10-30). 이름 색은 장착한 칭호의 색을 따른다
+    rank_titles: ranks.map((t) => ({ id: t.title_id, title: titleName(t.title_id), name_color: t.name_color, expires_at: t.expires_at ? t.expires_at.toISOString() : null, permanent: t.expires_at === null })),
     newly,
     achievements: visible.map((a) => ({
       id: a.id,

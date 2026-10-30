@@ -85,8 +85,8 @@ const envSchema = z.object({
   // 2026-10-18: 혼자(AI 동료 포함)도 레이드 보상을 받는다(사용자 결정). 2 이상으로 두면 그 인원 미만은 연습판(TOO_FEW_HUMANS)
   RAID_REWARD_MIN_HUMANS: posInt(1),
   RAID_PRACTICE_PAYS_KILLS: boolStr.default(false),
-  // 월드보스 주간 공유 체력(bossRushRules.WORLD_BOSS_HP_DEFAULT 근거). 새 주의 시즌을 만들 때만 읽는다
-  WORLD_BOSS_HP: posInt(40_000_000),
+  // 월드보스 한 시즌(2주) 공유 체력(bossRushRules.WORLD_BOSS_HP_DEFAULT 근거). 새 시즌을 만들 때만 읽는다. 보스 레벨 50 시즌은 x2.0
+  WORLD_BOSS_HP: posInt(80_000_000),
   // 챕터 3(만렙 40 -> 50) 개방 플래그(Docs/PLAN_CHAPTER3_2026-10-21.md). 꺼져 있으면 레벨 상한 40, 3장 콘텐츠는 422 CHAPTER_LOCKED.
   // 출시 빌드에 3장 데이터를 싣고 이 값만 바꿔 재배포 없이 연다
   CHAPTER3_OPEN: boolStr.default(false),

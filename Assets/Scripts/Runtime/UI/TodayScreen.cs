@@ -48,8 +48,8 @@ namespace DotRPG
             }
             w.emptyText = Label(w.content, "Empty", L.T("지금 바로 할 일이 없습니다. 사냥터에서 경험치를 모아 보세요."), 20, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0f, -200f), new Vector2(1000f, 40f), TextAnchor.MiddleCenter);
             var br = new Vector2(1f, 0f);
-            w.pagePrev = Button(w.content, "Prev", "◀", "ui_btngray", br, br, new Vector2(-140f, 0f), UiSizes.PageButton, () => w.Turn(-1), UiSizes.PageFont);
-            w.pageText = Label(w.content, "Page", "", 18, br, br, new Vector2(-54f, 0f), new Vector2(80f, 34f), TextAnchor.MiddleCenter);
+            w.pagePrev = Button(w.content, "Prev", "◀", "ui_btngray", br, br, new Vector2(-152f, 0f), UiSizes.PageButton, () => w.Turn(-1), UiSizes.PageFont);
+            w.pageText = Label(w.content, "Page", "", 18, br, br, new Vector2(-54f, 0f), new Vector2(96f, 34f), TextAnchor.MiddleCenter); // [UI 2026-10-30] "99 / 99" fits
             w.pageNext = Button(w.content, "Next", "▶", "ui_btngray", br, br, new Vector2(0f, 0f), UiSizes.PageButton, () => w.Turn(1), UiSizes.PageFont);
             return w;
         }

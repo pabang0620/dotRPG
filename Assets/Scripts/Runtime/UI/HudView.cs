@@ -133,7 +133,7 @@ namespace DotRPG
             autoBtn.onClick.AddListener(QuestAutoPilot.Toggle);
             UiButton.Attach(autoBtn);
             autoLabel = UIFactory.Text(autoImg.transform, "Text", L.T("자동 진행"), 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(autoLabel.rectTransform, 36f, 2f, 32f, 2f);
+            UIFactory.Stretch(autoLabel.rectTransform, 34f, 1f, 26f, 1f);
             FitLabel(autoLabel);
             autoKey = KeyBadge(autoImg.transform);
             ButtonIcon(autoImg.transform, "menuicon_autoquest"); // [ART]
@@ -146,7 +146,7 @@ namespace DotRPG
             huntBtn.onClick.AddListener(QuestAutoPilot.ToggleHunt);
             UiButton.Attach(huntBtn);
             huntLabel = UIFactory.Text(huntImg.transform, "Text", L.T("자동 사냥"), 17, Color.white, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(huntLabel.rectTransform, 36f, 2f, 32f, 2f);
+            UIFactory.Stretch(huntLabel.rectTransform, 34f, 1f, 26f, 1f);
             FitLabel(huntLabel);
             huntKey = KeyBadge(huntImg.transform);
             ButtonIcon(huntImg.transform, "menuicon_autohunt"); // [ART]
@@ -440,8 +440,10 @@ namespace DotRPG
 
         static void FitLabel(Text t)
         {
+            // [UI 2026-10-30] Two short lines at the readable floor ("자동 진행" / "(3)") instead of one line shrunk to 11 px.
+            t.lineSpacing = 0.85f;
             t.resizeTextForBestFit = true;
-            t.resizeTextMinSize = 11;
+            t.resizeTextMinSize = UIFactory.ReadableFloor;
             t.resizeTextMaxSize = t.fontSize;
             t.verticalOverflow = VerticalWrapMode.Truncate; // a long label shrinks inside the button, never spills above / below it
         }
@@ -453,9 +455,8 @@ namespace DotRPG
             // [UI] Inside the button's 12 px rim (it used to sit on the frame at the screen edge); a long rebound key
             // ("Space") shrinks to fit instead of growing past the button.
             UIFactory.Place(t.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-UIFactory.FrameRim + 2f, 0f), new Vector2(22f, 20f));
-            t.resizeTextForBestFit = true;
-            t.resizeTextMinSize = 9;
-            t.resizeTextMaxSize = t.fontSize;
+            // [UI 2026-10-30] Readable floor; a long rebound key ("Space") runs left over the label edge instead of shrinking to 9 px.
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
             return t;
         }
 

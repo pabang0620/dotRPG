@@ -23,6 +23,10 @@ namespace DotRPG
         /// <summary>Equipped title's name ("" = none).</summary>
         public static string MyTitle { get; private set; } = "";
         public static string MyTitleId { get; private set; } = "";
+        /// <summary>[2026-10-30] Name colour of each ranking title I own ('gold' / 'orange' / null): the name takes the colour of the equipped one.</summary>
+        public static readonly Dictionary<string, string> RankColors = new Dictionary<string, string>();
+        /// <summary>The colour my name shows now (the equipped ranking title's, else null).</summary>
+        public static string MyNameColor => !string.IsNullOrEmpty(MyTitleId) && RankColors.TryGetValue(MyTitleId, out var c) ? c : null;
         /// <summary>Category of the ranking titles in <see cref="All"/> (not achievements: left out of the achieved count).</summary>
         public const string RankCategory = "rank";
         public static event Action Changed;
@@ -43,6 +47,7 @@ namespace DotRPG
             }
             if (Game.Session != null) { Game.Session.Progression.LeveledUp -= OnLevel; Game.Session.Progression.LeveledUp += OnLevel; }
             All.Clear();
+            RankColors.Clear();
             MyTitle = MyTitleId = "";
             Check(true);
         }
@@ -103,15 +108,21 @@ namespace DotRPG
                     achieved = !string.IsNullOrEmpty(MiniJson.Str(a, "achieved_at")),
                 });
             }
-            // Ranking titles (world / guild boss weekly results): owned until they expire, equipped like any title.
+            // Ranking titles: world boss ones are permanent (expires_at null, 2026-10-30), the guild boss one lasts until the next
+            // weekly settlement. Equipped like any title; the name colour follows the equipped one.
+            RankColors.Clear();
             foreach (var o in MiniJson.Arr(data, "rank_titles") ?? new List<object>())
             {
                 var t = o as Dictionary<string, object>;
+                string id = MiniJson.Str(t, "id");
+                string color = MiniJson.Str(t, "name_color");
+                if (!string.IsNullOrEmpty(id)) RankColors[id] = color;
                 DateTime.TryParse(MiniJson.Str(t, "expires_at", ""), null, System.Globalization.DateTimeStyles.RoundtripKind, out var until);
+                string kind = until > DateTime.MinValue ? L.F("랭킹 칭호 · {0:M/d HH:mm}까지", until.ToLocalTime()) : L.T("랭킹 칭호 · 영구");
                 All.Add(new AchievementView
                 {
-                    id = MiniJson.Str(t, "id"), title = MiniJson.Str(t, "title", ""), category = RankCategory, goal = 1, progress = 1, achieved = true,
-                    description = until > DateTime.MinValue ? L.F("랭킹 칭호 · {0:M/d HH:mm}까지", until.ToLocalTime()) : L.T("랭킹 칭호"),
+                    id = id, title = MiniJson.Str(t, "title", ""), category = RankCategory, goal = 1, progress = 1, achieved = true,
+                    description = string.IsNullOrEmpty(color) ? kind : kind + " · " + (color == "gold" ? L.T("장착하면 이름이 금색") : L.T("장착하면 이름이 주황색")),
                 });
             }
             ReadTitle(MiniJson.Obj(data, "title"));

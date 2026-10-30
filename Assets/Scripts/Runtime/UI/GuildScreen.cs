@@ -64,13 +64,13 @@ namespace DotRPG
             guildMeta = Label(top.transform, "Meta", "", 17, TR, TR, new Vector2(-18f, -8f), new Vector2(480f, 38f), TextAnchor.MiddleRight);
             guildMeta.color = UiTheme.TextSecondary;
             guildNotice = Label(top.transform, "Notice", "", 18, TL, TL, new Vector2(18f, -52f), new Vector2(1180f, 34f), TextAnchor.MiddleLeft);
-            membersTab = Button(mineRoot, "Members", L.T("길드원"), "ui_btn", TL, TL, new Vector2(0f, -106f), new Vector2(150f, 40f), () => { showApplications = false; listPage = 0; Refresh(); }, 19);
-            appsTab = Button(mineRoot, "Apps", L.T("가입 신청"), "ui_btngray", TL, TL, new Vector2(160f, -106f), new Vector2(170f, 40f), () => { showApplications = true; listPage = 0; Refresh(); }, 19);
-            noticeField = Field(mineRoot, "NoticeField", L.T("한 줄 공지 (60자)"), new Vector2(340f, -106f), new Vector2(330f, 40f));
+            membersTab = Button(mineRoot, "Members", L.T("길드원"), "ui_btn", TL, TL, new Vector2(0f, -106f), new Vector2(110f, 40f), () => { showApplications = false; listPage = 0; Refresh(); }, 19);
+            appsTab = Button(mineRoot, "Apps", L.T("가입 신청"), "ui_btngray", TL, TL, new Vector2(118f, -106f), new Vector2(170f, 40f), () => { showApplications = true; listPage = 0; Refresh(); }, 19);
+            noticeField = Field(mineRoot, "NoticeField", L.T("한 줄 공지 (60자)"), new Vector2(296f, -106f), new Vector2(230f, 40f)); // [UI 2026-10-30] narrower so the buttons fit their longest translation
             noticeField.characterLimit = GuildClient.NoticeMax;
-            noticeBtn = Button(mineRoot, "NoticeSave", L.T("공지 저장"), "ui_btngray", TL, TL, new Vector2(678f, -106f), new Vector2(120f, 40f), SaveNotice, 17);
-            modeBtn = Button(mineRoot, "Mode", "", "ui_btngray", TL, TL, new Vector2(806f, -106f), new Vector2(190f, 40f), ToggleMode, 17);
-            bossBtn = Button(mineRoot, "Boss", L.T("길드보스"), "ui_btn", TR, TR, new Vector2(-110f, -106f), new Vector2(110f, 40f), () => BossRushScreen.Open(BossRushClient.Guild), 17);
+            noticeBtn = Button(mineRoot, "NoticeSave", L.T("공지 저장"), "ui_btngray", TL, TL, new Vector2(534f, -106f), new Vector2(180f, 40f), SaveNotice, 17);
+            modeBtn = Button(mineRoot, "Mode", "", "ui_btngray", TL, TL, new Vector2(722f, -106f), new Vector2(256f, 40f), ToggleMode, 17);
+            bossBtn = Button(mineRoot, "Boss", L.T("길드보스"), "ui_btn", TR, TR, new Vector2(-108f, -106f), new Vector2(132f, 40f), () => BossRushScreen.Open(BossRushClient.Guild), 17);
             leaveBtn = Button(mineRoot, "Leave", L.T("나가기"), "ui_btngray", TR, TR, new Vector2(0f, -106f), new Vector2(100f, 40f), LeaveOrDisband, 17);
         }
 

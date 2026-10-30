@@ -21,10 +21,11 @@ namespace DotRPG
         void Build(RectTransform root)
         {
             card = UIFactory.Place(UIFactory.Rect(root, "AttemptStatus"), new Vector2(1, 1), new Vector2(1, 1),
-                new Vector2(-DungeonHudView.ClockRight, -DungeonHudView.ClockTop), new Vector2(DungeonHudView.ClockWidth, 126));
+                new Vector2(-DungeonHudView.ClockRight, -DungeonHudView.ClockTop), new Vector2(DungeonHudView.ClockWidth, 126)); // BossHpBarView.TallCardBottom keeps clear of 126
             UIFactory.Stretch(UIFactory.Panel(card, "Frame", true).rectTransform);
             title = UIFactory.Text(card, "Kind", "", 18, UiTheme.Accent, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(title.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -10), new Vector2(286, 26));
+            UIFactory.Place(title.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -10), new Vector2(288, 26));
+            UIFactory.OneLine(title, true); // [UI 2026-10-30] one line, shrinks to 14 px at most
             time = UIFactory.Text(card, "Time", "03:00", 29, UiTheme.AccentLight, TextAnchor.MiddleLeft, true);
             UIFactory.Place(time.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -38), new Vector2(120, 36));
             damage = UIFactory.Text(card, "Damage", "", 16, UiTheme.TextPrimary, TextAnchor.MiddleRight, true);
@@ -37,14 +38,14 @@ namespace DotRPG
             bar.raycastTarget = false;
             UIFactory.Stretch(bar.rectTransform);
             var img = UIFactory.Image(card, "Leave", Game.Art.Get("ui_btngray"), Color.white);
-            UIFactory.Place(img.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -89), new Vector2(288, 28));
+            UIFactory.Place(img.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -86), new Vector2(288, 38));
             img.preserveAspect = false;
             var b = img.gameObject.AddComponent<Button>();
             b.targetGraphic = img;
             b.onClick.AddListener(() => Game.BossRush?.Leave());
             UiButton.Attach(b);
-            var label = UIFactory.Text(img.transform, "Text", L.T("도전 마치기 (지금까지 피해 기록)"), 15, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(label.rectTransform, 8, 1, 8, 1);
+            var label = UIFactory.Text(img.transform, "Text", L.T("도전 마치기 (지금까지 피해 기록)"), 16, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true);
+            UIFactory.FitInFrame(label, 8f, 1f); // [UI 2026-10-30] 14 px floor, two lines for the long translations
             card.gameObject.SetActive(false);
         }
 

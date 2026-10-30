@@ -177,7 +177,10 @@ namespace DotRPG
             GearTooltip.AppendBind(sb, key);
             t.icon.sprite = Game.Art.Get(DungeonDatabase.ItemIcon(key));
             t.text.text = sb.ToString();
-            t.box.sizeDelta = new Vector2(390f, Mathf.Max(96f, t.text.preferredHeight + 32f));
+            // [UI 2026-10-30] The text rect follows its height (set lines and the hidden option used to run past a fixed 400).
+            float th = t.text.preferredHeight;
+            t.text.rectTransform.sizeDelta = new Vector2(280f, Mathf.Max(400f, th + 4f));
+            t.box.sizeDelta = new Vector2(390f, Mathf.Max(96f, th + 32f));
             t.anchor = anchor;
             t.box.SetAsLastSibling();
             t.gameObject.SetActive(true);
@@ -190,7 +193,7 @@ namespace DotRPG
             Vector2 tr = canvas.InverseTransformPoint(anchor.TransformPoint(new Vector3(r.xMax, r.yMax, 0f)));
             float x = tr.x + 10f + size.x <= halfW - 8f ? tr.x + 10f : tl.x - size.x - 10f;
             x = Mathf.Clamp(x, -halfW + 8f, halfW - size.x - 8f);
-            float y = Mathf.Clamp(tl.y, -halfH + size.y + 8f, halfH - 8f);
+            float y = Mathf.Clamp(tl.y, Mathf.Min(-halfH + size.y + 8f, halfH - 8f), halfH - 8f); // [UI 2026-10-30] taller than the screen: top stays on screen
             t.box.anchoredPosition = new Vector2(x, y);
         }
 

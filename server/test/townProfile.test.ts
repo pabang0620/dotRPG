@@ -76,4 +76,19 @@ describe('town.pos 서버 값', () => {
     ca.send(pos('village', { aura: 'aura_sky', x: 3 }));
     expect(await seenAura('aura_sky')).toBeTruthy();
   });
+
+  it('장착한 칭호 id와 그 랭킹 칭호의 이름 색을 싣고, 칭호가 없으면 둘 다 없다(2026-10-30)', async () => {
+    const { a, b, ca, cb } = await pairInTown();
+    const season = await getPool().query<{ id: string }>(
+      "INSERT INTO boss_seasons (kind, week_start, week_end, boss_id, max_hp, hp_left) VALUES ('world', '2026-01-01T00:00:00Z', '2026-01-15T00:00:00Z', 'boss_abyss_titan', 1, 1) RETURNING id");
+    await getPool().query("INSERT INTO rank_titles (character_id, season_id, title_id, name_color, expires_at) VALUES ($1, $2, 'rank_world_1', 'gold', NULL)", [a.dbId, season.rows[0]?.id]);
+    await getPool().query("UPDATE characters SET title_achievement = 'rank_world_1' WHERE id = $1", [a.dbId]);
+    ca.send(pos('village'));
+    expect(await seenFrom(cb, a.id)).toMatchObject({ title_id: 'rank_world_1', title: '세계를 꺾은 자', name_color: 'gold' });
+    cb.send(pos('canyon'));
+    cb.send(pos('village', { x: 2 }));
+    const fb = await seenFrom(ca, b.id);
+    expect(fb.title_id).toBeUndefined();
+    expect(fb.name_color).toBeUndefined();
+  });
 });

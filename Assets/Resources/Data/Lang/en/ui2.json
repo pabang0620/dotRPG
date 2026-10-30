@@ -700,5 +700,8 @@
  "모두 수락": "Accept all",
  "모두 수락: {0}건": "Accept all: {0}",
  "받을 것이 없습니다.": "Nothing to claim.",
- "눌러서 열기": "Tap to open"
+ "눌러서 열기": "Tap to open",
+ "자동 뽑기": "Auto Draw",
+ "탭하여 계속": "Tap to continue",
+ "카드를 모두 확인해 주세요": "Open all the cards first."
 }

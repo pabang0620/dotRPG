@@ -31,6 +31,21 @@ export async function ensureSeason(db: Queryable, kind: BossKind, weekStart: Dat
   return toSeason(r.rows[0] as RawSeason);
 }
 
+/** now를 포함하는 시즌(week_start <= now < week_end). 월드보스 2주 시즌 전환 전에 만든 1주 시즌도 끝날 때까지 이것으로 찾는다 */
+export async function seasonCovering(db: Queryable, kind: BossKind, now: Date): Promise<Season | null> {
+  const r = await db.query<RawSeason>(
+    'SELECT * FROM boss_seasons WHERE kind = $1 AND week_start <= $2 AND week_end > $2 ORDER BY week_start DESC LIMIT 1',
+    [kind, now],
+  );
+  return r.rows[0] ? toSeason(r.rows[0]) : null;
+}
+
+/** now 전에 끝난 가장 최근 시즌(랭킹 "지난 시즌") */
+export async function lastEndedSeason(db: Queryable, kind: BossKind, now: Date): Promise<Season | null> {
+  const r = await db.query<RawSeason>('SELECT * FROM boss_seasons WHERE kind = $1 AND week_end <= $2 ORDER BY week_end DESC, id DESC LIMIT 1', [kind, now]);
+  return r.rows[0] ? toSeason(r.rows[0]) : null;
+}
+
 export async function seasonAt(db: Queryable, kind: BossKind, weekStart: Date): Promise<Season | null> {
   const r = await db.query<RawSeason>('SELECT * FROM boss_seasons WHERE kind = $1 AND week_start = $2', [kind, weekStart]);
   return r.rows[0] ? toSeason(r.rows[0]) : null;
@@ -212,7 +227,8 @@ export async function markSettled(client: PoolClient, id: number, now: Date): Pr
 
 // ---------- 랭킹 칭호 ----------
 
-export async function grantTitle(client: PoolClient, characterId: number, seasonId: number, titleId: string, color: string | null, expiresAt: Date): Promise<void> {
+/** 랭킹 칭호를 준다. expiresAt null = 영구(월드보스 순위 칭호, 2026-10-30) */
+export async function grantTitle(client: PoolClient, characterId: number, seasonId: number, titleId: string, color: string | null, expiresAt: Date | null): Promise<void> {
   await client.query(
     `INSERT INTO rank_titles (character_id, season_id, title_id, name_color, expires_at) VALUES ($1, $2, $3, $4, $5)
      ON CONFLICT (character_id, season_id, title_id) DO NOTHING`,
@@ -220,23 +236,37 @@ export async function grantTitle(client: PoolClient, characterId: number, season
   );
 }
 
-export async function activeTitles(db: Queryable, characterId: number, now: Date): Promise<{ title_id: string; name_color: string | null; expires_at: Date }[]> {
-  const r = await db.query<{ title_id: string; name_color: string | null; expires_at: Date }>(
-    'SELECT title_id, name_color, expires_at FROM rank_titles WHERE character_id = $1 AND expires_at > $2 ORDER BY expires_at DESC',
+/** 지금 가진 랭킹 칭호(칭호마다 한 줄: 여러 시즌에 같은 칭호를 받았으면 가장 오래가는 것). expires_at null = 영구 */
+export async function activeTitles(db: Queryable, characterId: number, now: Date): Promise<{ title_id: string; name_color: string | null; expires_at: Date | null }[]> {
+  const r = await db.query<{ title_id: string; name_color: string | null; expires_at: Date | null }>(
+    `SELECT DISTINCT ON (title_id) title_id, name_color, expires_at FROM rank_titles
+      WHERE character_id = $1 AND (expires_at IS NULL OR expires_at > $2)
+      ORDER BY title_id, expires_at DESC NULLS FIRST`,
     [characterId, now],
   );
   return r.rows;
 }
 
-/** 만료된 랭킹 칭호를 장착한 캐릭터는 칭호를 뗀다 */
+/** 만료된 랭킹 칭호를 장착한 캐릭터는 칭호를 뗀다(영구 칭호는 떼지 않는다) */
 export async function unequipExpiredTitles(client: PoolClient, now: Date): Promise<number> {
   const r = await client.query(
     `UPDATE characters c SET title_achievement = NULL
       WHERE c.title_achievement LIKE 'rank\\_%'
-        AND NOT EXISTS (SELECT 1 FROM rank_titles t WHERE t.character_id = c.id AND t.title_id = c.title_achievement AND t.expires_at > $1)`,
+        AND NOT EXISTS (SELECT 1 FROM rank_titles t WHERE t.character_id = c.id AND t.title_id = c.title_achievement
+                          AND (t.expires_at IS NULL OR t.expires_at > $1))`,
     [now],
   );
   return r.rowCount ?? 0;
+}
+
+/** 정산 시각에 이 길드에 있는 살아 있는 길드원(시즌이 끝나기 전에 가입한 사람만) */
+export async function guildMembersBefore(db: Queryable, guildId: number, joinedBefore: Date): Promise<number[]> {
+  const r = await db.query<{ character_id: string }>(
+    `SELECT m.character_id FROM guild_members m JOIN characters c ON c.id = m.character_id AND c.deleted_at IS NULL
+      WHERE m.guild_id = $1 AND m.joined_at < $2 ORDER BY m.character_id`,
+    [guildId, joinedBefore],
+  );
+  return r.rows.map((x) => Number(x.character_id));
 }
 
 export async function setGuildHonor(client: PoolClient, guildId: number, color: 'gold' | 'silver', until: Date): Promise<void> {

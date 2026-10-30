@@ -71,10 +71,10 @@ namespace DotRPG
             // ----- table (search / mine / mail) -----
             w.tableRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Table"));
             var head = Panel(w.tableRoot, "Head", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, TableTop + 46f), new Vector2(TableW, 30f), HeadRow);
-            w.headText = Label(head.transform, "Text", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(50f, 0f), new Vector2(330f, 28f), TextAnchor.MiddleLeft);
+            w.headText = Label(head.transform, "Text", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(50f, 0f), new Vector2(290f, 28f), TextAnchor.MiddleLeft);
             Text HeadCol(string n, float hx, float hw, TextAnchor align) => Label(head.transform, n, "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(hx, 0f), new Vector2(hw, 28f), align);
-            w.headCols = new[] { HeadCol("HGrade", 385f, 95f, TextAnchor.MiddleLeft), HeadCol("HPrice", 485f, 140f, TextAnchor.MiddleRight), HeadCol("HBid", 635f, 125f, TextAnchor.MiddleRight),
-                HeadCol("HSeller", 780f, 120f, TextAnchor.MiddleLeft), HeadCol("HTime", 905f, 120f, TextAnchor.MiddleLeft) };
+            w.headCols = new[] { HeadCol("HGrade", 345f, 95f, TextAnchor.MiddleLeft), HeadCol("HPrice", 445f, 140f, TextAnchor.MiddleRight), HeadCol("HBid", 595f, 125f, TextAnchor.MiddleRight),
+                HeadCol("HSeller", 740f, 120f, TextAnchor.MiddleLeft), HeadCol("HTime", 865f, 120f, TextAnchor.MiddleLeft) };
             for (int i = 0; i < PageSize; i++)
             {
                 var r = Row(w.tableRoot, i, TableTop + 14f, RowH, TableW);
@@ -82,10 +82,10 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
                 GearTooltip.Hook(icon, () => w.TableKey(idx));
-                var a = Button(r, "A", L.T("즉시 구매"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-82f, 0f), new Vector2(104f, 34f), () => w.RowAction(idx, true), 16);
-                var b = Button(r, "B", L.T("입찰"), "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(72f, 34f), () => w.RowAction(idx, false), 16);
-                w.rows.Add((r, icon, Cell(r, "Name", 50f, 330f), Cell(r, "Grade", 385f, 95f, 17), Cell(r, "Price", 485f, 140f, 18, TextAnchor.MiddleRight),
-                    Cell(r, "Bid", 635f, 125f, 17, TextAnchor.MiddleRight), Cell(r, "Seller", 780f, 120f, 17), Cell(r, "Time", 905f, 120f, 16), a, b));
+                var a = Button(r, "A", L.T("즉시 구매"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-96f, 0f), new Vector2(130f, 34f), () => w.RowAction(idx, true), 16);
+                var b = Button(r, "B", L.T("입찰"), "ui_btngray", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(86f, 34f), () => w.RowAction(idx, false), 16);
+                w.rows.Add((r, icon, Cell(r, "Name", 50f, 290f), Cell(r, "Grade", 345f, 95f, 17), Cell(r, "Price", 445f, 140f, 18, TextAnchor.MiddleRight),
+                    Cell(r, "Bid", 595f, 125f, 17, TextAnchor.MiddleRight), Cell(r, "Seller", 740f, 120f, 17), Cell(r, "Time", 865f, 120f, 16), a, b));
             }
             w.emptyText = Label(w.tableRoot, "Empty", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, TableTop - 10f), new Vector2(TableW, 40f), TextAnchor.MiddleCenter);
             w.emptyText.color = new Color32(184, 196, 216, 255);
@@ -98,7 +98,8 @@ namespace DotRPG
             // ----- register -----
             w.registerRoot = UIFactory.Stretch(UIFactory.Rect(w.content, "Register"));
             var left = Panel(w.registerRoot, "Bag", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, -54f), new Vector2(620f, 470f), new Color32(24, 36, 54, 235));
-            Label(left.transform, "Title", L.T("<b>가방</b>  <color=#8c96a8>(거래 가능한 아이템만 등록할 수 있습니다)</color>"), 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -8f), new Vector2(600f, 30f));
+            Label(left.transform, "Title", L.T("<b>가방</b>"), 18, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -8f), new Vector2(200f, 30f));
+            UiHelpTip.Create(left.transform, "Help", new Vector2(1f, 1f), new Vector2(-10f, -7f), L.T("거래 가능한 아이템만 등록할 수 있습니다.")); // [UI 2026-10-30] P5
             for (int i = 0; i < 8; i++)
             {
                 var r = Row(left.transform, i, -44f, 46f, 600f);
@@ -107,8 +108,8 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(34f, 34f));
                 int idx = i;
                 GearTooltip.Hook(icon, () => { int at = w.regPage * 8 + idx; return at < w.bagKeys.Count ? w.bagKeys[at] : null; });
-                var pick = Button(r, "Pick", L.T("선택"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(80f, 36f), () => { w.regSel = w.regPage * 8 + idx; w.regPrice = 0; w.Refresh(); }, 16);
-                w.regRows.Add((r, icon, Cell(r, "Name", 50f, 340f), Cell(r, "Bind", 395f, 110f, 16), pick));
+                var pick = Button(r, "Pick", L.T("선택"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-6f, 0f), new Vector2(104f, 36f), () => { w.regSel = w.regPage * 8 + idx; w.regPrice = 0; w.Refresh(); }, 16);
+                w.regRows.Add((r, icon, Cell(r, "Name", 50f, 340f), Cell(r, "Bind", 395f, 92f, 16), pick));
             }
             w.regEmptyText = Label(left.transform, "Empty", L.T("가방에 등록할 수 있는 아이템이 없습니다."), 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -60f), new Vector2(600f, 40f), TextAnchor.MiddleCenter);
             w.regEmptyText.color = new Color32(184, 196, 216, 255);
@@ -258,14 +259,14 @@ namespace DotRPG
                 if (!on) continue;
                 // Mail has no grade, bid or seller columns: give its complete title that space.
                 bool mail = tab == Tab.Mail;
-                row.name.rectTransform.sizeDelta = new Vector2(mail ? 840f : 330f, 38f);
+                row.name.rectTransform.sizeDelta = new Vector2(mail ? 800f : 290f, 38f);
                 row.name.horizontalOverflow = HorizontalWrapMode.Wrap;
                 row.name.verticalOverflow = VerticalWrapMode.Truncate;
                 row.name.resizeTextForBestFit = true;
-                row.name.resizeTextMinSize = 13;
+                row.name.resizeTextMinSize = UIFactory.ReadableFloor;
                 row.name.resizeTextMaxSize = 18;
                 var pricePosition = row.price.rectTransform.anchoredPosition;
-                row.price.rectTransform.anchoredPosition = new Vector2(mail ? 905f : 485f, pricePosition.y);
+                row.price.rectTransform.anchoredPosition = new Vector2(mail ? 865f : 445f, pricePosition.y);
                 row.price.rectTransform.sizeDelta = new Vector2(mail ? 120f : 140f, row.price.rectTransform.sizeDelta.y);
                 if (mail)
                 {

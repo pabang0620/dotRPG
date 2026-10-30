@@ -70,7 +70,7 @@ namespace DotRPG
             UiButton.Attach(button);
             text = UIFactory.Text(img.transform, "Label", label, 20, Color.white, TextAnchor.MiddleCenter, true);
             text.resizeTextForBestFit = true;
-            text.resizeTextMinSize = 12;
+            text.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12
             text.resizeTextMaxSize = text.fontSize;
             text.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label
             UIFactory.Stretch(text.rectTransform, UIFactory.FrameRim - 4f, 2f, UIFactory.FrameRim - 4f, 2f);
@@ -82,11 +82,11 @@ namespace DotRPG
         {
             var dot = UIFactory.Image(parent, "Badge", Game.Art.Get("ui_circle"), new Color32(232, 64, 64, 255));
             dot.raycastTarget = false;
-            UIFactory.Place(dot.rectTransform, new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-4f, -4f), new Vector2(26f, 26f));
+            UIFactory.Place(dot.rectTransform, new Vector2(1f, 1f), new Vector2(0.5f, 0.5f), new Vector2(-4f, -4f), new Vector2(28f, 28f)); // [UI 2026-10-30] 26 -> 28: "99+" at the 14 px floor
             var t = UIFactory.Text(dot.transform, "Count", "", 16, Color.white, TextAnchor.MiddleCenter, false);
             t.raycastTarget = false;
             t.resizeTextForBestFit = true; // "99+" in a 26 px dot
-            t.resizeTextMinSize = 10;
+            t.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 10
             t.resizeTextMaxSize = t.fontSize;
             UIFactory.Stretch(t.rectTransform, 2f, 2f, 2f, 2f);
             dot.gameObject.SetActive(false);

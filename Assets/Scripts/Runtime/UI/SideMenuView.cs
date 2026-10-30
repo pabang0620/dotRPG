@@ -142,9 +142,13 @@ namespace DotRPG
                 var t = UIFactory.Text(rt, "Label", label, 14, Color.white, TextAnchor.UpperCenter, true);
                 t.horizontalOverflow = HorizontalWrapMode.Wrap;
                 t.resizeTextForBestFit = true; // long labels shrink to fit the cell instead of spilling over
-                t.resizeTextMinSize = 10;
+                // [UI 2026-10-30] Never below the 14 px floor (was 10): a long translation takes a second line in the gap
+                // above the next icon instead. The PC hotkey labels stay next to the names (no icon-only menu, Docs/UI_AUDIT.md P6).
+                t.resizeTextMinSize = UIFactory.ReadableFloor;
                 t.resizeTextMaxSize = 14;
-                UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(StepX - 6f, 20f));
+                t.verticalOverflow = VerticalWrapMode.Truncate;
+                t.lineSpacing = 0.95f;
+                UIFactory.Place(t.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0f, -2f), new Vector2(StepX - 6f, StepY - Size - 2f));
             }
             var button = bg.gameObject.AddComponent<Button>();
             button.targetGraphic = bg;

@@ -114,8 +114,8 @@ namespace DotRPG
             w.resultText = Label(right.transform, "Result", "", 22, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 80f), new Vector2(620f, 40f), TextAnchor.MiddleCenter);
             w.enhanceButton = Button(right.transform, "Go", L.T("강화"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 12f), new Vector2(300f, 64f), w.OnEnhancePressed, 30);
             w.enhanceLabel = w.enhanceButton.GetComponentInChildren<Text>();
-            // Keep long localized descriptions inside their own rows.
-            foreach (var text in new[] { w.title, w.statsText, w.costTitle, w.chanceText, w.failText })
+            // Keep long localized descriptions inside their own rows ([UI 2026-10-30] the result line too: two lines at 14 px).
+            foreach (var text in new[] { w.title, w.statsText, w.costTitle, w.chanceText, w.failText, w.resultText })
             {
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.verticalOverflow = VerticalWrapMode.Truncate;

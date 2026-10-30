@@ -253,7 +253,7 @@ namespace DotRPG
                     : a?.kind == BossRushClient.Guild
                         ? L.F("{0} 길드 점수 +<color=#ffe066>{1:N0}</color>{2} · 길드 점수 {3:N0} · 내 기여 {4:N0} · 길드 {5}", head, res.accepted,
                             res.capped ? L.T(" (상한 적용)") : "", res.score, res.myContribution, res.rank > 0 ? L.F("{0}위", res.rank) : L.T("순위 집계 중"))
-                        : L.F("{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 주 최고 {3:N0} · {4}", head, res.accepted,
+                        : L.F("{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 시즌 최고 {3:N0} · {4}", head, res.accepted,
                             res.capped ? L.T(" (상한 적용)") : "", res.best, res.rank > 0 ? L.F("{0}위", res.rank) : L.T("순위 집계 중"));
                 if (gen == generation) Changed?.Invoke();
                 BossRushScreen.Instance?.Redraw();

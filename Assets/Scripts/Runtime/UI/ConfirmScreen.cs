@@ -42,6 +42,17 @@ namespace DotRPG
             });
             screen.menu.AddButton(L.T("아니오"), screen.AnswerNo);
             screen.menu.OnCancel = screen.AnswerNo;
+            // [UI 2026-10-30] P9: an × in the top-right corner answers "아니오" like Esc (the 아니오 option stays).
+            var x = UIFactory.Image(screen.panel, "CloseX", Game.Art.Get("ui_btngray"), Color.white);
+            x.preserveAspect = false;
+            x.raycastTarget = true;
+            UIFactory.Place(x.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -10f), new Vector2(44f, 44f));
+            var xb = x.gameObject.AddComponent<Button>();
+            xb.targetGraphic = x;
+            xb.onClick.AddListener(() => screen.AnswerNo());
+            UiButton.Attach(xb);
+            var xt = UIFactory.Text(x.transform, "Text", "×", 26, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(xt.rectTransform);
             screen.FitPanel();
             return screen;
         }

@@ -25,12 +25,14 @@ namespace DotRPG
                 var r = new GuildRow { root = Row(content, i, -156f, RowH, TableW) };
                 r.c0 = Cell(r.root, "C0", 12f, 250f);
                 r.c1 = Cell(r.root, "C1", 270f, 150f, 17);
-                r.c2 = Cell(r.root, "C2", 428f, 200f, 17);
-                r.c3 = Cell(r.root, "C3", 636f, 190f, 16);
+                r.c2 = Cell(r.root, "C2", 428f, 170f, 17);
+                r.c3 = Cell(r.root, "C3", 606f, C3Narrow, 16);
                 for (int b = 0; b < 3; b++)
                 {
                     var row = r; int k = b;
-                    r.buttons[b] = Button(r.root, "B" + b, "", b == 0 ? "ui_btn" : "ui_btngray", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(-8f - b * 128f, 0f), new Vector2(120f, 36f),
+                    // [UI 2026-10-30] Widths per slot so the longest translation of each slot's labels fits at 14 px
+                    // (slot 2 holds "길드장 위임"); the last-seen column shrinks while three buttons can show.
+                    r.buttons[b] = Button(r.root, "B" + b, "", b == 0 ? "ui_btn" : "ui_btngray", new Vector2(1f, .5f), new Vector2(1f, .5f), new Vector2(ButtonRight[b], 0f), new Vector2(ButtonW[b], 36f),
                         () => row.actions[k]?.Invoke(), 16);
                 }
                 table.Add(r);
@@ -42,11 +44,20 @@ namespace DotRPG
             nextBtn = Button(content, "Next", "▶", "ui_btngray", BR, BR, Vector2.zero, UiSizes.PageButton, () => TurnList(1), UiSizes.PageFont);
         }
 
+        static readonly float[] ButtonW = { 120f, 150f, 200f }, ButtonRight = { -8f, -136f, -294f };
+        const float C3Narrow = 110f, C3Wide = 470f;
+
         static string Safe(string s) => (s ?? "").Replace("<", "＜").Replace(">", "＞");
 
         void PlaceRows(float top)
         {
-            for (int i = 0; i < table.Count; i++) table[i].root.anchoredPosition = new Vector2(0f, top - i * RowH);
+            // Search results have one button, so their leader / notice column may run up to it.
+            float c3 = page == Page.Find ? C3Wide : C3Narrow;
+            for (int i = 0; i < table.Count; i++)
+            {
+                table[i].root.anchoredPosition = new Vector2(0f, top - i * RowH);
+                table[i].c3.rectTransform.sizeDelta = new Vector2(c3, table[i].c3.rectTransform.sizeDelta.y);
+            }
             emptyText.rectTransform.anchoredPosition = new Vector2(0f, top - 60f);
         }
 

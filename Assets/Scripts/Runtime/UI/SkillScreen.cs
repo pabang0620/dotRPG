@@ -102,7 +102,7 @@ namespace DotRPG
                 slotTitle[s] = Label(row.transform, "Title", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(10f, 0f), new Vector2(84f, RowHeight - 4f), TextAnchor.MiddleCenter);
                 slotTitle[s].resizeTextForBestFit = true;
                 slotTitle[s].resizeTextMaxSize = slotTitle[s].fontSize;
-                slotTitle[s].resizeTextMinSize = 9;
+                slotTitle[s].resizeTextMinSize = UIFactory.ReadableFloor;
                 slotTitle[s].verticalOverflow = VerticalWrapMode.Truncate;
                 // Link bar behind the three sockets.
                 var link = Img(row.transform, "Link", "ui_white", new Color32(150, 120, 70, 255));
@@ -116,9 +116,9 @@ namespace DotRPG
                     bg.raycastTarget = true;
                     var icon = UIFactory.SharpIcon(bg.transform, "Icon", Color.white);
                     UIFactory.Place(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(size * 0.7f, size * 0.7f));
-                    var label = UIFactory.Text(bg.transform, "Label", k == 0 ? L.T("스킬") : L.T("보조"), UiTheme.FontMin, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
-                    UIFactory.FitInFrame(label, 4f, 4f);
-                    label.resizeTextMinSize = 8;
+                    // [UI 2026-10-30] An empty socket shows "+" (the word shrank to 8 px in most languages); hover explains it.
+                    var label = UIFactory.Text(bg.transform, "Label", "+", 28, new Color(1f, 1f, 1f, 0.7f), TextAnchor.MiddleCenter, true);
+                    UIFactory.Stretch(label.rectTransform);
                     var view = new SocketView { slot = s, socket = k, bg = bg, icon = icon, label = label };
                     int index = sockets.Count;
                     var relay = bg.gameObject.AddComponent<PointerRelay>();
@@ -128,13 +128,12 @@ namespace DotRPG
                     LongPress.Add(bg.gameObject, () => { selectedSocket = index; Cycle(view, -1); }); // touch: hold = right click
                     sockets.Add(view);
                 }
-                slotInfo[s] = Label(row.transform, "Info", "", 13, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(278f, 0f), new Vector2(512f, RowHeight - 2f), TextAnchor.MiddleLeft);
+                // [UI 2026-10-30] Readable floor instead of 11-13 px best fit: the row keeps name + numbers (three lines at most),
+                // the support gems are the socket icons next to it (their names are in the socket tooltip).
+                slotInfo[s] = Label(row.transform, "Info", "", 16, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(278f, 0f), new Vector2(512f, RowHeight - 2f), TextAnchor.MiddleLeft);
                 slotInfo[s].lineSpacing = 1.0f;
                 slotInfo[s].horizontalOverflow = HorizontalWrapMode.Wrap;
                 slotInfo[s].verticalOverflow = VerticalWrapMode.Truncate;
-                slotInfo[s].resizeTextForBestFit = true;
-                slotInfo[s].resizeTextMinSize = 11;
-                slotInfo[s].resizeTextMaxSize = 13;
                 slotLock[s] = Img(row.transform, "Lock", "ui_white", new Color(0.02f, 0.03f, 0.06f, 0.55f));
                 UIFactory.Stretch(slotLock[s].rectTransform);
                 slotLockText[s] = Label(row.transform, "LockText", "", 16, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(360f, 34f), TextAnchor.MiddleRight);
@@ -227,7 +226,10 @@ namespace DotRPG
                     slotInfo[s].text = hintStart >= 0 ? summary.Substring(0, hintStart) : summary;
                     continue;
                 }
-                var sb = new StringBuilder(L.F("<b>{0}</b>{1}\n", L.T(gem.name), (ult ? L.T("  <color=#ffd66e>[각성 기술]</color>") : "")));
+                string bonus = TreeBonus(s);
+                var sb = new StringBuilder(L.F("<b>{0}</b>{1}", L.T(gem.name), (ult ? L.T("  <color=#ffd66e>[각성 기술]</color>") : "")));
+                if (bonus.Length > 0) sb.Append(L.F("   <color=#ffcf70>트리: {0}</color>", bonus)); // [UI 2026-10-30] on the name line
+                sb.Append("\n");
                 // [SKILL v2] Defence skills show what they block; single-target ones have no area to show.
                 bool single = gem.id == "crush" || gem.id == "lance" || gem.id == "stab" || gem.id == "backstab" || gem.id == "raid";
                 if (n.guardPct > 0) sb.Append(L.F("받는 피해 <color=#ffe066>-{0}%</color> ({1:0}초)   {2} 소모 {3}   재사용 {4:0.##}초", n.guardPct, n.guardTime, (n.usesLife ? "HP" : "MP"), n.manaCost, n.cooldown));
@@ -239,12 +241,6 @@ namespace DotRPG
                 if (n.buffPct > 0) sb.Append(L.F("   피해 +{0}% ({1:0}초)", n.buffPct, n.buffTime));
                 if (n.leechPct > 0) sb.Append(L.F("   흡혈 {0}%", n.leechPct));
                 if (n.bossPct > 0) sb.Append(L.F("   보스 피해 +{0}%", n.bossPct));
-                var sup = new List<string>();
-                foreach (var g in prog.Supports(s)) sup.Add(L.T(g.name));
-                string bonus = TreeBonus(s);
-                sb.Append("\n");
-                sb.Append(sup.Count > 0 ? L.F("<color=#8fe28f>보조: {0}</color>", string.Join(", ", sup)) : L.T("<color=#8c96a8>보조 칸이 비었다. 클릭해서 보조 젬을 끼우자.</color>"));
-                if (bonus.Length > 0) sb.Append(L.F("   <color=#ffcf70>트리: {0}</color>", bonus));
                 slotInfo[s].text = sb.ToString();
             }
             int unlocked = 0, total = 0;

@@ -149,6 +149,8 @@ namespace DotRPG
             string guildName = MiniJson.Str(d, "guild_name", "") ?? "";
             string nameColor = MiniJson.Str(d, "name_color"), guildColor = MiniJson.Str(d, "guild_color");
             if (p.guildName != guildName || p.nameColor != nameColor || p.guildColor != guildColor) self.Decorate(id, p, guildName, nameColor, guildColor);
+            // [TITLE PLATE 2026-10-30] The equipped title (and ranking mark) on a line above the name; absent = none.
+            TitlePlate.On(p.body.transform)?.Set(MiniJson.Str(d, "title_id", "") ?? "", MiniJson.Str(d, "title", "") ?? "", NameY(p) + TitleGap);
             p.seenAt = Time.unscaledTime;
             p.body.NetMoveTo(at, facing);
             // [PARTY 13] The counter moved: they swung or cast since the last frame, play it here (the look only).
@@ -187,6 +189,10 @@ namespace DotRPG
             p.label = Label(body.transform, name, InMyParty(id) ? new Color32(140, 240, 150, 255) : new Color32(240, 244, 255, 255), new Vector3(0f, 1.5f, 0f), 41);
             return p;
         }
+
+        /// <summary>Gap from the name line's bottom to the title line's bottom (the name is about 0.22 high).</summary>
+        const float TitleGap = 0.24f;
+        static float NameY(Peer p) => p.label != null ? p.label.transform.localPosition.y : 1.5f;
 
         /// <summary>[GUILD / RANK] "&lt;길드&gt;" under the name tag and the ranking colour of the name (party green wins).</summary>
         void Decorate(string id, Peer p, string guildName, string nameColor, string guildColor)

@@ -13,7 +13,7 @@ namespace DotRPG
     public partial class GachaScreen
     {
         Image ceilingBg, ceilingFill;
-        Text ceilingText;
+        Text ceilingText, ceilingPct;
         Button ceilingBtn;
         /// <summary>Gear pieces shown in the choice window while picking with the gear ceiling (null = cosmetic choice).</summary>
         List<string> gearPick;
@@ -29,8 +29,10 @@ namespace DotRPG
             ceilingFill = UIFactory.Image(ceilingBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(255, 179, 71, 255));
             ceilingFill.preserveAspect = false; ceilingFill.raycastTarget = false;
             UIFactory.Place(ceilingFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 10f));
-            ceilingText = Label(box, "CeilingText", "", 17, tl, tl, new Vector2(30f, -324f), new Vector2(GaugeW + 160f, 26f), TextAnchor.MiddleLeft);
-            ceilingBtn = Button(box, "CeilingBtn", L.T("천장 받기"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(150f, 40f), UseCeiling, 18);
+            ceilingPct = BarPercent(ceilingBg); // [UI] bar + percentage
+            // [UI] the text stops at the bar's right end (the button sits right of it); the button fits fr / id at 14 px
+            ceilingText = Label(box, "CeilingText", "", 17, tl, tl, new Vector2(30f, -324f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
+            ceilingBtn = Button(box, "CeilingBtn", L.T("천장 받기"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(SideBtnW, 40f), UseCeiling, 18);
         }
 
         void RefreshCeiling(bool online)
@@ -43,6 +45,7 @@ namespace DotRPG
             int max = Mathf.Max(1, Sealed ? CashClient.CeilingMax : StarShopClient.GearCeilingMax);
             bool ready = gauge >= max;
             ceilingFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * Mathf.Clamp01(gauge / (float)max), 10f);
+            ceilingPct.text = Pct(gauge, max);
             string reward = Sealed
                 ? $"{L.T(DungeonDatabase.ItemName(CashClient.CeilingReward))}{(CashClient.CeilingRewardCount > 1 ? $" x{CashClient.CeilingRewardCount}" : "")}"
                 : L.T("유니크 장비 1개 선택");

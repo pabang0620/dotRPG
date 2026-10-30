@@ -68,10 +68,9 @@ namespace DotRPG
 
             var bottom = Panel(w.content, "Info", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), Vector2.zero, new Vector2(1220f, 110f), UiTheme.Panel);
             w.info = Label(bottom.transform, "Text", "", 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -10f), new Vector2(1180f, 64f));
-            w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(800f, 26f));
-            // [UX] Always-visible controls hint (the info line above turns into the item's details on hover).
-            var hint = Label(bottom.transform, "Hint", L.T("클릭: 1개 이동 · 우클릭: 전부 이동"), 18, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-20f, 8f), new Vector2(380f, 26f), TextAnchor.MiddleRight);
-            hint.color = UiTheme.TextSecondary;
+            w.message = Label(bottom.transform, "Message", "", 18, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(20f, 8f), new Vector2(1120f, 26f));
+            // [UI 2026-10-30] P5: the controls hint is a "?" tip in the bottom-right corner (the line ran out in other languages).
+            UiHelpTip.Create(bottom.transform, "Hint", new Vector2(1f, 0f), new Vector2(-20f, 6f), L.T("클릭: 1개 이동 · 우클릭: 전부 이동"));
             w.cursor = Img(w.content, "Cursor", "ui_frame", UiTheme.Accent);
             w.cursor.raycastTarget = false;
             return w;

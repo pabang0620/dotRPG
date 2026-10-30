@@ -26,12 +26,15 @@ namespace DotRPG
         {
             int slot = p.SlotOf(id);
             if (slot < 0) return;
-            var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, y), new Vector2(34, 26), new Color32(255, 211, 74, 235));
-            var key = Label(badge.transform, "Key", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 16,
-                new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(32, 24), TextAnchor.MiddleCenter);
+            // [UI 2026-10-30] The badge grows with the key name ("Space") instead of shrinking it below the readable floor.
+            string keyName = Game.Input.GetBindingLabel(SkillGems.ActionFor(slot));
+            float badgeW = Mathf.Clamp(12f + keyName.Length * 9f, 34f, 64f);
+            var badge = Panel(card, "KeyBadge", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-4, y), new Vector2(badgeW, 26), new Color32(255, 211, 74, 235));
+            var key = Label(badge.transform, "Key", "<b>" + keyName + "</b>", 16,
+                new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(badgeW - 2f, 24), TextAnchor.MiddleCenter);
             key.color = new Color32(30, 24, 10, 255);
-            key.resizeTextForBestFit = true; // a long rebound key ("Space") shrinks inside the badge
-            key.resizeTextMinSize = 9;
+            key.resizeTextForBestFit = true;
+            key.resizeTextMinSize = UIFactory.ReadableFloor;
             key.resizeTextMaxSize = key.fontSize;
             key.verticalOverflow = VerticalWrapMode.Truncate;
         }
@@ -59,13 +62,16 @@ namespace DotRPG
                 UIFactory.Stretch(icon.rectTransform, 4, 4, 4, 4);
                 // [UI 2026-10-29] The key on a dark tag (bottom-left): over the skill icon a bare label was unreadable, so
                 // only the empty keys seemed to have one.
-                var keyTag = Panel(box.transform, "KeyTag", new Vector2(0, 0), new Vector2(0, 0), new Vector2(1, 1), new Vector2(30, 17), new Color(0.03f, 0.04f, 0.08f, 0.85f));
+                // [UI 2026-10-30] The tag grows with the key name (up to the box width) so the key stays at the readable floor.
+                string keyName = Game.Input.GetBindingLabel(SkillGems.ActionFor(slot));
+                float tagW = Mathf.Clamp(8f + keyName.Length * 9f, 22f, KeyBox - 2f);
+                var keyTag = Panel(box.transform, "KeyTag", new Vector2(0, 0), new Vector2(0, 0), new Vector2(1, 1), new Vector2(tagW, 19), new Color(0.03f, 0.04f, 0.08f, 0.85f));
                 keyTag.raycastTarget = false;
-                var key = Label(keyTag.transform, "KeyLabel", "<b>" + Game.Input.GetBindingLabel(SkillGems.ActionFor(slot)) + "</b>", 13,
-                    new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(28, 17), TextAnchor.MiddleCenter);
+                var key = Label(keyTag.transform, "KeyLabel", "<b>" + keyName + "</b>", 16,
+                    new Vector2(.5f, .5f), new Vector2(.5f, .5f), Vector2.zero, new Vector2(tagW - 2f, 19), TextAnchor.MiddleCenter);
                 key.color = new Color32(255, 224, 102, 255);
-                key.resizeTextForBestFit = true; // a long rebound key ("Space") shrinks inside the tag
-                key.resizeTextMinSize = 8;
+                key.resizeTextForBestFit = true;
+                key.resizeTextMinSize = UIFactory.ReadableFloor;
                 key.resizeTextMaxSize = key.fontSize;
                 key.raycastTarget = false;
                 if (!p.IsSlotOpen(slot))

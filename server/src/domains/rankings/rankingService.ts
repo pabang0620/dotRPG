@@ -1,9 +1,9 @@
-// 주간 랭킹(월드보스 개인, 길드보스 길드, 전투력 개인). 전체 순서를 1분 동안 메모리에 캐시하고 100위까지 내려 준다.
+// 시즌 랭킹(월드보스 개인 2주 시즌, 길드보스 길드 주간, 전투력 개인). 전체 순서를 1분 동안 메모리에 캐시하고 100위까지 내려 준다.
 import { getPool, type Queryable } from '../../db/pool';
 import { getNow } from '../../utils/clock';
 import { resetBoundaries } from '../../utils/resetBoundaries';
 import * as bossRepo from '../bossrush/bossRushRepository';
-import type { BossKind } from '../bossrush/bossRushRules';
+import { WORLD_SEASON_WEEKS, worldSeasonBounds, type BossKind } from '../bossrush/bossRushRules';
 import { computePower } from '../characters/powerEstimate';
 import * as repo from './rankingRepository';
 
@@ -27,6 +27,18 @@ export function clearRankingCache(): void {
 export function weekStartOf(week: Week, now: Date): Date {
   const start = new Date(resetBoundaries(now).weeklyStartAt);
   return week === 'current' ? start : new Date(start.getTime() - WEEK_MS);
+}
+
+/**
+ * 보드의 시즌 시작. 길드보스·전투력은 주간 경계 그대로. 월드보스(2주 시즌, 2026-10-30)는 current = now를 포함하는 시즌,
+ * previous = now 전에 끝난 가장 최근 시즌(행이 아직 없으면 계산한 시즌 경계로 빈 보드)
+ */
+export async function seasonStartOf(db: Queryable, board: Board, week: Week, now: Date): Promise<Date> {
+  if (board !== 'world_boss') return weekStartOf(week, now);
+  const own = worldSeasonBounds(Date.parse(resetBoundaries(now).weeklyStartAt));
+  if (week === 'current') return (await bossRepo.seasonCovering(db, 'world', now))?.week_start ?? own.start;
+  const prev = await bossRepo.lastEndedSeason(db, 'world', now);
+  return prev?.week_start ?? new Date(own.start.getTime() - WORLD_SEASON_WEEKS * WEEK_MS);
 }
 
 async function compute(db: Queryable, board: Board, weekStart: Date): Promise<Ranked[]> {
@@ -72,9 +84,10 @@ export const rankOf = (rows: Ranked[], key: number): number | null => {
 
 export async function board(board: Board, week: Week, me: { characterId: number; guildId: number | null } | null) {
   const now = getNow();
-  const { rows, updatedAt } = await ranked(board, weekStartOf(week, now));
-  const top = rows.slice(0, TOP);
   const db = getPool();
+  const seasonStart = await seasonStartOf(db, board, week, now);
+  const { rows, updatedAt } = await ranked(board, seasonStart);
+  const top = rows.slice(0, TOP);
   let entries: unknown[];
   let mine: { rank: number; value: number } | null = null;
   if (board === 'guild_boss') {
@@ -96,5 +109,7 @@ export async function board(board: Board, week: Week, me: { characterId: number;
       if (rank) mine = { rank, value: (rows[rank - 1] as Ranked).value };
     }
   }
-  return { board, week, entries, me: mine, updated_at: updatedAt.toISOString() };
+  // season_start·season_end: 그 보드 시즌의 경계(월드보스는 2주). 클라이언트 "이번 시즌 / 지난 시즌" 표시용
+  const season = board === 'power' ? null : await bossRepo.seasonAt(db, board === 'world_boss' ? 'world' : 'guild', seasonStart);
+  return { board, week, entries, me: mine, updated_at: updatedAt.toISOString(), season_start: seasonStart.toISOString(), season_end: season?.week_end.toISOString() ?? null };
 }

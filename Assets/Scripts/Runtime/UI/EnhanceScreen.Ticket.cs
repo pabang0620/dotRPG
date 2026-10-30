@@ -18,7 +18,7 @@ namespace DotRPG
 
         void BuildTicket(Transform right)
         {
-            ticketButton = Button(right, "Ticket", "", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(16f, 17f), new Vector2(158f, 54f), () => { if (ticketButton != null && LongPress.TakeFired(ticketButton.gameObject)) return; UseTicket(); }, 15); // left of the centred 강화 button
+            ticketButton = Button(right, "Ticket", "", "ui_btngray", new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(16f, 17f), new Vector2(158f, 54f), () => { if (ticketButton != null && LongPress.TakeFired(ticketButton.gameObject)) return; UseTicket(); }, 16); // left of the centred 강화 button ([UI 2026-10-30] 16 renders 14 px)
             ticketLabel = ticketButton.GetComponentInChildren<Text>();
             var relay = ticketButton.gameObject.AddComponent<PointerRelay>();
             relay.onClick = b => { if (b == PointerEventData.InputButton.Right) SwitchTicket(1); };
@@ -45,7 +45,7 @@ namespace DotRPG
             ticketButton.interactable = !busy;
             int t = options[ticketPick];
             string keyLabel = Game.Input.GetBindingLabel(GameAction.UseMana);
-            ticketLabel.text = L.F("<b>+{0} 강화권 ({1})</b>", t, keyLabel) + "\n<size=15>" + L.F("{0}장", Game.Session.Inventory.Count(ConsumableDatabase.EnhanceTicket(t))) + (options.Count > 1 ? L.T(" · 우클릭: 변경") : "") + "</size>";
+            ticketLabel.text = L.F("<b>+{0} 강화권 ({1})</b>", t, keyLabel) + "\n<size=16>" + L.F("{0}장", Game.Session.Inventory.Count(ConsumableDatabase.EnhanceTicket(t))) + (options.Count > 1 ? L.T(" · 우클릭: 변경") : "") + "</size>";
         }
 
         /// <summary>Right click, [ / ] or LB / RB: the next (or previous) owned 강화권 for this gear.</summary>

@@ -10,13 +10,14 @@ export interface CharDisplay {
   name_color: 'gold' | 'orange' | null;
 }
 
-/** 표시 정보(이름·레벨·전직·길드·이름 색). 이름 색은 지금 유효한 랭킹 칭호 중 가장 강한 색 */
+/** 표시 정보(이름·레벨·전직·길드·이름 색). 이름 색은 장착한 랭킹 칭호의 색(2026-10-30: 영구 칭호와 함께 장착을 따른다) */
 export async function displays(db: Queryable, ids: number[], now: Date): Promise<Map<number, CharDisplay>> {
   if (ids.length === 0) return new Map();
   const r = await db.query<{ id: string; name: string; level: number; career: number; guild_name: string | null; colors: (string | null)[] | null }>(
     `SELECT c.id, c.name, c.level, COALESCE(cc.career, 0) AS career,
             (SELECT g.name FROM guild_members m JOIN guilds g ON g.id = m.guild_id AND g.disbanded_at IS NULL WHERE m.character_id = c.id) AS guild_name,
-            (SELECT array_agg(t.name_color) FROM rank_titles t WHERE t.character_id = c.id AND t.expires_at > $2) AS colors
+            (SELECT array_agg(t.name_color) FROM rank_titles t WHERE t.character_id = c.id AND t.title_id = c.title_achievement
+                AND (t.expires_at IS NULL OR t.expires_at > $2)) AS colors
        FROM characters c LEFT JOIN character_career cc ON cc.character_id = c.id
       WHERE c.id = ANY($1::bigint[])`,
     [ids, now],

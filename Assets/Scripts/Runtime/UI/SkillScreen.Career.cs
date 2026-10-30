@@ -39,7 +39,7 @@ namespace DotRPG
         Text CareerText(Transform parent,string name,string text,int size,float x,float y,float w,float h)
         {
             var label = Label(parent,name,text,size,new Vector2(0,1),new Vector2(0,1),new Vector2(x,-y),new Vector2(w,h));
-            if (name == "PointRule" || name == "Awakening") FitCareerCopy(label, 10);
+            if (name == "Awakening") FitCareerCopy(label, UIFactory.ReadableFloor);
             return label;
         }
         static void FitCareerCopy(Text label, int minimum)
@@ -72,8 +72,9 @@ namespace DotRPG
             var p=Game.Session.Progression;
             if(p.IsPromoted)browsing=p.Career;
             else if(browsing==Career.None||CareerCatalog.Base(browsing)!=Game.Session.PlayerClass)browsing=CareerCatalog.Pair(Game.Session.PlayerClass).a;
-            CareerText(careerRoot,"CareerTitle",L.F("<b>{0}</b>  Lv.{1}  ·  전직 포인트 <color=#ffe0a0>{2}</color>{3}", L.T(p.ClassLabel), p.Level, p.CareerPoints, (p.IsPromoted?$"  ·  <color=#9fe8ff>{L.T(Progression.StyleName(p.ActiveStyle))}</color>":"")),24,12,4,780,32);
-            CareerText(careerRoot,"PointRule",p.IsPromoted?(p.Level>=22?L.T("새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)"):L.F("전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림", p.RefundedPoints)):L.T("15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능"),16,12,40,780,28);
+            CareerText(careerRoot,"CareerTitle",L.F("<b>{0}</b>  Lv.{1}  ·  전직 포인트 <color=#ffe0a0>{2}</color>{3}", L.T(p.ClassLabel), p.Level, p.CareerPoints, (p.IsPromoted?$"  ·  <color=#9fe8ff>{L.T(Progression.StyleName(p.ActiveStyle))}</color>":"")),24,12,4,736,32);
+            // [UI 2026-10-30] The point rule (shrank to 10 px on one line) is a "?" at the end of the title row.
+            UiHelpTip.Create(careerRoot,"PointRule",new Vector2(0,1),new Vector2(752,-4),p.IsPromoted?(p.Level>=22?L.T("새 전직 기술은 Lv.22까지 모두 열렸습니다 · 이후 레벨은 단계 강화(레벨당 1포인트)와 키 칸(Lv.25 S · Lv.30 D)"):L.F("전직 시 4포인트 + 레벨당 1포인트 · 단계 비용 1/2/3 · 돌려받은 {0} · 새 기술은 Lv.15/18/22에 열림", p.RefundedPoints)):L.T("15레벨 전직 후 이용 가능 · 기본 스킬은 레벨만 충족하면 사용 가능"));
             if(!p.IsPromoted)
             {
                 var (a,b)=CareerCatalog.Pair(Game.Session.PlayerClass); // [ROGUE] 도적: 어쌔신 · 닌자
@@ -205,8 +206,8 @@ namespace DotRPG
                 var icon=UIFactory.Image(bg.transform,"Icon",SkillIcon(g),open?Color.white:new Color(.45f,.45f,.5f,1f));
                 icon.raycastTarget=false;icon.preserveAspect=true;
                 UIFactory.Place(icon.rectTransform,new Vector2(0,.5f),new Vector2(0,.5f),new Vector2(8,0),new Vector2(48,48));
-                FitCareerCopy(CareerText(bg.transform,"Name",$"<b>{L.T(g.name)}</b>",15,62,6,112,30),10);
-                FitCareerCopy(CareerText(bg.transform,"State",open?L.T("<color=#8fe28f>사용 가능</color>"):L.F("<color=#ff9f7a>Lv.{0} 필요</color>",g.unlockLevel),13,62,38,80,20),9);
+                FitCareerCopy(CareerText(bg.transform,"Name",$"<b>{L.T(g.name)}</b>",16,62,6,112,30),UIFactory.ReadableFloor);
+                FitCareerCopy(CareerText(bg.transform,"State",open?L.T("<color=#8fe28f>사용 가능</color>"):L.F("<color=#ff9f7a>Lv.{0} 필요</color>",g.unlockLevel),16,62,38,80,22),UIFactory.ReadableFloor);
                 var drag=bg.gameObject.AddComponent<DragSource>();
                 var id=g.id;
                 drag.payload=()=>p.IsUnlocked(SkillGems.Get(id))?id:null;

@@ -53,7 +53,7 @@ namespace DotRPG
 
         void BuildAtlasButton(Transform frame)
         {
-            atlasButton = Button(frame, "AtlasToggle", L.T("월드 지도"), "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-174, -10), new Vector2(140, 34), ToggleAtlas, 17);
+            atlasButton = Button(frame, "AtlasToggle", L.T("월드 지도"), "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-210, -10), new Vector2(140, 34), ToggleAtlas, 17);
         }
         void ToggleAtlas()
         {
@@ -101,7 +101,7 @@ namespace DotRPG
                     AtlasLabel("Floor_" + floor, "B" + floor, new Vector2(40, y + 10), new Vector2(45, 30), 22, UiTheme.AccentWarm);
                 }
                 Button(atlasContents, "SurfaceReturn", L.T("↑  뿌리샘 마을 · 지상월드"), "ui_btngray", TL, C,
-                    At(new Vector2(.5f, .10f)), new Vector2(244, 34), () => SelectWorld(WorldLayer.Surface), 17);
+                    At(new Vector2(.5f, .10f)), new Vector2(420, 34), () => SelectWorld(WorldLayer.Surface), 17);
                 Road(At(new Vector2(.50f, .14f)), At(positions["hollow_descent"]), new Color32(190, 151, 96, 220), 3, true);
                 AtlasLabel("Strata", L.T("폐광  /  뿌리 묘실 · 푸른 수로  /  심연의 봉인"), new Vector2(370, -390), new Vector2(620, 26), 17, UiTheme.TextSecondary);
             }

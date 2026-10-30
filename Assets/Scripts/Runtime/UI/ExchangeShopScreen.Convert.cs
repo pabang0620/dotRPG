@@ -35,7 +35,8 @@ namespace DotRPG
             var page = Panel(content, "ConvertPage", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(760f, 360f), new Color32(10, 14, 24, 250));
             page.raycastTarget = true;
             convPage = page.rectTransform;
-            Label(page.transform, "Title", L.T("별의 결정 → 별조각"), 22, tl, tl, new Vector2(20f, -14f), new Vector2(720f, 34f), TextAnchor.MiddleLeft);
+            Label(page.transform, "Title", L.T("별의 결정 → 별조각"), 22, tl, tl, new Vector2(20f, -14f), new Vector2(660f, 34f), TextAnchor.MiddleLeft);
+            CloseX(page.transform, CloseConvert); // [UI 2026-10-30] every popup has an × close
             convInfo = Label(page.transform, "Info", "", 16, tl, tl, new Vector2(20f, -54f), new Vector2(720f, 48f), TextAnchor.UpperLeft);
             convHave = Label(page.transform, "Have", "", 17, tl, tl, new Vector2(20f, -104f), new Vector2(720f, 30f), TextAnchor.MiddleLeft);
             convAmount = Label(page.transform, "Amount", "", 22, tl, tl, new Vector2(20f, -142f), new Vector2(720f, 40f), TextAnchor.MiddleCenter);

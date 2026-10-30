@@ -44,6 +44,7 @@ namespace DotRPG
                 revealed = 0;
                 waiting = -1;
                 lastCount = count;
+                purchaseResult = true; // [GACHA VFX] the result page offers 자동 뽑기
                 revealAt = Time.unscaledTime + 0.45f;
                 OpenResults();
                 Refresh();

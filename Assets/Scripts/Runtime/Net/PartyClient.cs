@@ -14,6 +14,8 @@ namespace DotRPG
         /// <summary>Connected right now, and the map the server last heard (null = unknown).</summary>
         public bool online;
         public string mapId;
+        /// <summary>[TITLE PLATE 2026-10-30] Equipped title id and its (server Korean) name, empty when none (older servers send neither).</summary>
+        public string titleId = "", title = "";
     }
 
     /// <summary>[PARTY] Someone asking to join my party (the leader sees these).</summary>
@@ -217,6 +219,8 @@ namespace DotRPG
                     me = Flag(m, "is_me"),
                     online = Flag(m, "online"),
                     mapId = MiniJson.Str(m, "map_id"),
+                    titleId = MiniJson.Str(m, "title_id", "") ?? "",
+                    title = MiniJson.Str(m, "title", "") ?? "",
                 });
             foreach (var a in MiniJson.Arr(p, "applications") ?? new List<object>())
             {

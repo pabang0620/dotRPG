@@ -1,0 +1,16 @@
+{
+ "랭킹 칭호 · 영구": "Danh hiệu xếp hạng · Vĩnh viễn",
+ "장착하면 이름이 금색": "Đeo vào: tên màu vàng",
+ "장착하면 이름이 주황색": "Đeo vào: tên màu cam",
+ "이번 시즌 보스 정보가 없습니다.": "Không có thông tin boss mùa này.",
+ "이번 시즌 월드보스 정보가 없습니다.": "Không có thông tin boss thế giới mùa này.",
+ "<b>길드보스</b> (주간, 목요일 06:00 정산)\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(우편): 이번 주 도전한 길드원 20,000 골드\n1~10위 길드원 전원: 1위 15,000 골드·장비 보호권·마력 정수 30 / 2~3위 10,000 골드·정수 20 / 4~10위 5,000 골드·정수 10\n1위 길드 도전자 칭호 '최강 길드'(다음 주 정산까지) + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Boss bang hội</b> (hằng tuần, chốt thứ Năm 06:00)\nKhông phải boss để hạ gục: cả bang tích điểm. Sát thương bạn gây ra trong 3 phút được cộng vào điểm bang hội tuần này (không tính đồng đội AI).\nMỗi thành viên 2 lượt mỗi ngày, mỗi lượt 3 phút · sau 24 giờ kể từ khi gia nhập · Lv.40\nXếp hạng: tổng điểm bang hội tuần này → bằng nhau thì bang đạt trước xếp trên\nPhần thưởng (thư): thành viên đã đánh tuần này nhận 20.000 vàng\nToàn bộ thành viên 10 bang hội đứng đầu: hạng 1 15.000 vàng, Vé Bảo Hộ Trang Bị, Tinh Hoa Ma Lực x30 / hạng 2-3 10.000 vàng, Tinh Hoa x20 / hạng 4-10 5.000 vàng, Tinh Hoa x10\nNgười đánh của bang hạng 1 nhận danh hiệu 'Bang Hội Mạnh Nhất' (đến lần chốt tuần sau) + tên bang màu vàng, hạng 2-10 tên bang màu bạc",
+ "<b>월드보스</b> (2주 시즌, 격주 목요일 06:00 정산)\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 시즌 가장 높은 1회 피해량\n보상(우편): 참가 60,000 골드 + 강화석 10, 격파한 시즌 60,000 골드 추가\n영구 칭호: 1위 '세계를 꺾은 자'(장착하면 이름 금색), 2~10위 '거신 사냥꾼'(주황색), 11~100위 '거신에 맞선 자'": "<b>Boss thế giới</b> (mùa 2 tuần, chốt thứ Năm cách tuần 06:00)\nMọi nhà thám hiểm cùng bào chung một thanh máu. Chỉ tính sát thương bạn gây ra trong phòng mình trong 3 phút (không tính đồng đội AI).\nMỗi ngày 3 lượt, mỗi lượt 3 phút · Lv.40 · sát thương trước khi gục vẫn được tính\nXếp hạng: lượt đánh cao nhất của bạn trong mùa này\nPhần thưởng (thư): tham gia nhận 60.000 vàng + 10 Đá Cường Hóa, thêm 60.000 vàng ở mùa hạ được boss\nDanh hiệu vĩnh viễn: hạng 1 'Kẻ Hạ Gục Thế Giới' (đeo vào tên màu vàng), hạng 2-10 'Thợ Săn Cự Thần' (màu cam), hạng 11-100 'Kẻ Đối Đầu Cự Thần'",
+ "격파! 이번 시즌 도전은 계속 랭킹에 기록됩니다": "Đã hạ gục! Các lượt mùa này vẫn được tính vào xếp hạng",
+ "시즌 정산 {0:MM-dd HH:mm} (남은 시간 {1}일 {2}시간)": "Chốt mùa {0:MM-dd HH:mm} (còn {1} ngày {2} giờ)",
+ "오늘 남은 도전 <color=#ffe066>{0}</color> / {1}   ·   이번 시즌 내 최고 {2:N0}   ·   내 순위 {3}   ·   {4}": "Lượt còn lại hôm nay <color=#ffe066>{0}</color> / {1}   ·   Kỷ lục mùa này {2:N0}   ·   Hạng của tôi {3}   ·   {4}",
+ "시즌 {0:MM-dd} ~ {1:MM-dd}": "Mùa {0:MM-dd} ~ {1:MM-dd}",
+ "이번 시즌 ▶ 지난 시즌": "Mùa này ▶ Mùa trước",
+ "지난 시즌 ▶ 이번 시즌": "Mùa trước ▶ Mùa này",
+ "{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 시즌 최고 {3:N0} · {4}": "{0} Sát thương được tính <color=#ffe066>{1:N0}</color>{2} · Cao nhất mùa này {3:N0} · {4}"
+}

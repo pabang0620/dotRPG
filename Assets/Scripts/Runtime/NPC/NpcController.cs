@@ -35,6 +35,7 @@ namespace DotRPG
         bool scripted;
         float scriptSpeed = 2f;
         TextMesh markText, markShadow;
+        SpriteRenderer markSprite; // drawn quest mark (Art/quest_mark_*); the text mark is the fallback
         float nextMarkCheck;
 
         public override string Prompt
@@ -351,8 +352,29 @@ namespace DotRPG
             if (mark == QuestMark.None)
             {
                 if (markText != null) markText.gameObject.SetActive(false);
+                if (markSprite != null) markSprite.gameObject.SetActive(false);
                 return;
             }
+            bool main = ShownMarkMain;
+            // Available = gold/blue "!", Progress (talk step or report) = gold/blue "?".
+            string key = "quest_mark_" + (mark == QuestMark.Available ? "available_" : "turnin_") + (main ? "main" : "side");
+            var drawn = Game.Art != null ? Game.Art.Optional(key) : null;
+            if (drawn != null)
+            {
+                if (markSprite == null)
+                {
+                    var sgo = new GameObject("QuestMarkSprite");
+                    sgo.transform.SetParent(transform, false);
+                    sgo.transform.localPosition = new Vector3(0f, MarkSpriteY, 0f);
+                    markSprite = sgo.AddComponent<SpriteRenderer>();
+                    markSprite.sortingOrder = 29999;
+                }
+                markSprite.sprite = drawn;
+                markSprite.gameObject.SetActive(true);
+                if (markText != null) markText.gameObject.SetActive(false);
+                return;
+            }
+            if (markSprite != null) markSprite.gameObject.SetActive(false);
             if (markText == null)
             {
                 // Just above the head (64 px body at 36 px per unit is about 1.8 units tall).
@@ -362,7 +384,6 @@ namespace DotRPG
             }
             markText.gameObject.SetActive(true);
             string glyph = mark == QuestMark.Available ? "!" : "?";
-            bool main = ShownMarkMain;
             markText.text = glyph;
             markShadow.text = glyph;
             markText.color = main ? new Color32(255, 214, 64, 255) : new Color32(120, 214, 255, 255);
@@ -391,10 +412,16 @@ namespace DotRPG
             return tm;
         }
 
+        // The 28x36 mark (64 px per unit, center pivot) sits with its bottom where the text baseline was.
+        const float MarkSpriteY = MarkHeight + 36f / 64f * 0.5f;
+
         void LateUpdate()
         {
+            float bob = Mathf.Sin(Time.unscaledTime * 4f) * 0.06f;
             if (markText != null && markText.gameObject.activeSelf)
-                markText.transform.localPosition = new Vector3(0f, MarkHeight + Mathf.Sin(Time.unscaledTime * 4f) * 0.06f, 0f);
+                markText.transform.localPosition = new Vector3(0f, MarkHeight + bob, 0f);
+            if (markSprite != null && markSprite.gameObject.activeSelf)
+                markSprite.transform.localPosition = new Vector3(0f, MarkSpriteY + bob, 0f);
         }
 
         void StartMove(Vector2 target)

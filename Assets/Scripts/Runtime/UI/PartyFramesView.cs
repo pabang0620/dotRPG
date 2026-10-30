@@ -56,8 +56,10 @@ namespace DotRPG
             UIFactory.Place(f.stripe.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), Vector2.zero, new Vector2(5f, Height));
             f.name = UIFactory.Text(f.root, "Name", "", 16, Color.white, TextAnchor.UpperLeft, true);
             UIFactory.Place(f.name.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(12f, -3f), new Vector2(90f, 22f));
+            UIWordWrap.Ellipsis(f.name); // [UI 2026-10-30] a long name is cut with "…" instead of running under "Lv.50 Mage"
             f.info = UIFactory.Text(f.root, "Info", "", UiTheme.FontMin, new Color(1f, 1f, 1f, 0.88f), TextAnchor.UpperRight, true);
-            UIFactory.Place(f.info.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-6f, -5f), new Vector2(104f, 20f));
+            UIFactory.Place(f.info.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-6f, -5f), new Vector2(98f, 20f));
+            UIWordWrap.Ellipsis(f.info);
             f.hpFill = Bar(f.root, "HP", -27f, 10f, new Color32(214, 48, 49, 255));
             f.mpFill = Bar(f.root, "MP", -40f, 6f, new Color32(52, 120, 230, 255));
             f.downed = Img(f.root, "Downed", new Color32(40, 10, 10, 190));

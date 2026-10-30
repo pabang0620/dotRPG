@@ -219,7 +219,7 @@ export async function handleChatSend(s: ChatSession, f: ChatSendFrame): Promise<
         from: {
           id: s.characterUuid, name: s.characterName, ...(senderTitle ? { title: senderTitle } : {}),
           ...(plate.guild_name ? { guild_name: plate.guild_name } : {}), ...(plate.guild_color ? { guild_color: plate.guild_color } : {}),
-          ...(plate.name_color ? { name_color: plate.name_color } : {}),
+          ...(plate.name_color ? { name_color: plate.name_color } : {}), ...(plate.title_id ? { title_id: plate.title_id } : {}),
         },
         text: masked.text,
         at: saved.createdAt.toISOString(),

@@ -14,10 +14,13 @@ namespace DotRPG
     /// </summary>
     public sealed class BuffBarView : MonoBehaviour
     {
-        const float Icon = 20f, ChipWidth = 108f, Gap = 4f, Height = 24f;
+        const float Icon = 20f, ChipWidth = 108f, Gap = 4f, Height = 24f, MaxChipWidth = 170f;
         const int Slots = 10;
         readonly List<(Image icon, Text label, Image back)> slots = new List<(Image, Text, Image)>();
         readonly List<string> titles = new List<string>(), descs = new List<string>();
+        // [UI 2026-10-30] On PC a chip is as wide as its label needs (108..170) so the label stays at 14 px (it shrank to 9).
+        readonly List<float> chipX = new List<float>(), chipW = new List<float>();
+        float nextX;
         RectTransform tip;
         Text tipText;
         int open = -1, downFrame = -1;
@@ -49,7 +52,7 @@ namespace DotRPG
                 label.raycastTarget = false;
                 // [UI] "방진 3회 120초" can be wider than the chip: shrink to fit instead of running past its edge.
                 label.resizeTextForBestFit = true;
-                label.resizeTextMinSize = 9;
+                label.resizeTextMinSize = UIFactory.ReadableFloor;
                 label.resizeTextMaxSize = label.fontSize;
                 label.verticalOverflow = VerticalWrapMode.Truncate;
                 UIFactory.Place(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(Icon + 5f, 0f), new Vector2(ChipWidth - Icon - 7f, Height));
@@ -57,6 +60,8 @@ namespace DotRPG
                 v.slots.Add((icon, label, back));
                 v.titles.Add("");
                 v.descs.Add("");
+                v.chipX.Add(i * (ChipWidth + Gap));
+                v.chipW.Add(ChipWidth);
             }
             // The explanation box: above the row, at the clicked chip.
             var tipBg = UIFactory.Image(root, "Tip", Game.Art.Get("ui_white"), new Color32(14, 20, 32, 235));
@@ -96,7 +101,7 @@ namespace DotRPG
             open = i;
             openTitle = titles[i];
             SetTip($"<b>{titles[i]}</b>\n{descs[i]}");
-            tip.anchoredPosition = new Vector2(i * (ChipWidth + Gap), Height + 6f);
+            tip.anchoredPosition = new Vector2(chipX[i], Height + 6f);
             tip.gameObject.SetActive(true);
             tip.SetAsLastSibling();
         }
@@ -116,6 +121,15 @@ namespace DotRPG
             if (tip != null) tip.gameObject.SetActive(false);
         }
 
+        /// <summary>The label's one-line width at its own size (no best fit), to size its chip.</summary>
+        static float LabelWidth(Text t)
+        {
+            var settings = t.GetGenerationSettings(Vector2.zero);
+            settings.resizeTextForBestFit = false;
+            settings.horizontalOverflow = HorizontalWrapMode.Overflow;
+            return t.cachedTextGeneratorForLayout.GetPreferredWidth(t.text, settings) / t.pixelsPerUnit;
+        }
+
         static string Sec(float s) => L.F("{0}초", Mathf.CeilToInt(s));
 
         void LateUpdate()
@@ -124,6 +138,7 @@ namespace DotRPG
             if (open >= 0 && Input.GetMouseButtonDown(0) && downFrame != Time.frameCount) Close();
             var p = Game.Player;
             int n = 0;
+            nextX = 0f;
             if (p != null && !p.IsDead)
             {
                 var c = CareerCombat.For(p);
@@ -157,7 +172,7 @@ namespace DotRPG
             {
                 int at = titles.IndexOf(openTitle);
                 if (at < 0 || at >= n) Close();
-                else if (at != open) { open = at; tip.anchoredPosition = new Vector2(at * (ChipWidth + Gap), Height + 6f); }
+                else if (at != open) { open = at; tip.anchoredPosition = new Vector2(chipX[at], Height + 6f); }
                 else if (tipText.text != $"<b>{titles[at]}</b>\n{descs[at]}") SetTip($"<b>{titles[at]}</b>\n{descs[at]}");
             }
         }
@@ -169,7 +184,15 @@ namespace DotRPG
             var s = slots[i];
             if (!s.back.gameObject.activeSelf) s.back.gameObject.SetActive(true);
             s.icon.sprite = Game.Art.Get(sprite);
-            if (s.label.text != label) s.label.text = label;
+            if (s.label.text != label)
+            {
+                s.label.text = label;
+                chipW[i] = TouchUi.Enabled ? ChipWidth : Mathf.Clamp(Mathf.Ceil(LabelWidth(s.label)) + Icon + 9f, ChipWidth, MaxChipWidth);
+                s.label.rectTransform.sizeDelta = new Vector2(chipW[i] - Icon - 7f, Height);
+                s.back.rectTransform.sizeDelta = new Vector2(chipW[i], Height);
+            }
+            if (chipX[i] != nextX) { chipX[i] = nextX; s.back.rectTransform.anchoredPosition = new Vector2(nextX, 0f); }
+            nextX += chipW[i] + Gap;
             titles[i] = title;
             descs[i] = desc;
         }

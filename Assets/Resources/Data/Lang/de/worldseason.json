@@ -1,0 +1,16 @@
+{
+ "랭킹 칭호 · 영구": "Ranglisten-Titel · Dauerhaft",
+ "장착하면 이름이 금색": "Ausgerüstet: goldener Name",
+ "장착하면 이름이 주황색": "Ausgerüstet: orangefarbener Name",
+ "이번 시즌 보스 정보가 없습니다.": "Keine Boss-Infos für diese Saison.",
+ "이번 시즌 월드보스 정보가 없습니다.": "Keine Weltboss-Infos für diese Saison.",
+ "<b>길드보스</b> (주간, 목요일 06:00 정산)\n쓰러뜨리는 보스가 아니라 점수를 쌓습니다. 3분 동안 내가 준 피해가 이번 주 길드 점수에 더해집니다(AI 동료 피해 제외).\n길드원마다 하루 2회, 회당 3분 · 길드 가입 24시간 뒤부터 · Lv.40\n순위: 이번 주 길드 점수 합 → 같으면 먼저 도달한 길드\n보상(우편): 이번 주 도전한 길드원 20,000 골드\n1~10위 길드원 전원: 1위 15,000 골드·장비 보호권·마력 정수 30 / 2~3위 10,000 골드·정수 20 / 4~10위 5,000 골드·정수 10\n1위 길드 도전자 칭호 '최강 길드'(다음 주 정산까지) + 길드 이름 금색, 2~10위 길드 이름 은색": "<b>Gildenboss</b> (wöchentlich, Abrechnung Donnerstag 06:00)\nKein Boss zum Besiegen: Ihr sammelt Punkte. Dein Schaden in 3 Minuten zählt zur Gildenpunktzahl dieser Woche (ohne KI-Gefährten).\n2 Versuche pro Tag je Mitglied, je 3 Minuten · ab 24 Stunden nach dem Beitritt · Lv.40\nRang: Gildenpunkte dieser Woche → bei Gleichstand die Gilde, die sie zuerst erreicht hat\nBelohnungen (Post): Mitglieder, die diese Woche gekämpft haben, erhalten 20.000 Gold\nAlle Mitglieder der Top-10-Gilden: 1. 15.000 Gold, Ausrüstungsschutzschein, Manaessenz x30 / 2.-3. 10.000 Gold, Essenz x20 / 4.-10. 5.000 Gold, Essenz x10\nKämpfer der 1. Gilde erhalten den Titel 'Stärkste Gilde' (bis zur nächsten Wochenabrechnung) + goldener Gildenname, 2.-10. silberner Gildenname",
+ "<b>월드보스</b> (2주 시즌, 격주 목요일 06:00 정산)\n모든 모험가가 같은 체력을 함께 깎습니다. 내 방에서 3분 동안 내가 준 피해만 기록됩니다(AI 동료 피해 제외).\n하루 3회, 회당 3분 · Lv.40 · 쓰러져도 그때까지의 피해가 남습니다\n순위: 이번 시즌 가장 높은 1회 피해량\n보상(우편): 참가 60,000 골드 + 강화석 10, 격파한 시즌 60,000 골드 추가\n영구 칭호: 1위 '세계를 꺾은 자'(장착하면 이름 금색), 2~10위 '거신 사냥꾼'(주황색), 11~100위 '거신에 맞선 자'": "<b>Weltboss</b> (2-Wochen-Saison, Abrechnung jeden zweiten Donnerstag 06:00)\nAlle Abenteurer tragen gemeinsam dieselben LP ab. Es zählt nur dein Schaden in deinem Raum in 3 Minuten (ohne KI-Gefährten).\n3 Versuche pro Tag, je 3 Minuten · Lv.40 · Schaden bis zum Fallen zählt\nRang: dein bester Einzelversuch dieser Saison\nBelohnungen (Post): 60.000 Gold + 10 Verstärkungssteine für die Teilnahme, +60.000 Gold in einer Saison mit Sieg\nDauerhafte Titel: 1. 'Weltenbezwinger' (ausgerüstet goldener Name), 2.-10. 'Kolossjäger' (orange), 11.-100. 'Kolossbezwinger'",
+ "격파! 이번 시즌 도전은 계속 랭킹에 기록됩니다": "Besiegt! Versuche in dieser Saison zählen weiter für die Rangliste",
+ "시즌 정산 {0:MM-dd HH:mm} (남은 시간 {1}일 {2}시간)": "Saisonabrechnung {0:MM-dd HH:mm} (noch {1} T. {2} Std.)",
+ "오늘 남은 도전 <color=#ffe066>{0}</color> / {1}   ·   이번 시즌 내 최고 {2:N0}   ·   내 순위 {3}   ·   {4}": "Heute übrige Versuche <color=#ffe066>{0}</color> / {1}   ·   Mein Bestwert dieser Saison {2:N0}   ·   Mein Rang {3}   ·   {4}",
+ "시즌 {0:MM-dd} ~ {1:MM-dd}": "Saison {0:MM-dd} ~ {1:MM-dd}",
+ "이번 시즌 ▶ 지난 시즌": "Diese Saison ▶ Letzte Saison",
+ "지난 시즌 ▶ 이번 시즌": "Letzte Saison ▶ Diese Saison",
+ "{0} 인정된 피해 <color=#ffe066>{1:N0}</color>{2} · 이번 시즌 최고 {3:N0} · {4}": "{0} Gewerteter Schaden <color=#ffe066>{1:N0}</color>{2} · Bestwert dieser Saison {3:N0} · {4}"
+}

@@ -51,9 +51,9 @@ namespace DotRPG
             UIFactory.Place(icon.rectTransform, new Vector2(0, 1), new Vector2(.5f, .5f), new Vector2(42, -46), Vector2.one * 60);
             // Name, kind and requirement.
             string kind = s.kind == CareerSkillKind.Passive ? L.T("<color=#b8a0ff>패시브</color>") : L.T("<color=#9fd0ff>액티브</color>");
-            FitCareerCopy(CareerText(bg.transform, "Name", $"<b>{L.T(s.name)}</b>", 16, 82, 8, 95, 38), 10);
-            FitCareerCopy(CareerText(bg.transform, "Kind", kind, 13, 82, 47, 95, 12), 9);
-            FitCareerCopy(CareerText(bg.transform, "Level", $"Lv.{s.level}", 13, 82, 66, 60, 16), 9);
+            // [UI 2026-10-30] Kind and level on one line at the readable floor (they were 9-13 px in 12-16 px boxes).
+            FitCareerCopy(CareerText(bg.transform, "Name", $"<b>{L.T(s.name)}</b>", 16, 82, 8, 95, 38), UIFactory.ReadableFloor);
+            FitCareerCopy(CareerText(bg.transform, "Kind", $"{kind} Lv.{s.level}", 16, 82, 50, 97, 22), UIFactory.ReadableFloor);
             // Rank pips.
             for (int i = 0; i < 3; i++)
             {
@@ -61,7 +61,9 @@ namespace DotRPG
                 pip.raycastTarget = false;
                 UIFactory.Place(pip.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(14 + i * 17, -78), Vector2.one * 8);
             }
-            FitCareerCopy(CareerText(bg.transform, "State", NodeState(s, p), 14, 8, 90, 167, 22), 8);
+            var state = CareerText(bg.transform, "State", NodeState(s, p), 16, 8, 86, 167, 28);
+            FitCareerCopy(state, UIFactory.ReadableFloor);
+            state.alignment = TextAnchor.MiddleLeft;
             // Hover / press feedback and gamepad reach.
             bg.raycastTarget = true;
             var btn = bg.gameObject.AddComponent<Button>();

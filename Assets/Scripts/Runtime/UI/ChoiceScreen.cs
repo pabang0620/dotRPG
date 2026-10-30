@@ -28,6 +28,18 @@ namespace DotRPG
             screen.message = screen.panel.Find("Body").GetComponent<Text>();
             screen.menu.OnCancel = screen.Cancel;
             screen.FitPanel();
+            // [UI 2026-10-30] "×" in the corner (every popup has one); same as Esc: the cancel action.
+            var x = UIFactory.Image(screen.panel, "CloseX", Game.Art.Get("ui_btngray"), Color.white);
+            x.preserveAspect = false;
+            x.raycastTarget = true;
+            UIFactory.Place(x.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -14f), new Vector2(44f, 44f));
+            var xb = x.gameObject.AddComponent<Button>();
+            xb.targetGraphic = x;
+            xb.onClick.AddListener(screen.Cancel);
+            UiButton.Attach(xb);
+            var xt = UIFactory.Text(x.transform, "Text", "×", 26, Color.white, TextAnchor.MiddleCenter, true);
+            UIFactory.Stretch(xt.rectTransform);
+            xt.horizontalOverflow = HorizontalWrapMode.Overflow;
             return screen;
         }
 
@@ -52,9 +64,13 @@ namespace DotRPG
             // Same layout as ConfirmScreen.Setup: title, body under it, then the menu.
             int lines = Mathf.Max(2, (text ?? "").Split('\n').Length);
             float h = lines * BodySize * 1.45f + 8f;
+            // [UI 2026-10-30] A long NPC line wraps: measure the wrapped height too, or it ran into the answers.
+            var settings = message.GetGenerationSettings(new Vector2(Width - 70f, 0f));
+            float wrapped = message.cachedTextGeneratorForLayout.GetPreferredHeight(message.text, settings) / Mathf.Max(0.01f, message.pixelsPerUnit);
+            h = Mathf.Max(h, wrapped + 8f);
             const float bodyTop = 86f;
             var title = panel.Find("Title") as RectTransform;
-            if (title != null) title.sizeDelta = new Vector2(Width - 40f, title.sizeDelta.y);
+            if (title != null) title.sizeDelta = new Vector2(Width - 120f, title.sizeDelta.y); // clear of the × button
             message.rectTransform.anchoredPosition = new Vector2(0f, -bodyTop);
             message.rectTransform.sizeDelta = new Vector2(Width - 70f, h);
             float menuTop = bodyTop + h + 10f;

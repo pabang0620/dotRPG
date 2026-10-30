@@ -101,7 +101,7 @@ namespace DotRPG
         {
             var label = UIFactory.Text(parent, "Label", text, size, Color.white, TextAnchor.MiddleCenter, true);
             label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = 12;
+            label.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12
             label.resizeTextMaxSize = label.fontSize;
             label.verticalOverflow = VerticalWrapMode.Truncate; // best fit only shrinks a wrapping label (Overflow let it run past the button)
             UIFactory.Stretch(label.rectTransform, 4f, 4f, 4f, 4f);

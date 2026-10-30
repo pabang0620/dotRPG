@@ -29,7 +29,7 @@ namespace DotRPG
             var t = sweepPanel.transform;
             var tl = new Vector2(0f, 1f);
             sweepHead = Label(t, "Head", "", 26, tl, tl, new Vector2(24f, -14f), new Vector2(620f, 38f));
-            Button(t, "Close", L.T("닫기"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-16f, -14f), new Vector2(110f, 40f), CloseSweep, 18);
+            CloseX(t, CloseSweep, 12f); // [UI 2026-10-30] P9 the × of every popup panel
             var icon = UIFactory.SharpIcon(t, "Ticket", Color.white);
             icon.sprite = Game.Art.Get("icon_sweep");
             UIFactory.Place(icon.rectTransform, tl, tl, new Vector2(24f, -64f), new Vector2(56f, 56f));

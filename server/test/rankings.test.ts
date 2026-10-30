@@ -41,9 +41,25 @@ describe('rankings', () => {
     expect(r.body.data.entries.map((e: { value: number; rank: number }) => [e.rank, e.value])).toEqual([[1, 12_000], [2, 9000], [3, 9000]]);
     expect(r.body.data.me).toEqual({ rank: 3, value: 9000 });
     expect(r.body.data.entries[0]).toMatchObject({ level: 40, guild_name: null, name_color: null });
-    // 지난주는 비어 있다
+    // 지난 시즌은 비어 있다. 월드보스는 2주 시즌 경계를 싣는다
+    expect(r.body.data).toMatchObject({ season_start: '2026-10-14T21:00:00.000Z', season_end: '2026-10-28T21:00:00.000Z' });
     const prev = await board(b, 'world_boss', '&week=previous');
     expect(prev.body.data.entries).toEqual([]);
+  });
+
+  test('world boss board is per two-week season: a week later it is still this season, after the season it is the previous one', async () => {
+    const a = await hero();
+    await fight(a, 7000);
+    now = new Date('2026-10-22T03:00:00Z'); // 주간 경계를 넘겼지만 같은 2주 시즌
+    clearRankingCache();
+    expect((await board(a, 'world_boss')).body.data.me).toEqual({ rank: 1, value: 7000 });
+    expect((await board(a, 'world_boss', '&week=previous')).body.data.entries).toEqual([]);
+    now = new Date('2026-10-29T03:00:00Z'); // 다음 2주 시즌
+    clearRankingCache();
+    const cur = (await board(a, 'world_boss')).body.data;
+    expect(cur).toMatchObject({ entries: [], me: null, season_start: '2026-10-28T21:00:00.000Z' });
+    const prev = (await board(a, 'world_boss', '&week=previous')).body.data;
+    expect(prev).toMatchObject({ me: { rank: 1, value: 7000 }, season_start: '2026-10-14T21:00:00.000Z', season_end: '2026-10-28T21:00:00.000Z' });
   });
 
   test('guild boss: score first, then who reached it first', async () => {

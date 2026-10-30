@@ -27,11 +27,31 @@ export const ROOM_HP_MUL = 1;
 export const EST_ATTEMPT_DAMAGE = 150_000;
 
 /**
- * 월드보스 주간 체력(2026-10-21 하향): 실측 평균 1회 피해 110,000(레이드 장비) x 하루 3회 x 7일 x 참여율 0.5 = 한 사람당 주 1,155,000.
- * 40,000,000이면 참가자 35명 안팎이 한 주에 격파하고, 20명이면 1.7주다. 출시 초 인원에서도 격파 보너스가 나오게 작게 시작하고,
- * 참가자가 100명 수준이면 env WORLD_BOSS_HP를 160,000,000으로 올린다(새 주의 시즌을 만들 때만 읽는다).
+ * 월드보스 시즌 체력(2026-10-30: 시즌이 1주에서 2주로 늘어 40,000,000 x 2).
+ * 근거(2026-10-21): 실측 평균 1회 피해 110,000(레이드 장비) x 하루 3회 x 7일 x 참여율 0.5 = 한 사람당 주 1,155,000.
+ * 2주 80,000,000이면 참가자 35명 안팎이 시즌 첫 주 끝 무렵에 격파하고(예전 1주 격파와 같은 시점), 20명이면 1.7주다.
+ * env WORLD_BOSS_HP는 "한 시즌(2주) 체력"이다. 참가자가 100명 수준이면 320,000,000으로 올린다(새 시즌을 만들 때만 읽는다).
  */
-export const WORLD_BOSS_HP_DEFAULT = 40_000_000;
+export const WORLD_BOSS_HP_DEFAULT = 80_000_000;
+
+// ---------- 월드보스 시즌(2주) ----------
+
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+/** 월드보스 시즌 길이(2026-10-30 사용자 결정: 1주 -> 2주. 길드보스는 1주 그대로) */
+export const WORLD_SEASON_WEEKS = 2;
+/**
+ * 2주 시즌의 기준점: 2026-10-29(목) 06:00 KST. 시즌은 이 시각부터 2주마다 바뀐다(모든 서버가 같은 상수로 같은 경계를 쓴다).
+ * 주간 경계(목요일 06:00 KST, resetBoundaries) 중 기준점에서 짝수 번째 주만 시즌 시작이다
+ */
+export const WORLD_SEASON_ANCHOR_MS = Date.UTC(2026, 9, 28, 21, 0, 0);
+
+/** now가 속한 월드보스 시즌의 시작·끝. weeklyStartMs는 resetBoundaries(now).weeklyStartAt */
+export function worldSeasonBounds(weeklyStartMs: number): { start: Date; end: Date } {
+  const weeks = Math.round((weeklyStartMs - WORLD_SEASON_ANCHOR_MS) / WEEK_MS);
+  const offset = ((weeks % WORLD_SEASON_WEEKS) + WORLD_SEASON_WEEKS) % WORLD_SEASON_WEEKS;
+  const start = weeklyStartMs - offset * WEEK_MS;
+  return { start: new Date(start), end: new Date(start + WORLD_SEASON_WEEKS * WEEK_MS) };
+}
 
 /** 챕터 3 보스 레벨(50) 시즌의 월드보스 체력 배율(Docs/ch3/LIVE_CONTENT.md 2절). 조정은 env WORLD_BOSS_HP로 한다 */
 export const LV50_WORLD_HP_MUL = 2.0;
@@ -55,13 +75,30 @@ export function attemptDamageCap(dpsCap: number, elapsedSeconds: number): number
 
 // ---------- 주간 보상(명예 위주) ----------
 
-export const WORLD_JOIN_GOLD = 30_000;
-export const WORLD_JOIN_ORE = 5;
-export const WORLD_DEFEAT_GOLD = 30_000;
+// 월드보스 보상은 시즌(2주)마다 한 번이라, 주당 수입이 예전 1주 시즌과 같도록 두 배로 둔다(2026-10-30).
+// 보스 우편 수입은 theory_gold.py·income_caps.json에 들어 있지 않다(무자본 비율 계산 밖). 주당 액수가 그대로라 비율에 영향 없음
+export const WORLD_JOIN_GOLD = 60_000;
+export const WORLD_JOIN_ORE = 10;
+export const WORLD_DEFEAT_GOLD = 60_000;
 /** 길드보스 참가 보상(그 주 1회 이상 끝까지 도전한 길드원) */
 export const GUILD_JOIN_GOLD = 20_000;
 /** 강화석(items.json mat_ore) */
 export const ORE_ITEM = 'mat_ore';
+export const ESSENCE_ITEM = 'mat_essence';
+export const PROTECT_ITEM = 'ticket_protect';
+
+/**
+ * 길드보스 1~10위 길드원 보상(2026-10-30 사용자 결정, 주간 정산 우편). 정산 시각에 그 길드에 있던 길드원(그 주가 끝나기 전에 가입) 전원.
+ * Lv40 사냥 1시간 수입이 골드 환산 약 77,000·마력 정수 148개(income_caps.json 41~44)라 1위도 사냥 약 12분어치 골드다.
+ * 보스 우편은 theory_gold.py 무자본 비율 계산 밖이고, 한 사람이 받는 최대치는 주 15,000골드(참가 20,000과 합쳐 35,000)
+ */
+export interface GuildTierReward { gold: number; items: { itemKey: string; count: number }[] }
+export function guildTierReward(rank: number): GuildTierReward | null {
+  if (rank === 1) return { gold: 15_000, items: [{ itemKey: PROTECT_ITEM, count: 1 }, { itemKey: ESSENCE_ITEM, count: 30 }] };
+  if (rank <= 3) return { gold: 10_000, items: [{ itemKey: ESSENCE_ITEM, count: 20 }] };
+  if (rank <= 10) return { gold: 5_000, items: [{ itemKey: ESSENCE_ITEM, count: 10 }] };
+  return null;
+}
 
 export type RankTitleId = 'rank_world_1' | 'rank_world_10' | 'rank_world_100' | 'rank_guild_1';
 export const RANK_TITLE_NAMES: Record<RankTitleId, string> = {
@@ -71,6 +108,9 @@ export const RANK_TITLE_NAMES: Record<RankTitleId, string> = {
   rank_guild_1: '최강 길드',
 };
 export const isRankTitle = (id: string): id is RankTitleId => Object.prototype.hasOwnProperty.call(RANK_TITLE_NAMES, id);
+
+/** 영구 칭호(2026-10-30): 월드보스 순위 칭호는 한 번 받으면 만료가 없다. 길드보스 "최강 길드"는 다음 주 정산까지 */
+export const isPermanentRankTitle = (id: string): boolean => id.startsWith('rank_world_');
 
 /** 월드보스 순위 -> 칭호·이름 색 */
 export function worldRankReward(rank: number): { title: RankTitleId; color: 'gold' | 'orange' | null } | null {

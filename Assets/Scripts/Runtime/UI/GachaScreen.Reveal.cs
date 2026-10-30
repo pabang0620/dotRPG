@@ -7,36 +7,38 @@ namespace DotRPG
 {
     public partial class GachaScreen
     {
-        /// <summary>Opens every card left (one burst for the best of them). [GACHA VFX] 유니크 / 레전더리 cards stay
-        /// face-down and open one after another with their clips (no tap needed).</summary>
+        /// <summary>모두 열기 (multi-draws): every closed card turns up at once, 유니크 / 레전더리 too, without the charge-up,
+        /// the clip or the spotlight (bonghwa reveal() allBtn). One burst for the best of them.</summary>
         void RevealAll()
         {
-            if (!Revealing) return;
+            if (!Revealing || spot != null) return;
             EndIntro();
             bool top = false, epic = false;
-            int from = revealed;
-            for (int i = revealed; i < shown.Count; i++)
+            var opened = new List<int>();
+            for (int i = 0; i < shown.Count; i++)
             {
-                if (ClipTier(shown[i]) > 0) { held[i] = true; continue; }
+                if (i >= revealed || held[i]) opened.Add(i);
+                else continue;
+                held[i] = false;
+                chargeEnd[i] = 0f;
                 if (IsTop(shown[i])) top = true;
                 else if (IsEpic(shown[i])) epic = true;
                 else continue;
-                if (waiting < revealed) waiting = i;
+                waiting = i;
             }
             revealed = shown.Count;
+            openQueue.Clear();
             if (top || epic)
             {
                 flashAt = punchAt = Time.unscaledTime;
                 flashColor = top ? new Color(1f, .85f, .45f) : new Color(.78f, .55f, 1f);
                 Game.Audio.PlaySfx(top ? "quest" : "confirm");
                 Game.Camera?.Shake(top ? 0.14f : 0.08f, 0.3f);
-                for (int i = from; i < shown.Count; i++)
-                    if (held[i]) continue;
-                    else if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
+                foreach (int i in opened)
+                    if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
                     else if (IsEpic(shown[i])) Burst(i, new Color(.78f, .55f, 1f), 16);
             }
-            for (int i = 0; i < shown.Count; i++)
-                if (held[i]) QueueOpen(i);
+            else Game.Audio.PlaySfx("select");
             DrawCells();
         }
 
@@ -54,6 +56,7 @@ namespace DotRPG
                 else if (i < 10) { pos = new Vector2(startX + (i % 5) * (CellW + 14f), -40f - (i / 5) * (CellH + 18f)); size = new Vector2(CellW, CellH); }
                 else { pos = new Vector2(startX + rowsW + gap, -40f - (2 * CellH + 18f - BonusH) / 2f); size = new Vector2(BonusW, BonusH); }
                 UIFactory.Place(c.rt, new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), pos + new Vector2(size.x / 2f, -size.y / 2f), size);
+                cellBase[i] = c.rt.anchoredPosition; // [GACHA VFX] the nudge shakes around this
                 UIFactory.Place(c.halo.rectTransform, new Vector2(0f, 1f), new Vector2(0.5f, 0.5f), pos + new Vector2(size.x / 2f, -size.y / 2f), size * 2f);
                 if (i == 10) UIFactory.Place(bonusLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 0f), pos + new Vector2(0f, 6f), new Vector2(BonusW, 28f));
             }
@@ -85,37 +88,28 @@ namespace DotRPG
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
             if (choiceModal != null && choiceModal.gameObject.activeSelf && Game.Input.CancelPressed) { choiceModal.gameObject.SetActive(false); return; }
             if (resultPage != null && resultPage.gameObject.activeSelf && (Game.Input.CancelPressed || Game.Input.SubmitPressed))
-            { if (IntroOn) EndIntro(); else if (Revealing) RevealAll(); else CloseResults(); Animate(); return; }
+            { ResultKey(Game.Input.SubmitPressed); Animate(); return; } // [GACHA VFX] never opens the top cards by itself
             base.Update();
             if (!gameObject.activeSelf) return;
             Animate();
             UpdateAuto(); // [GACHA 2026-10-29] 자동 뽑기: the next draw once this reveal is over
             UpdateIntro(); // [GACHA VFX] the opening clip: tap to skip, 2 s at most
-            if (revealed >= shown.Count || Time.unscaledTime < revealAt) return;
-            var r = shown[revealed];
+            UpdateCards(); // [GACHA VFX] charge-ups, the spotlight
+            // [GACHA VFX] Dealing (bonghwa deal()): the lower grades turn up by themselves, 0.35 s + 0.09 s per card;
+            // 유니크 / 레전더리 stay face-down with the gold glow until they are clicked (자동 뽑기 opens them itself).
+            if (revealed >= shown.Count || Time.unscaledTime < revealAt + DealFirst + revealed * DealStep) return;
+            int at = revealed;
+            var r = shown[at];
+            revealed++;
             if (ClipTier(r) > 0)
             {
-                // [GACHA VFX] dealt face-down with the same glow for both grades; a tap (or the auto sequence) opens it
-                int at = revealed;
                 held[at] = true;
-                revealed++;
-                revealAt = Time.unscaledTime + Step;
-                Game.Audio.PlaySfx("rank_reveal");
                 if (batchAuto) QueueOpen(at);
                 DrawCells();
                 return;
             }
-            if (Special(r) && waiting != revealed)
-            {
-                waiting = revealed; // the card glows and trembles first
-                revealAt = Time.unscaledTime + Anticipation;
-                Game.Audio.PlaySfx("rank_reveal");
-                return;
-            }
-            int cell = CellOf(revealed);
-            revealed++;
-            revealAt = Time.unscaledTime + (Special(r) ? 0.55f : Step);
-            Announce(cell, r);
+            waiting = at; // the punch (Animate) lands on an 에픽 / hidden card
+            Announce(CellOf(at), r);
             DrawCells();
         }
 
@@ -156,6 +150,7 @@ namespace DotRPG
         /// <summary>Sparks flying out of a card.</summary>
         void Burst(int cell, Color color, int count)
         {
+            if (!GachaClip.Enabled) return; // [GACHA VFX] reduce motion (screen shake off): no sparks
             var c = cells[cell];
             var center = (Vector2)c.rt.anchoredPosition;
             for (int i = 0; i < count; i++)
@@ -196,14 +191,17 @@ namespace DotRPG
                 var c = cells[i];
                 float scale = 1f;
                 c.rt.localRotation = Quaternion.identity;
+                float nudge = t - nudgeAt[i];
+                c.rt.anchoredPosition = cellBase[i] + new Vector2(nudge < 0.4f ? Mathf.Sin(nudge / 0.4f * Mathf.PI * 2f) * 6f : 0f, 0f);
                 if (i < shown.Count && held[i])
                 {
-                    // [GACHA VFX] face-down 유니크 / 레전더리: one gold glow for both; a teased 레전더리 trembles hard
-                    bool hot = teased[i];
+                    // [GACHA VFX] face-down 유니크 / 레전더리: one gold glow for both (.card.hi); charging or a teased 레전더리
+                    // glows brighter and trembles hard (.charging)
+                    bool hot = teased[i] || chargeEnd[i] > 0f;
                     float k = 0.5f + 0.5f * Mathf.Sin(t * (hot ? 26f : 6f));
                     c.halo.color = new Color(1f, .8f, .3f, .55f + .45f * k);
                     c.bg.color = Color.Lerp(HeadRow, new Color32(150, 108, 30, 255), k);
-                    scale = 1.04f + .04f * k;
+                    scale = (chargeEnd[i] > 0f ? 1.12f : 1.04f) + .04f * k;
                     c.rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * (hot ? 60f : 18f)) * (hot ? 3f : 1.2f));
                 }
                 else if (i == waiting && i >= revealed && i < shown.Count)
@@ -301,6 +299,7 @@ namespace DotRPG
                         : r.byPity ? L.T("<color=#ffd34a>선택 · NEW</color>") : "<color=#8fe28f>NEW</color>");
                 }
             }
+            RefreshLocks(); // [GACHA VFX]
         }
 
         static Color PixelHex(string hex) => ColorUtility.TryParseHtmlString(hex, out var c) ? c : Color.white;

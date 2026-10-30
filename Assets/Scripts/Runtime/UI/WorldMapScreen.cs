@@ -39,10 +39,10 @@ namespace DotRPG
         {
             var w = CreateWindow<WorldMapScreen>(canvas, "WorldMap", L.T("세계 지도"), "menuicon_map");
             var frame = Panel(w.content, "Frame", TL, TL, Vector2.zero, new Vector2(760, 590), UiTheme.PanelDeep);
-            w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(GameFlow.DemoSlots ? 260 : 400, 32));
+            w.caption = Label(frame.transform, "RegionTitle", "", 22, TL, TL, new Vector2(18, -10), new Vector2(GameFlow.DemoSlots ? 200 : 380, 32));
             w.BuildAtlasButton(frame.transform); // [UI] whole-world route map
             if (GameFlow.DemoSlots) // [DEMO] trial builds jump straight to any region
-                w.travelButton = Button(frame.transform, "DemoTravel", L.T("이 지역으로 이동"), "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-324, -10), new Vector2(150, 34), () =>
+                w.travelButton = Button(frame.transform, "DemoTravel", L.T("이 지역으로 이동"), "ui_btn", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-358, -10), new Vector2(172, 34), () =>
                 {
                     var target = w.selectedMap;
                     var info = MapRegistry.Get(target);
@@ -50,7 +50,7 @@ namespace DotRPG
                     w.Close();
                     Game.Flow.TravelTo(target, true);
                 }, 17);
-            Button(frame.transform, "CurrentRegion", L.T("현재 위치"), "ui_btngray", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -10), new Vector2(150, 34), () => w.SelectMap(Game.World.MapId), 17);
+            Button(frame.transform, "CurrentRegion", L.T("현재 위치"), "ui_btngray", new Vector2(1, 1), new Vector2(1, 1), new Vector2(-16, -10), new Vector2(186, 34), () => w.SelectMap(Game.World.MapId), 17);
             var viewport = UIFactory.Place(UIFactory.Rect(frame.transform, "MapViewport"), TL, TL, new Vector2(10, -54), new Vector2(740, 416));
             viewport.gameObject.AddComponent<RectMask2D>();
             w.map = new GameObject("Map", typeof(RectTransform)).AddComponent<RawImage>(); w.map.transform.SetParent(viewport, false); w.map.raycastTarget = false;
@@ -72,7 +72,9 @@ namespace DotRPG
             UIFactory.Place(w.bossIcon.rectTransform, new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 14), new Vector2(56, 56));
             w.bossIcon.enabled = false;
             w.side = Panel(w.content, "Side", new Vector2(1, 1), new Vector2(1, 1), Vector2.zero, new Vector2(420, 590), UiTheme.Panel).transform;
-            Label(w.side, "RegionHeading", L.T("월드 선택 · 지역을 눌러 자세히 보기"), 20, TL, TL, new Vector2(16, -10), new Vector2(388, 30));
+            // [UI 2026-10-30] P5: the "how to use" half of the heading moved into a "?" tip.
+            Label(w.side, "RegionHeading", L.T("월드 선택"), 20, TL, TL, new Vector2(16, -10), new Vector2(340, 30));
+            UiHelpTip.Create(w.side, "RegionHelp", new Vector2(1, 1), new Vector2(-16, -9), L.T("지역을 눌러 자세히 보기"));
             w.surfaceTab = Button(w.side, "WorldSurface", L.T("지상월드"), "ui_btn", TL, TL, new Vector2(16, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Surface), 19);
             w.undergroundTab = Button(w.side, "WorldUnderground", L.T("지하월드"), "ui_btngray", TL, TL, new Vector2(214, -44), new Vector2(190, 38), () => w.SelectWorld(WorldLayer.Underground), 19);
             var regions=Panel(w.side,"RegionsViewport",TL,TL,new Vector2(16,-94),new Vector2(388,244),UiTheme.PanelDeep);
@@ -84,7 +86,7 @@ namespace DotRPG
             {
                 var service = MapRegistry.IndoorServices[i];
                 var button = Button(w.side, "Room_" + service, service == NpcService.Blacksmith ? L.T("대장간 실내") : L.F("{0} 실내", L.T(MapRegistry.ServiceName(service))), "ui_btngray", TL, TL,
-                    new Vector2(16 + i * 131, -351), new Vector2(126, 30), () =>
+                    new Vector2(16 + i * 130, -342), new Vector2(128, 44), () => // [UI 2026-10-30] two lines for long translations
                     { string town = MapRegistry.Get(w.selectedMap)?.exteriorMap ?? w.selectedMap; var id = MapRegistry.InteriorFor(town, service); if (id != null) w.SelectMap(id); }, 16);
                 w.roomTabs.Add(button);
             }
@@ -150,7 +152,7 @@ namespace DotRPG
                     string tag = zone == null ? (MapRegistry.IsTown(id) ? L.T("<color=#b9dbab>마을</color>") : L.T("<color=#91c9b0>탐험</color>")) : $"<color=#ccb995>Lv.{zone.minLevel}~{zone.maxLevel}</color>";
                     string label = k == 0 ? $"<b>{badge}{L.T(info.displayName)}</b>   {tag}" : $"<color=#8c96a8>{(k == group.Count - 1 ? "└" : "├")}</color> {badge}{L.T(info.displayName)}   {tag}";
                     if (stage.Length > 0)
-                        label = $"<color=#ebbd5f><b>[{stage}]</b></color> {L.T(info.displayName)}   <size=13>{tag}</size>";
+                        label = $"<color=#ebbd5f><b>[{stage}]</b></color> {L.T(info.displayName)}   <size=14>{tag}</size>";
                     var button = Button(regionsContent, "Region_" + id, label, k == 0 && zone == null ? "ui_btn" : "ui_btngray", TL, TL,
                         new Vector2(k == 0 ? 0 : 14, -row * rowH), new Vector2(k == 0 ? 388 : 374, rowH - 2), () => SelectMap(id), 16);
                     var text = button.GetComponentInChildren<Text>(); text.alignment = TextAnchor.MiddleLeft; UIFactory.Stretch(text.rectTransform, 10, 0, 8, 0);

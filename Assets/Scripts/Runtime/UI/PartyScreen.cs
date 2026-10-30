@@ -51,6 +51,7 @@ namespace DotRPG
             var w = CreateWindow<PartyScreen>(canvas, "Party", L.T("AI 동료 편성"), "menuicon_party");
             PartyHub.Attach(w, w.content, PartyHub.Page.Companions); // [UX] one party window: 내 파티 | 파티 찾기 | AI 동료
             w.partyTitle = Label(w.content, "PartyTitle", "", 24, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, 0f), new Vector2(800f, 32f));
+            UIFactory.OneLine(w.partyTitle, true); // [UI 2026-10-30] the "자리가 N개라" warning shrinks the line instead of running under the 쿠크 button
             for (int i = 0; i < PartyManager.MaxMembers; i++) w.slots.Add(w.BuildSlot(i));
             Label(w.content, "MercTitle", L.T("<b>용병 목록</b>   <color=#b8c4d8>레벨은 내 캐릭터와 같고, 장비는 레벨 구간마다 정해져 있습니다.</color>"), 22,
                 new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(4f, -150f), new Vector2(1180f, 30f));

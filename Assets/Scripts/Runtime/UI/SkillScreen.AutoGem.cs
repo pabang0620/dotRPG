@@ -30,7 +30,8 @@ namespace DotRPG
             autoPanel = Panel(gemPage, "GemAuto", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(GuideX, 0f), new Vector2(GuideWidth, 538f), UiTheme.PanelDeep).rectTransform;
             var t = autoPanel.transform;
             Label(t, "Title", L.T("<b>간편 젬 세팅</b>"), 20, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -8f), new Vector2(GuideWidth - 28f, 28f));
-            var intro = Label(t, "Intro", L.T("원하는 스타일만 고르면 장착한 스킬에 보조 젬을 계산해서 가장 좋게 끼웁니다."), 14, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -38f), new Vector2(GuideWidth - 28f, 40f));
+            var intro = Label(t, "Intro", L.T("원하는 스타일만 고르면 장착한 스킬에 보조 젬을 계산해서 가장 좋게 끼웁니다."), 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -38f), new Vector2(GuideWidth - 28f, 40f));
+            intro.lineSpacing = 1f;
             intro.color = new Color32(184, 196, 216, 255);
             string[] presets = { L.T("흡혈 세팅"), L.T("범위 세팅"), L.T("타격 세팅") };
             for (int i = 0; i < 3; i++)
@@ -54,16 +55,11 @@ namespace DotRPG
             autoSummary.horizontalOverflow = HorizontalWrapMode.Wrap;
             autoSummary.verticalOverflow = VerticalWrapMode.Truncate;
             autoSummary.resizeTextForBestFit = true;
-            autoSummary.resizeTextMinSize = 11;
+            autoSummary.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 11
             autoSummary.resizeTextMaxSize = 15;
-            var note = Label(t, "Note", L.T("수치는 지금 스킬로 낼 수 있는 최대치 대비입니다. 흡혈·연속 시전·보스 사냥은 기본 스킬에만 효과가 있고, 전직 스킬은 피해·범위·효율만 적용됩니다. 초당 MP는 기본 자동 장착(피해 + 범위)보다 더 쓰지 않습니다. 보조 칸은 왼쪽에서 직접 바꿀 수도 있습니다."),
-                13, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -422f), new Vector2(GuideWidth - 28f, 108f));
-            note.color = new Color32(140, 150, 168, 255);
-            note.horizontalOverflow = HorizontalWrapMode.Wrap;
-            note.verticalOverflow = VerticalWrapMode.Truncate;
-            note.resizeTextForBestFit = true;
-            note.resizeTextMinSize = 10;
-            note.resizeTextMaxSize = 13;
+            // [UI 2026-10-30] The fine print (was 10-13 px in the bottom box) is a "?" next to the title; the summary gets the room.
+            autoSummary.rectTransform.sizeDelta = new Vector2(GuideWidth - 28f, 190f);
+            UiHelpTip.Create(t, "NoteHelp", new Vector2(1f, 1f), new Vector2(-14f, -6f), L.T("수치는 지금 스킬로 낼 수 있는 최대치 대비입니다. 흡혈·연속 시전·보스 사냥은 기본 스킬에만 효과가 있고, 전직 스킬은 피해·범위·효율만 적용됩니다. 초당 MP는 기본 자동 장착(피해 + 범위)보다 더 쓰지 않습니다. 보조 칸은 왼쪽에서 직접 바꿀 수도 있습니다."));
             // The switch between this panel and the 젬 안내 sits at the right end of the how-to bar under the rows.
             var bar = gemPage.Find("List");
             if (bar != null)

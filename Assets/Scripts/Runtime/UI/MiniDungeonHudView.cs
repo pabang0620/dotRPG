@@ -22,10 +22,11 @@ namespace DotRPG
         void Build(RectTransform root)
         {
             card = UIFactory.Place(UIFactory.Rect(root, "TrainingStatus"), new Vector2(1, 1), new Vector2(1, 1),
-                new Vector2(-DungeonHudView.ClockRight, -DungeonHudView.ClockTop), new Vector2(DungeonHudView.ClockWidth, 126));
+                new Vector2(-DungeonHudView.ClockRight, -DungeonHudView.ClockTop), new Vector2(DungeonHudView.ClockWidth, 126)); // BossHpBarView.TallCardBottom keeps clear of 126
             UIFactory.Stretch(UIFactory.Panel(card, "Frame", true).rectTransform);
-            mode = UIFactory.Text(card, "Mode", L.T("성장의 틈 · 자동 수련"), 18, UiTheme.AccentBlue, TextAnchor.MiddleLeft, true);
-            UIFactory.Place(mode.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -10), new Vector2(286, 26));
+            mode = UIFactory.Text(card, "Mode", L.T("자동 수련"), 18, UiTheme.AccentBlue, TextAnchor.MiddleLeft, true);
+            UIFactory.Place(mode.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -10), new Vector2(288, 26));
+            UIFactory.OneLine(mode, true); // [UI 2026-10-30] one line, shrinks to 14 px at most
             time = UIFactory.Text(card, "Time", "30:00", 29, UiTheme.AccentLight, TextAnchor.MiddleLeft, true);
             UIFactory.Place(time.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(16, -38), new Vector2(120, 36));
             counters = UIFactory.Text(card, "Counters", "", 16, UiTheme.TextPrimary, TextAnchor.MiddleRight, true);
@@ -36,20 +37,20 @@ namespace DotRPG
             bar = UIFactory.Image(track.transform, "Fill", Game.Art.Get("ui_white"), UiTheme.AccentBlue);
             bar.preserveAspect = false;
             UIFactory.Stretch(bar.rectTransform); bar.raycastTarget = false;
-            toggle = MakeButton(card, "ToggleHunt", L.T("사냥 중지"), new Vector2(16, -89), 135, () => QuestAutoPilot.ToggleHunt());
+            toggle = MakeButton(card, "ToggleHunt", L.T("사냥 중지"), new Vector2(16, -86), 135, () => QuestAutoPilot.ToggleHunt());
             toggleText = toggle.GetComponentInChildren<Text>();
-            MakeButton(card, "Leave", L.T("퇴장"), new Vector2(161, -89), 143, () => Game.MiniDungeon?.Leave());
+            MakeButton(card, "Leave", L.T("퇴장"), new Vector2(161, -86), 143, () => Game.MiniDungeon?.Leave());
             card.gameObject.SetActive(false);
         }
 
         static Button MakeButton(Transform parent, string name, string text, Vector2 at, float width, UnityEngine.Events.UnityAction action)
         {
             var img = UIFactory.Image(parent, name, Game.Art.Get("ui_btngray"), Color.white);
-            UIFactory.Place(img.rectTransform, new Vector2(0, 1), new Vector2(0, 1), at, new Vector2(width, 28));
+            UIFactory.Place(img.rectTransform, new Vector2(0, 1), new Vector2(0, 1), at, new Vector2(width, 38));
             img.preserveAspect = false;
             var b = img.gameObject.AddComponent<Button>(); b.targetGraphic = img; b.onClick.AddListener(action); UiButton.Attach(b);
-            var label = UIFactory.Text(img.transform, "Text", text, 15, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true);
-            UIFactory.Stretch(label.rectTransform, 8, 1, 8, 1);
+            var label = UIFactory.Text(img.transform, "Text", text, 16, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true); // [UI 2026-10-30] renders 14 px
+            UIFactory.FitInFrame(label, 8f, 1f); // [UI 2026-10-30] 14 px floor, wraps to two lines instead of running out
             return b;
         }
 
@@ -63,7 +64,8 @@ namespace DotRPG
             bool hunting = QuestAutoPilot.Hunting;
             // Catch-up (x10 while the next main quest waits on level) is the mini dungeon's own rule, so it heads the card.
             bool catchUp = run.CatchingUp;
-            mode.text = (catchUp ? L.F("따라잡기 x{0}", MiniDungeonCatalog.CatchUpMultiplier) : L.T("성장의 틈")) + " · " + (hunting ? L.T("자동 수련") : L.T("직접 조작 중"));
+            // [UI 2026-10-30] "성장의 틈 · " dropped: with the long translations the line ran past the card.
+            mode.text = (catchUp ? L.F("따라잡기 x{0}", MiniDungeonCatalog.CatchUpMultiplier) + " · " : "") + (hunting ? L.T("자동 수련") : L.T("직접 조작 중"));
             mode.color = catchUp ? UiTheme.Accent : UiTheme.AccentBlue;
             toggleText.text = hunting ? L.T("사냥 중지") : L.T("자동사냥 시작");
             int second = Mathf.CeilToInt(run.RemainingSeconds);

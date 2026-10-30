@@ -54,6 +54,8 @@ namespace DotRPG
         public static Vector2 CanvasReference => TouchUi.Enabled ? new Vector2(1024, 576) : ReferenceResolution;
         /// <summary>Smallest font size of any UI text (22 with touch controls, 14 otherwise).</summary>
         public static int MinFontSize => TouchUi.Enabled ? 22 : 14;
+        /// <summary>[UI 2026-10-30] Best-fit never shrinks a label below this (UiTheme.FontMin 16 x TextScale 0.88).</summary>
+        public const int ReadableFloor = 14;
         const float UiPixelScale = 3f;
         /// <summary>Density-1 art resolution (pixels per tile). HD (density-2) UI frames are sized
         /// against this so their on-screen 9-slice borders match the old 16px frames.</summary>
@@ -173,7 +175,7 @@ namespace DotRPG
         /// <summary>
         /// [UI] A label that must stay on one line whatever its box (grade names, numbers with units, column cells):
         /// it overflows sideways instead of wrapping. With <paramref name="shrink"/> it is shrunk to its box first
-        /// (down to 70% of its size, at least 11) so dense table cells do not run into their neighbours.
+        /// (down to the readable floor <see cref="ReadableFloor"/>) so dense table cells do not run into their neighbours.
         /// </summary>
         public static Text OneLine(Text t, bool shrink = false)
         {
@@ -181,7 +183,7 @@ namespace DotRPG
             {
                 t.resizeTextForBestFit = true;
                 t.resizeTextMaxSize = t.fontSize;
-                t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(11, Mathf.RoundToInt(t.fontSize * .7f)));
+                t.resizeTextMinSize = Mathf.Min(t.fontSize, ReadableFloor); // [UI 2026-10-30] never below the readable floor (was 70%, at least 11)
                 t.horizontalOverflow = HorizontalWrapMode.Wrap;
                 t.verticalOverflow = VerticalWrapMode.Truncate;
                 return t;
@@ -195,14 +197,14 @@ namespace DotRPG
 
         /// <summary>
         /// [UI] A label inside a bordered button: kept inside the rim (never drawn over the frame) and shrunk to fit
-        /// (down to 60% of its size, at least 11) instead of wrapping out above and below the button.
+        /// (down to the readable floor <see cref="ReadableFloor"/>) instead of wrapping out above and below the button.
         /// </summary>
         public static Text FitInFrame(Text t, float sideInset = FrameRim - 2f, float vInset = 3f)
         {
             Stretch(t.rectTransform, sideInset, vInset, sideInset, vInset);
             t.resizeTextForBestFit = true;
             t.resizeTextMaxSize = t.fontSize;
-            t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(11, Mathf.RoundToInt(t.fontSize * .6f)));
+            t.resizeTextMinSize = Mathf.Min(t.fontSize, ReadableFloor); // [UI 2026-10-30] never below the readable floor (was 60%, at least 11)
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Truncate;
             return t;

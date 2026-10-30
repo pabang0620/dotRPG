@@ -10,7 +10,7 @@ namespace DotRPG
     /// </summary>
     public class PartyStatusView : MonoBehaviour
     {
-        public const float Left = 18f, Top = -180f, Width = 372f, Height = 30f; // under the buff row (BuffBarView, 150..178): the two overlapped online
+        public const float Left = 18f, Top = -180f, Width = 372f, Height = 30f, MaxWidth = 520f; // under the buff row (BuffBarView, 150..178): the two overlapped online
 
         Image plate;
         Text text;
@@ -50,6 +50,8 @@ namespace DotRPG
             if (plate.gameObject.activeSelf != show) { plate.gameObject.SetActive(show); text.gameObject.SetActive(show); }
             if (!show) return;
             text.text = Describe();
+            // [UI 2026-10-30] The one-line plate grows with a long status (leader + target + hints ran past its right edge).
+            if (!TouchUi.Enabled) ((RectTransform)transform).sizeDelta = new Vector2(Mathf.Clamp(text.preferredWidth + 20f, Width, MaxWidth), Height);
         }
 
         static string Describe()

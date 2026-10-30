@@ -41,7 +41,22 @@ namespace DotRPG
         Image badgeBg, gaugeFill, gaugeBg;
         Button chooseBtn, hiddenBtn;
         Image hiddenBg, hiddenFill;
-        Text hiddenText;
+        Text hiddenText, gaugePct, hiddenPct;
+        /// <summary>[UI] 히든 선택 / 천장 받기: wide enough for the longest translation at the 14 px floor.</summary>
+        const float SideBtnW = 200f;
+
+        /// <summary>[UI] The percentage written in the middle of a gauge bar.</summary>
+        static Text BarPercent(Image bar)
+        {
+            var t = UIFactory.Text(bar.transform, "Pct", "", UiTheme.FontMin, UiTheme.TextPrimary, TextAnchor.MiddleCenter, true);
+            t.raycastTarget = false;
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.verticalOverflow = VerticalWrapMode.Overflow;
+            UIFactory.Stretch(t.rectTransform);
+            return t;
+        }
+
+        static string Pct(int have, int max) => Mathf.FloorToInt(100f * Mathf.Clamp01(have / (float)Mathf.Max(1, max))) + "%";
         /// <summary>The gauge the choice window is picking for ("aura", "skin" or "hidden").</summary>
         string choiceGauge = "skin";
         RectTransform choiceModal;
@@ -114,7 +129,7 @@ namespace DotRPG
             infoShade.preserveAspect = false; infoShade.raycastTarget = false;
             UIFactory.Place(infoShade.rectTransform, tl, tl, Vector2.zero, new Vector2(500f, BigH));
             w.bigTitle = Label(bigBox.transform, "Title", "", 40, tl, tl, new Vector2(28f, -28f), new Vector2(520f, 56f), TextAnchor.MiddleLeft);
-            w.bigSub = Label(bigBox.transform, "Sub", "", 19, tl, tl, new Vector2(30f, -90f), new Vector2(460f, 150f), TextAnchor.UpperLeft);
+            w.bigSub = Label(bigBox.transform, "Sub", "", 19, tl, tl, new Vector2(30f, -90f), new Vector2(430f, 136f), TextAnchor.UpperLeft); // [UI] clear of 선택하기 (-230)
             // "출시 스킨 N종" ribbon on the skin banner (top right).
             w.badgeBg = UIFactory.Image(bigBox.transform, "Badge", Game.Art.Get("ui_white"), new Color32(150, 30, 40, 235));
             w.badgeBg.preserveAspect = false; w.badgeBg.raycastTarget = false;
@@ -127,6 +142,7 @@ namespace DotRPG
             w.gaugeFill = UIFactory.Image(w.gaugeBg.transform, "Fill", Game.Art.Get("ui_white"), UiTheme.Accent);
             w.gaugeFill.preserveAspect = false; w.gaugeFill.raycastTarget = false;
             UIFactory.Place(w.gaugeFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 16f));
+            w.gaugePct = BarPercent(w.gaugeBg); // [UI] bonghwa: a gauge is a bar with its percentage
             w.gaugeText = Label(bigBox.transform, "GaugeText", "", 17, tl, tl, new Vector2(30f, -264f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
             w.BuildTierPicker(bigBox.transform);
             w.BuildCeiling(bigBox.transform); // [CEILING]
@@ -138,8 +154,10 @@ namespace DotRPG
             w.hiddenFill = UIFactory.Image(w.hiddenBg.transform, "Fill", Game.Art.Get("ui_white"), new Color32(255, 226, 122, 255));
             w.hiddenFill.preserveAspect = false; w.hiddenFill.raycastTarget = false;
             UIFactory.Place(w.hiddenFill.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(2f, 0f), new Vector2(0f, 10f));
-            w.hiddenText = Label(bigBox.transform, "HiddenText", "", 17, tl, tl, new Vector2(30f, -324f), new Vector2(GaugeW + 160f, 26f), TextAnchor.MiddleLeft);
-            w.hiddenBtn = Button(bigBox.transform, "HiddenChoose", L.T("히든 선택"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(150f, 40f), () => w.OpenChoices("hidden"), 18);
+            w.hiddenPct = BarPercent(w.hiddenBg);
+            // [UI] the text stops at the bar's right end (the button sits right of it); the button is wide enough for fr / id
+            w.hiddenText = Label(bigBox.transform, "HiddenText", "", 17, tl, tl, new Vector2(30f, -324f), new Vector2(GaugeW, 26f), TextAnchor.MiddleLeft);
+            w.hiddenBtn = Button(bigBox.transform, "HiddenChoose", L.T("히든 선택"), "ui_btn", tl, tl, new Vector2(30f + GaugeW + 14f, -296f), new Vector2(SideBtnW, 40f), () => w.OpenChoices("hidden"), 18);
             var shard = UIFactory.Image(bigBox.transform, "StarShard", Game.Art.Get("icon_star_shard"), Color.white);
             shard.preserveAspect = true; shard.raycastTarget = false;
             UIFactory.Place(shard.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(24f, 14f), new Vector2(38f, 38f));
@@ -162,9 +180,9 @@ namespace DotRPG
             page.raycastTarget = true;
             w.resultPage = page.rectTransform;
             UIFactory.Stretch(w.resultPage, -20f, -20f, -20f, -20f);
-            w.resultTitle = Label(page.transform, "Title", "", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(900f, 44f), TextAnchor.MiddleCenter);
+            w.resultTitle = Label(page.transform, "Title", "", 30, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f), new Vector2(700f, 44f), TextAnchor.MiddleCenter); // [GACHA VFX] narrower: the 자동 뽑기 button sits top right
             w.skipBtn = Button(page.transform, "Skip", L.T("모두 열기"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-260f, 24f), new Vector2(220f, 56f), w.RevealAll, 19);
-            w.againBtn = Button(page.transform, "Again", L.T("한 번 더"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 56f), () => w.Ask(w.lastCount), 19);
+            w.againBtn = Button(page.transform, "Again", L.T("한 번 더"), "ui_btn", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(240f, 56f), w.Again, 19);
             w.okBtn = Button(page.transform, "Ok", L.T("확인"), "ui_btngray", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(260f, 24f), new Vector2(220f, 56f), w.CloseResults, 19);
             w.BuildAuto(bigBox.transform, page.transform); // [GACHA 2026-10-29] 자동 뽑기 (GachaScreen.Auto.cs)
 
@@ -260,6 +278,7 @@ namespace DotRPG
             shown = new List<StarPullResult>();
             revealed = 0;
             waiting = -1;
+            purchaseResult = false;
             ResetVfx(true); // [GACHA VFX] no clip left over, both clips prepared again
             Refresh();
             CashClient.Refresh(); // [CASH] sealed box table and gauge
@@ -420,6 +439,7 @@ namespace DotRPG
                 revealed = 0;
                 waiting = -1;
                 lastCount = count;
+                purchaseResult = true; // [GACHA VFX] the result page offers 자동 뽑기
                 revealAt = Time.unscaledTime + 0.45f;
                 OpenResults();
                 Refresh();
@@ -437,11 +457,19 @@ namespace DotRPG
             StartVfxBatch(); // [GACHA VFX] face-down top cards and the opening clip
         }
 
+        /// <summary>한 번 더: locked until every card is seen (bonghwa).</summary>
+        void Again()
+        {
+            if (!AllSeen()) { NotYet(); return; }
+            Ask(lastCount);
+        }
+
         void CloseResults()
         {
-            if (Revealing) { RevealAll(); return; }
+            if (!AllSeen()) { NotYet(); return; } // [GACHA VFX] locked until every card is seen (bonghwa)
+            purchaseResult = false;
             StopAuto(null); // [GACHA 2026-10-29] closing the results ends 자동 뽑기
-            ResetVfx(false); // [GACHA VFX]
+            ResetVfx(true); // [GACHA VFX] clips gone, both prepared again for the next draw
             resultPage.gameObject.SetActive(false);
             shown = new List<StarPullResult>();
             Refresh();

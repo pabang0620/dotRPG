@@ -14,7 +14,7 @@ namespace DotRPG
     {
         public static TradeScreen Instance { get; private set; }
         const int Rows = 8;
-        const float ColW = 395f, Gap = 17.5f, RowH = 46f, PanelH = 470f;
+        const float ColW = 395f, Gap = 17.5f, RowH = 44f, PanelH = 470f; // [UI 2026-10-30] rows 46 -> 44: the gold line overlapped the gold field
 
         sealed class RowView { public Image bg, icon; public Text text; }
         readonly List<RowView> mineRows = new List<RowView>(), bagRows = new List<RowView>(), otherRows = new List<RowView>();
@@ -38,15 +38,15 @@ namespace DotRPG
             w.mineHead = Label(mine.transform, "Head", "", 19, tl, tl, new Vector2(12f, -8f), new Vector2(ColW - 24f, 26f), TextAnchor.MiddleLeft);
             BuildRows(w, mine.transform, w.mineRows, i => w.TakeBack(i));
             w.mineGold = Label(mine.transform, "Gold", "", 18, tl, tl, new Vector2(12f, -46f - Rows * RowH), new Vector2(ColW - 24f, 26f), TextAnchor.MiddleLeft);
-            w.goldField = w.Field(mine.transform, "GoldField", L.T("골드"), new Vector2(12f, -PanelH + 50f), new Vector2(200f, 38f));
+            w.goldField = w.Field(mine.transform, "GoldField", L.T("골드"), new Vector2(12f, -PanelH + 46f), new Vector2(200f, 38f));
             w.goldField.contentType = InputField.ContentType.IntegerNumber;
             w.goldField.characterLimit = 12;
-            w.goldBtn = Button(mine.transform, "GoldBtn", L.T("골드 넣기"), "ui_btngray", tl, tl, new Vector2(222f, -PanelH + 50f), new Vector2(160f, 38f), w.SetGold, 17);
+            w.goldBtn = Button(mine.transform, "GoldBtn", L.T("골드 넣기"), "ui_btngray", tl, tl, new Vector2(222f, -PanelH + 46f), new Vector2(160f, 38f), w.SetGold, 17);
 
             var bagPanel = Panel(w.content, "Bag", tl, tl, new Vector2(ColW + Gap, -36f), new Vector2(ColW, PanelH), new Color32(24, 36, 54, 235));
             Label(bagPanel.transform, "Head", L.T("<b>내 가방</b>  <size=15><color=#8c96a8>눌러서 올리기</color></size>"), 19, tl, tl, new Vector2(12f, -8f), new Vector2(ColW - 24f, 26f), TextAnchor.MiddleLeft);
             BuildRows(w, bagPanel.transform, w.bagRows, i => w.Put(i));
-            w.countField = w.Field(bagPanel.transform, "Count", L.T("개수 (비우면 전부)"), new Vector2(12f, -PanelH + 50f), new Vector2(190f, 38f));
+            w.countField = w.Field(bagPanel.transform, "Count", L.T("개수 (비우면 전부)"), new Vector2(12f, -PanelH + 46f), new Vector2(190f, 38f));
             w.countField.contentType = InputField.ContentType.IntegerNumber;
             w.countField.characterLimit = 6;
             var br = new Vector2(1f, 0f);

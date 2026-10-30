@@ -37,7 +37,7 @@ namespace DotRPG
             var list = Panel(w.content, "List", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(ListWidth, 590f), new Color32(18, 26, 40, 240));
             w.listRoot = list.rectTransform;
             SwipeSteps.Add(list.gameObject, RowHeight, w.ScrollRows); // touch: swipe instead of the mouse wheel
-            w.moreUp = Label(list.transform, "MoreUp", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -2f), new Vector2(160f, 20f), TextAnchor.UpperRight);
+            w.moreUp = Label(list.transform, "MoreUp", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -2f), new Vector2(ListWidth - 20f, 20f), TextAnchor.UpperRight);
             w.moreDown = Label(list.transform, "MoreDown", "", 16, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-10f, -8f - VisibleRows * RowHeight), new Vector2(ListWidth - 20f, 20f), TextAnchor.UpperRight);
             w.empty = Label(list.transform, "Empty", L.T("진행 중인 퀘스트가 없습니다."), 20, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(ListWidth - 40f, 40f), TextAnchor.MiddleCenter);
             var side = Panel(w.content, "Detail", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(ListWidth + 20f, 0f), new Vector2(760f, 590f), new Color32(24, 36, 54, 235));
@@ -231,8 +231,18 @@ namespace DotRPG
             if (r.gold > 0) parts.Add(L.F("골드 {0:N0}", Progression.QuestGold(r.gold)));
             if (r.maxHealth > 0) parts.Add(L.F("최대 체력 +{0}", EquipmentDatabase.Hearts(r.maxHealth)));
             if (r.items != null)
+            {
+                // [UI 2026-10-30] P8: the same item listed twice shows once with the total.
+                var order = new List<string>();
+                var counts = new Dictionary<string, int>();
                 foreach (var it in r.items)
-                    if (!string.IsNullOrEmpty(it.id)) parts.Add(it.count > 1 ? $"{L.T(QuestManager.ItemName(it.id))} x{it.count}" : L.T(QuestManager.ItemName(it.id)));
+                {
+                    if (string.IsNullOrEmpty(it.id)) continue;
+                    if (!counts.ContainsKey(it.id)) { order.Add(it.id); counts[it.id] = 0; }
+                    counts[it.id] += Mathf.Max(1, it.count);
+                }
+                foreach (var id in order) parts.Add(counts[id] > 1 ? $"{L.T(QuestManager.ItemName(id))} x{counts[id]}" : L.T(QuestManager.ItemName(id)));
+            }
             return string.Join("   ·   ", parts);
         }
 

@@ -118,7 +118,9 @@ namespace DotRPG
         {
             for (int i = 0; i < tabs.Length; i++) tabs[i].GetComponent<Image>().sprite = Game.Art.Get(Boards[i] == board ? "ui_btn" : "ui_btngray");
             weekBtn.gameObject.SetActive(board != RankingClient.PowerBoard);
-            TextOf(weekBtn).text = week == "current" ? L.T("이번 주 ▶ 지난주") : L.T("지난주 ▶ 이번 주");
+            // [2026-10-30] The world boss runs two-week seasons: "this season / last season" (the guild boss stays weekly).
+            if (board == RankingClient.WorldBoard) TextOf(weekBtn).text = week == "current" ? L.T("이번 시즌 ▶ 지난 시즌") : L.T("지난 시즌 ▶ 이번 시즌");
+            else TextOf(weekBtn).text = week == "current" ? L.T("이번 주 ▶ 지난주") : L.T("지난주 ▶ 이번 주");
             bool guild = board == RankingClient.GuildBoard;
             heads[0].text = L.T("순위");
             heads[1].text = guild ? L.T("길드") : L.T("이름");
@@ -140,6 +142,8 @@ namespace DotRPG
             pageText.text = $"{page + 1} / {pages}";
             prev.gameObject.SetActive(pages > 1); next.gameObject.SetActive(pages > 1); pageText.gameObject.SetActive(pages > 1);
             updated.text = b?.updatedAt != null ? L.F("{0:HH:mm} 기준 · 1분마다 갱신", b.updatedAt.Value) : "";
+            if (board == RankingClient.WorldBoard && b?.seasonStart != null && b.seasonEnd != null)
+                updated.text = L.F("시즌 {0:MM-dd} ~ {1:MM-dd}", b.seasonStart.Value, b.seasonEnd.Value) + " · " + updated.text;
             emptyText.text = b == null ? (loading != null ? L.T("불러오는 중...") : "") : b.entries.Count == 0 ? L.T("아직 기록이 없습니다.") : "";
             for (int i = 0; i < rows.Count; i++)
             {

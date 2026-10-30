@@ -42,6 +42,8 @@ export interface MemberRow {
   level: number;
   ready: boolean;
   joined_at: Date;
+  /** 장착한 칭호 id(머리 위 칭호 줄, 2026-10-30) */
+  title_id: string | null;
 }
 interface RawMember extends Omit<MemberRow, 'member_id' | 'party_id' | 'character_id' | 'account_id'> {
   member_id: string;
@@ -57,7 +59,7 @@ const toMember = (r: RawMember): MemberRow => ({
   account_id: Number(r.account_id),
 });
 const MEMBER_SQL = `SELECT m.id AS member_id, m.party_id, m.character_id, m.account_id, c.uuid AS character_uuid, c.name,
-  c.class, c.level, m.ready, m.joined_at
+  c.class, c.level, m.ready, m.joined_at, c.title_achievement AS title_id
   FROM party_members m JOIN characters c ON c.id = m.character_id`;
 
 export async function findPartyIdOf(db: Queryable, characterId: number): Promise<number | null> {

@@ -57,7 +57,7 @@ namespace DotRPG
                     label.horizontalOverflow = HorizontalWrapMode.Wrap;
                     label.verticalOverflow = VerticalWrapMode.Truncate;
                     label.resizeTextForBestFit = true;
-                    label.resizeTextMinSize = 10;
+                    label.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 10
                     label.resizeTextMaxSize = label.fontSize;
                 }
                 HoverSpec(row.a.gameObject, r, 'a');

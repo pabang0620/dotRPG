@@ -18,6 +18,7 @@ namespace DotRPG
         const int Rows = 6;
 
         Text header, chestTitle, chestBody;
+        UiHelpTip ruleTip; // [UI 2026-10-30] the tab's rule moved from the header line into a "?" tooltip
         Image chestBg;
         Button refresh, tabDaily, tabWeekly, chestOpen, claimAll, acceptAll;
         bool batchRunning; // [UI 2026-10-29] 모두 받기 / 모두 수락 in progress
@@ -31,9 +32,11 @@ namespace DotRPG
             Instance = w;
             w.tabDaily = Button(w.content, "TabDaily", L.T("일일 의뢰"), "ui_btn", new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero, new Vector2(170f, 44f), () => w.SetTab(false), 20);
             w.tabWeekly = Button(w.content, "TabWeekly", L.T("주간 의뢰"), "ui_btngray", new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(180f, 0f), new Vector2(170f, 44f), () => w.SetTab(true), 20);
-            w.header = Label(w.content, "Header", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(362f, 0f), new Vector2(360f, 44f), TextAnchor.MiddleLeft);
-            w.header.resizeTextForBestFit = true; w.header.resizeTextMinSize = 11; w.header.resizeTextMaxSize = w.header.fontSize; // [UI 2026-10-29] narrower: room for the two buttons
+            // [UI 2026-10-30] Two-line header (giver · next reset) wrapped at spaces; it used to shrink to 11 px to fit the rule too.
+            w.header = Label(w.content, "Header", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(362f, 0f), new Vector2(336f, 44f), TextAnchor.MiddleLeft);
+            w.header.lineSpacing = 1f;
             w.header.verticalOverflow = VerticalWrapMode.Truncate;
+            w.ruleTip = UiHelpTip.Create(w.content, "RuleHelp", new Vector2(0f, 1f), new Vector2(704f, -6f), "");
             // [UI 2026-10-29] One press for every ready reward (and chest) / every offered job, both tabs.
             w.acceptAll = Button(w.content, "AcceptAll", L.T("모두 수락"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-320f, 0f), new Vector2(150f, 44f), () => w.RunAll(false), 17);
             w.claimAll = Button(w.content, "ClaimAll", L.T("모두 받기"), "ui_btn", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-160f, 0f), new Vector2(150f, 44f), () => w.RunAll(true), 17);
@@ -47,7 +50,7 @@ namespace DotRPG
                 text.horizontalOverflow = HorizontalWrapMode.Wrap;
                 text.verticalOverflow = VerticalWrapMode.Truncate;
                 text.resizeTextForBestFit = true;
-                text.resizeTextMinSize = 13;
+                text.resizeTextMinSize = UIFactory.ReadableFloor;
                 text.resizeTextMaxSize = text.fontSize;
             }
             w.refresh = Button(w.content, "Refresh", L.T("새로고침"), "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), Vector2.zero, new Vector2(150f, 44f), () => { Game.Audio.PlaySfx("select", 0.5f); DailyQuestClient.Refresh(); }, 17);
@@ -117,17 +120,11 @@ namespace DotRPG
             return string.Join(" · ", parts);
         }
 
-        /// <summary>Streak pips for the 7-day cycle: filled up to today's step, gold on the last one.</summary>
+        /// <summary>[UI 2026-10-30] Today's step in the 7-day cycle as "n/7" (was a row of seven dots): gold on the last day, green once opened.</summary>
         static string Pips(int step, int cycle, bool opened)
         {
-            var sb = new System.Text.StringBuilder();
-            for (int i = 1; i <= cycle; i++)
-            {
-                bool lit = i < step || (i == step && opened);
-                string col = lit ? (i == cycle ? "#ffd34a" : "#8fe28f") : i == step ? "#ffffff" : "#5a6070";
-                sb.Append($"<color={col}>{(i == cycle ? "★" : "●")}</color>");
-            }
-            return sb.ToString();
+            string col = step >= cycle ? "#ffd34a" : opened ? "#8fe28f" : "#ffffff";
+            return $"<color={col}>{(step >= cycle ? "★ " : "")}{step}/{cycle}</color>";
         }
 
         void RefreshChest(bool show)
@@ -181,6 +178,7 @@ namespace DotRPG
             batchRunning = true;
             Refresh();
             var done = new List<string>();
+            long xpSum = 0, goldSum = 0; int jobs = 0; // [UI 2026-10-30] job rewards are added up into one line
             string error = null;
             for (int guard = 0; guard < 24; guard++)
             {
@@ -194,12 +192,21 @@ namespace DotRPG
                 float until = Time.unscaledTime + 15f;
                 while (result == null && Time.unscaledTime < until) yield return null;
                 if (result != true) { error = message ?? L.T("서버에 연결할 수 없습니다."); break; }
-                done.Add(message);
+                if (claim && chest == null) { xpSum += slot.xp; goldSum += slot.gold; jobs++; }
+                else done.Add(message);
                 while (DailyQuestClient.Busy && Time.unscaledTime < until) yield return null;
             }
             batchRunning = false;
-            Game.Audio.PlaySfx(done.Count > 0 && error == null ? "quest" : "cancel");
-            string head = done.Count == 0 ? (error == null ? L.T("받을 것이 없습니다.") : "") : claim ? L.F("모두 받기: {0}건", done.Count) : L.F("모두 수락: {0}건", done.Count);
+            Game.Audio.PlaySfx(done.Count + jobs > 0 && error == null ? "quest" : "cancel");
+            int count = done.Count + jobs;
+            string head = count == 0 ? (error == null ? L.T("받을 것이 없습니다.") : "") : claim ? L.F("모두 받기: {0}건", count) : L.F("모두 수락: {0}건", count);
+            if (jobs > 0)
+            {
+                var sum = new List<string>();
+                if (xpSum > 0) sum.Add(L.F("경험치 {0:N0}", xpSum));
+                if (goldSum > 0) sum.Add(L.F("골드 {0:N0}", goldSum));
+                if (sum.Count > 0) head += "\n" + string.Join("  ·  ", sum);
+            }
             if (done.Count > 0) head += "\n" + string.Join("\n", done);
             if (error != null) head += (head.Length > 0 ? "\n" : "") + L.F("<color=#ff9f7a>멈춤: {0}</color>", error);
             GameEvents.RaiseToast(head);
@@ -245,7 +252,9 @@ namespace DotRPG
             header.text = !online ? L.T("<color=#8c96a8>온라인으로 접속하면 받을 수 있습니다.</color>")
                 : !DailyQuestClient.Loaded ? L.T("<color=#8c96a8>불러오는 중입니다...</color>")
                 : !DailyQuestClient.Unlocked ? L.T("<color=#8c96a8>1-15 '전직의 길'을 마치면 열립니다.</color>")
-                : $"{(string.IsNullOrEmpty(DailyQuestClient.Giver) ? "" : DailyQuestClient.Giver + "  ·  ")}<color=#b8c4d8>{rule}</color>  ·  <color=#8c96a8>{reset}</color>";
+                : $"{(string.IsNullOrEmpty(DailyQuestClient.Giver) ? "" : DailyQuestClient.Giver + "  ·  ")}<color=#8c96a8>{reset}</color>";
+            ruleTip.SetText(rule);
+            ruleTip.gameObject.SetActive(online && DailyQuestClient.Loaded && DailyQuestClient.Unlocked);
             refresh.gameObject.SetActive(online);
             refresh.interactable = !DailyQuestClient.Busy;
             claimAll.gameObject.SetActive(online);

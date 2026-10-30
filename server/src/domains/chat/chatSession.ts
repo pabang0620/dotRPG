@@ -31,6 +31,9 @@ export interface ServerProfile {
   guildName?: string | null;
   guildColor?: string | null;
   nameColor?: string | null;
+  /** 장착한 칭호 id(머리 위 칭호 줄·랭킹 마크, 2026-10-30) */
+  titleId?: string | null;
+  title?: string | null;
 }
 
 const MAX_BUFFERED_BYTES = 1024 * 1024;

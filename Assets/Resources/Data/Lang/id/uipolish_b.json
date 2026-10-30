@@ -1,0 +1,10 @@
+{
+ "<b>가방</b>": "<b>Tas</b>",
+ "거래 가능한 아이템만 등록할 수 있습니다.": "Hanya item yang bisa diperdagangkan yang bisa didaftarkan.",
+ "내 전투력 {0:N0}": "Kekuatanku {0:N0}",
+ "<color=#b8c4d8>목적지: <b>{0}</b></color>": "<color=#b8c4d8>Tujuan: <b>{0}</b></color>",
+ "월드 선택": "Pilih Dunia",
+ "지역을 눌러 자세히 보기": "Tekan wilayah untuk detail",
+ "{0}  <color={1}>{2}</color>   {3}/{4}명   <color=#b8c4d8>{5}</color>\n최소 전투력 {6:N0}  <color={8}>(내 {9:N0})</color>   <color=#b8c4d8>“{7}”</color>": "{0}  <color={1}>{2}</color>   {3}/{4} orang   <color=#b8c4d8>{5}</color>\nKekuatan min. {6:N0}  <color={8}>(kamu {9:N0})</color>   <color=#b8c4d8>“{7}”</color>",
+ "<size=14><color=#8a94a8> Enter 채팅</color></size>": "<size=14><color=#8a94a8> Enter untuk chat</color></size>"
+}

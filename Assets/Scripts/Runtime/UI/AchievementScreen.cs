@@ -46,6 +46,7 @@ namespace DotRPG
                 UIFactory.Place(icon.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
                 var name = Label(bg.transform, "Name", "", 19, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -4f), new Vector2(330f, 26f), TextAnchor.MiddleLeft);
                 var info = Label(bg.transform, "Info", "", 16, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(60f, -28f), new Vector2(400f, 24f), TextAnchor.MiddleLeft);
+                UIFactory.OneLine(info, true); // [UI 2026-10-30] one line inside the row, never under the 장착 button
                 var equip = Button(bg.transform, "Equip", L.T("장착"), "ui_btn", new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(110f, 38f), () => w.EquipAt(idx), 16);
                 w.cells.Add((bg, name, info, equip, icon));
             }
@@ -105,6 +106,7 @@ namespace DotRPG
                 c.info.text = a.achieved ? $"<color=#b8c4d8>{L.T(a.description)}</color>" : $"<color=#8c96a8>{L.T(a.description)}  ({a.progress:N0}/{a.goal:N0})</color>";
                 bool equipped = AchievementClient.MyTitleId == a.id;
                 c.equip.gameObject.SetActive(a.achieved);
+                c.info.rectTransform.sizeDelta = new Vector2(a.achieved ? 400f : CellW - 76f, c.info.rectTransform.sizeDelta.y); // no button: the whole row
                 TextOf(c.equip).text = equipped ? L.T("장착 중") : L.T("장착");
                 c.equip.interactable = !equipped;
             }

@@ -162,7 +162,7 @@ namespace DotRPG
             status = UIFactory.Text(layout, "HubStatus", "", 18, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
             UIFactory.Place(status.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(1280f - 28f - (TabX + 3f * (TabW + TabGap)) - 12f, 52f));
             status.resizeTextForBestFit = true;
-            status.resizeTextMinSize = 12;
+            status.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 12; the 52 px box takes two lines at 14
             status.resizeTextMaxSize = 18;
             if (TouchUi.Enabled) foreach (var b in tabs) MobileTouch.GrowHeight((RectTransform)b.transform, MobileTouch.WindowTapHeight, MobileTouch.Grow.Up); // [TOUCH] into the header
             Paint();

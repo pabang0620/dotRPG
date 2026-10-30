@@ -73,7 +73,9 @@ namespace DotRPG
             GearTooltip.AppendBind(sb, s.itemId);
             tooltipText.text = sb.ToString();
             // Size the box to the text.
-            float h = Mathf.Max(96f, tooltipText.preferredHeight + 32f);
+            float th = tooltipText.preferredHeight;
+            tooltipText.rectTransform.sizeDelta = new Vector2(280f, Mathf.Max(400f, th + 4f)); // [UI 2026-10-30] long set / hidden lines stay inside
+            float h = Mathf.Max(96f, th + 32f);
             tooltip.sizeDelta = new Vector2(390f, h);
         }
 
@@ -89,7 +91,7 @@ namespace DotRPG
             Vector2 topRight = canvasRect.InverseTransformPoint(s.rect.TransformPoint(new Vector3(r.xMax, r.yMax, 0f)));
             float x = left ? topLeft.x - size.x - 10f : topRight.x + 10f;
             x = Mathf.Clamp(x, -halfW + 8f, halfW - size.x - 8f);
-            float y = Mathf.Clamp(topLeft.y, -halfH + size.y + 8f, halfH - 8f);
+            float y = Mathf.Clamp(topLeft.y, Mathf.Min(-halfH + size.y + 8f, halfH - 8f), halfH - 8f); // [UI 2026-10-30] a tall tooltip keeps its top on screen
             tooltip.anchoredPosition = new Vector2(x, y);
             tooltip.SetAsLastSibling();
         }

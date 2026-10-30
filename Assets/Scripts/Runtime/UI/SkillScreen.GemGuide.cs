@@ -89,7 +89,7 @@ namespace DotRPG
                     t.horizontalOverflow = HorizontalWrapMode.Wrap;
                     t.verticalOverflow = VerticalWrapMode.Truncate;
                     t.resizeTextForBestFit = true;
-                    t.resizeTextMinSize = 10;
+                    t.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 10
                     t.resizeTextMaxSize = t.fontSize;
                 }
                 var view = e;
@@ -179,9 +179,10 @@ namespace DotRPG
                 string locked = g.IsUltimate ? L.T("전직 각성 후") : L.F("Lv.{0} 해금", g.unlockLevel);
                 string state = open ? (worn.Length > 0 ? $"<color=#8fe28f>{worn}</color>" : L.T("<color=#b8c4d8>사용 가능</color>")) : $"<color=#ff9f43>{locked}</color>";
                 string key = g.kind == GemKind.Active ? (g.IsUltimate ? L.T("각성") : L.F("{0}번", g.slot + 1)) + " · " : "";
-                e.title.text = $"<b>{L.T(g.name)}</b>  <size=13>{key}{state}</size>";
+                e.title.text = $"<b>{L.T(g.name)}</b>  <size=14>{key}{state}</size>";
+                // [UI 2026-10-30] A support gem's row keeps its effect; the recommendation is in the hover tooltip (추천).
                 e.body.text = g.kind == GemKind.Support
-                    ? $"{GemEffect(g)}\n<color=#8c96a8>{Short(L.T(g.tip), 40)}</color>"
+                    ? GemEffect(g)
                     : $"<color=#b8c4d8>{Short(L.T(g.description), 46)}</color>";
             }
         }

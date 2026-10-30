@@ -137,6 +137,7 @@ namespace DotRPG
 
             nameText = UIFactory.Text(root, "Name", "", 20, UIColors.Cream, TextAnchor.MiddleLeft, true);
             UIFactory.Place(nameText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(14f, -6f), new Vector2(Width - 150f, 26f));
+            UIFactory.OneLine(nameText, shrink: true); // [UI 2026-10-30] a long translated name + level ran under the ×N lines
             linesText = UIFactory.Text(root, "Lines", "", 22, UIColors.Highlight, TextAnchor.MiddleRight, true);
             UIFactory.Place(linesText.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-14f, -5f), new Vector2(140f, 28f));
 
@@ -187,6 +188,9 @@ namespace DotRPG
             bo.effectColor = new Color(0.45f, 0.05f, 0.05f, 1f);
             bo.effectDistance = new Vector2(3f, -3f);
             UIFactory.Place(bannerTitle.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -12f), new Vector2(UiTheme.HudBannerWidth - 20f, 70f));
+            // [UI 2026-10-30] Long boss names shrink inside the centre column instead of running over the party frames.
+            bannerTitle.resizeTextForBestFit = true; bannerTitle.resizeTextMinSize = 26; bannerTitle.resizeTextMaxSize = bannerTitle.fontSize;
+            bannerTitle.verticalOverflow = VerticalWrapMode.Truncate;
             banner.gameObject.SetActive(false);
 
             // [CONTENT] Right above the bar, inside the same centre column (clear of party frames and quest panel).
@@ -196,6 +200,8 @@ namespace DotRPG
             wo.effectColor = new Color(0.1f, 0.02f, 0.02f, 1f);
             wo.effectDistance = new Vector2(2f, -2f);
             UIFactory.Stretch(warningText.rectTransform);
+            warningText.resizeTextForBestFit = true; warningText.resizeTextMinSize = 18; warningText.resizeTextMaxSize = warningText.fontSize; // [UI 2026-10-30] stays in its line
+            warningText.verticalOverflow = VerticalWrapMode.Truncate;
             // [UI 2026-10-29] A mechanic's countdown (안전지대로, 마법진) on its own, big, right under the line.
             countText = UIFactory.Text(warning, "Count", "", 64, Color.white, TextAnchor.MiddleCenter, true);
             var co = countText.gameObject.AddComponent<Outline>();

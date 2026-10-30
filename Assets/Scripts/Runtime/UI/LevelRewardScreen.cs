@@ -128,23 +128,38 @@ namespace DotRPG
         {
             batchRunning = true;
             Refresh();
-            var done = new List<string>();
+            int done = 0;
+            // [UI 2026-10-30] Same rewards added up (star shards, each pass item) instead of one line per claim.
+            var totals = new List<(string name, long count)>();
+            void AddTotal(string name, long count)
+            {
+                for (int i = 0; i < totals.Count; i++) if (totals[i].name == name) { totals[i] = (name, totals[i].count + count); return; }
+                totals.Add((name, count));
+            }
+            long stars = 0;
             string error = null;
             for (int guard = 0; guard < 120; guard++)
             {
                 float until = Time.unscaledTime + 15f;
                 while ((LevelRewardClient.Busy || !LevelRewardClient.Loaded) && Time.unscaledTime < until) yield return null; // the list reloads after each claim
                 if (!NextClaim(out int level, out bool pass)) break;
+                var freeTier = pass ? null : FreeAt(level);
+                var passTier = pass ? PassAt(level) : null;
                 bool? result = null; string message = null;
                 System.Action<bool, string> answer = (ok, msg) => { result = ok; message = msg; };
                 if (pass) LevelRewardClient.ClaimPass(level, answer); else LevelRewardClient.Claim(level, answer);
                 while (result == null && Time.unscaledTime < until) yield return null;
                 if (result != true) { error = message ?? L.T("서버에 연결할 수 없습니다."); break; }
-                done.Add(message);
+                done++;
+                if (freeTier != null) stars += freeTier.stars;
+                if (passTier != null) foreach (var (key, count) in passTier.rewards) AddTotal(L.T(DungeonDatabase.ItemName(key)), count);
             }
             batchRunning = false;
-            Game.Audio.PlaySfx(done.Count > 0 && error == null ? "quest" : "cancel");
-            string text = done.Count > 0 ? L.F("모두 받기: {0}건", done.Count) + "\n" + string.Join("\n", done) : "";
+            Game.Audio.PlaySfx(done > 0 && error == null ? "quest" : "cancel");
+            var parts = new List<string>();
+            if (stars > 0) parts.Add(L.F("별조각 <color=#ffd34a>{0:N0}</color>", stars));
+            foreach (var (name, count) in totals) parts.Add(name + (count > 1 ? $" x{count:N0}" : ""));
+            string text = done > 0 ? L.F("모두 받기: {0}건", done) + (parts.Count > 0 ? "\n" + string.Join("  ·  ", parts) : "") : "";
             if (error != null) text += (text.Length > 0 ? "\n" : "") + L.F("<color=#ff9f7a>멈춤: {0}</color>", error);
             if (text.Length > 0) GameEvents.RaiseToast(text);
             if (gameObject.activeInHierarchy) Refresh();

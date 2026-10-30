@@ -46,7 +46,7 @@ namespace DotRPG
             t.verticalOverflow = VerticalWrapMode.Truncate;
             w.keeperLine = UIFactory.Text(layout, "Keeper", "", 19, new Color32(246, 231, 200, 255), TextAnchor.MiddleRight, true);
             UIFactory.Place(w.keeperLine.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-28f, -12f), new Vector2(536f, 52f));
-            w.keeperLine.resizeTextForBestFit = true; w.keeperLine.resizeTextMinSize = 13; w.keeperLine.resizeTextMaxSize = 19;
+            w.keeperLine.resizeTextForBestFit = true; w.keeperLine.resizeTextMinSize = UIFactory.ReadableFloor; w.keeperLine.resizeTextMaxSize = 19;
             w.keeperLine.verticalOverflow = VerticalWrapMode.Truncate;
             // Every window's content is the same 1220x594 rect (1280x720 minus margins and header).
             var area = UIFactory.Stretch(UIFactory.Rect(layout, "ContentArea"), 30f, 30f, 30f, 96f);
@@ -99,6 +99,10 @@ namespace DotRPG
             UIFactory.FitInFrame(text, size.x < 70f ? 6f : UIFactory.FrameRim - 2f);
             return button;
         }
+
+        /// <summary>[UI 2026-10-30] The "×" close button in the top-right corner of a popup panel drawn inside a window.</summary>
+        protected static Button CloseX(Transform panel, Action onClick, float inset = 8f) =>
+            Button(panel, "CloseX", "×", "ui_btngray", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-inset, -inset), new Vector2(44f, 44f), onClick, 26);
 
         protected static Text Label(Transform parent, string name, string text, int size, Vector2 anchor, Vector2 pivot, Vector2 pos, Vector2 box, TextAnchor align = TextAnchor.UpperLeft)
         {

@@ -18,7 +18,7 @@ namespace DotRPG
         const float GoodW = 602f, GoodH = 70f, GearH = 60f, BodyTop = -128f;
         protected override bool PadNavigation => !busy;
 
-        sealed class GoodView { public RectTransform row; public Text name, info; public Button buy; public string id; }
+        sealed class GoodView { public RectTransform row; public Text name, stock, info; public Button buy; public string id; }
         sealed class GearView { public RectTransform row; public Text name; public Button one, all; public string key; }
 
         public static ExchangeShopScreen Instance { get; private set; }
@@ -68,6 +68,9 @@ namespace DotRPG
                 {
                     var v = new GoodView { row = Row(colRoot, i, 0f, GoodH, GoodW) };
                     v.name = Label(v.row, "Name", "", 19, tl, tl, new Vector2(14f, -6f), new Vector2(430f, 30f), TextAnchor.MiddleLeft);
+                    // [UI 2026-10-30] weekly stock on the name line (right), so the info line keeps one fact at a readable size
+                    v.stock = Label(v.row, "Stock", "", 16, tl, tl, new Vector2(14f, -6f), new Vector2(430f, 30f), TextAnchor.MiddleRight);
+                    UIFactory.OneLine(v.stock);
                     v.info = Label(v.row, "Info", "", 15, tl, tl, new Vector2(14f, -36f), new Vector2(430f, 28f), TextAnchor.MiddleLeft);
                     UIFactory.OneLine(v.info, shrink: true);
                     var view = v;
@@ -78,9 +81,11 @@ namespace DotRPG
 
             // ---------- 장비 분해 ----------
             w.gearTab = UIFactory.Place(UIFactory.Rect(w.content, "Gear"), tl, tl, new Vector2(0f, BodyTop), new Vector2(1220f, 40f + GearRows * GearH));
-            w.gearHead = Label(w.gearTab, "Head", "", 17, tl, tl, Vector2.zero, new Vector2(820f, 36f), TextAnchor.MiddleLeft);
-            w.dismantleAllBtn = Button(w.gearTab, "DismantleAll", L.T("이 쪽 모두 분해"), "ui_btngray", tr, tr, new Vector2(-170f, 0f), new Vector2(170f, 36f), w.AskDismantlePage, 16);
-            w.gearPager = Pager(w.gearTab, new Vector2(-350f, -2f), d => { w.gearPage += d; w.Refresh(); });
+            // [UI 2026-10-30] head wraps to two lines left of the pager (it ran under the pager); wider page button for long translations
+            w.gearHead = Label(w.gearTab, "Head", "", 17, tl, tl, new Vector2(0f, 2f), new Vector2(690f, 40f), TextAnchor.MiddleLeft);
+            w.gearHead.lineSpacing = 1f;
+            w.dismantleAllBtn = Button(w.gearTab, "DismantleAll", L.T("이 쪽 모두 분해"), "ui_btngray", tr, tr, new Vector2(-170f, 0f), new Vector2(194f, 36f), w.AskDismantlePage, 16);
+            w.gearPager = Pager(w.gearTab, new Vector2(-372f, -2f), d => { w.gearPage += d; w.Refresh(); });
             for (int i = 0; i < GearRows; i++)
             {
                 var v = new GearView { row = Row(w.gearTab, i, -42f, GearH, 1220f) };
@@ -95,8 +100,9 @@ namespace DotRPG
             var page = Panel(w.content, "PickPage", new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(760f, 560f), new Color32(10, 14, 24, 250));
             page.raycastTarget = true;
             w.pickPage = page.rectTransform;
-            w.pickTitle = Label(page.transform, "Title", "", 22, tl, tl, new Vector2(20f, -14f), new Vector2(560f, 34f), TextAnchor.MiddleLeft);
-            w.pickPager = Pager(page.transform, new Vector2(-14f, -14f), d => { w.pickPageIndex += d; w.RefreshPick(); });
+            w.pickTitle = Label(page.transform, "Title", "", 22, tl, tl, new Vector2(20f, -14f), new Vector2(510f, 34f), TextAnchor.MiddleLeft);
+            w.pickPager = Pager(page.transform, new Vector2(-64f, -14f), d => { w.pickPageIndex += d; w.RefreshPick(); });
+            CloseX(page.transform, w.ClosePick); // [UI 2026-10-30] every popup has an × close
             for (int i = 0; i < PickRows; i++)
             {
                 int at = i;
@@ -210,6 +216,7 @@ namespace DotRPG
                 var g = list[start + i];
                 v.id = g.id;
                 v.name.text = $"<b>{L.T(g.name)}</b>";
+                v.stock.text = "";
                 v.info.text = L.F("<color=#b8c4d8>{0} {1}개를 가방으로 받습니다 · {2}</color>", L.T(DungeonDatabase.ItemName(g.itemId)), g.count, StarShopClient.Stars(StarShopClient.Balance));
                 TextOf(v.buy).text = L.F("별조각 {0:N0}", g.price);
                 v.buy.interactable = !busy && StarShopClient.ExchangeLoaded && StarShopClient.Balance >= g.price;
@@ -230,9 +237,11 @@ namespace DotRPG
                 v.id = g.id;
                 bool ownedOnly = g.kind == "cosmetic" && !string.IsNullOrEmpty(g.itemId) && StarShopClient.Owned.Contains(g.itemId);
                 bool noChoice = g.kind == "cosmetic" && string.IsNullOrEmpty(g.itemId) && g.choices.Count == 0;
-                string stock = g.left < 0 ? L.T("재고 제한 없음") : L.F("이번 주 남은 재고 {0}/{1}", g.left, g.weekly);
+                // [UI 2026-10-30] unlimited stock is not worth a line; a weekly stock sits right of the name
                 v.name.text = $"<b>{L.T(g.name)}</b>" + ClassTag(g);
-                v.info.text = $"<color=#b8c4d8>{KindText(g)} · {stock}</color>";
+                string stock = g.left < 0 ? "" : L.F("이번 주 남은 재고 {0}/{1}", g.left, g.weekly);
+                v.stock.text = stock.Length == 0 ? "" : "<color=" + (g.left == 0 ? "#ff9f7a" : "#b8c4d8") + ">" + stock + "</color>";
+                v.info.text = $"<color=#b8c4d8>{KindText(g)}</color>";
                 TextOf(v.buy).text = ownedOnly ? L.T("보유 중") : noChoice ? L.T("모두 보유") : g.left == 0 ? L.T("이번 주 품절") : L.F("결정 {0:N0}", g.price);
                 v.buy.interactable = !busy && !Closed && StarShopClient.ExchangeLoaded && !ownedOnly && !noChoice && g.left != 0 && StarShopClient.Crystals >= g.price;
             }

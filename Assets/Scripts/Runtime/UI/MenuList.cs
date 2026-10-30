@@ -80,7 +80,7 @@ namespace DotRPG
         {
             t.resizeTextForBestFit = true;
             t.resizeTextMaxSize = t.fontSize;
-            t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(11, Mathf.RoundToInt(t.fontSize * .6f)));
+            t.resizeTextMinSize = Mathf.Min(t.fontSize, UIFactory.ReadableFloor); // [UI 2026-10-30] was 60%, at least 11
             t.verticalOverflow = VerticalWrapMode.Truncate;
         }
 

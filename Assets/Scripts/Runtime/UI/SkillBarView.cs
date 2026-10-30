@@ -100,7 +100,7 @@ namespace DotRPG
                 foreach (var t in new[] { v.keys[i], v.lockTexts[i], v.costs[i] })
                 {
                     t.resizeTextForBestFit = true;
-                    t.resizeTextMinSize = 9;
+                    t.resizeTextMinSize = UIFactory.ReadableFloor; // [UI 2026-10-30] was 9; the key tag grows with the key name instead
                     t.resizeTextMaxSize = t.fontSize;
                     t.verticalOverflow = VerticalWrapMode.Truncate;
                 }
@@ -204,7 +204,14 @@ namespace DotRPG
                 var gem = prog.Active(i);
                 ShowToggle(i, gem != null && CareerCatalog.Get(gem.id)?.effect == "stance" && CareerCombat.For(player).StanceOn);
                 var shown = gem ?? (i==4 ? prog.IsPromoted ? CareerCatalog.For(prog.Career)[8].Gem : null : SkillGems.ForSlot(player.Class, i));
-                keys[i].text = Game.Input.GetBindingLabel(SkillGems.ActionFor(i));
+                string keyName = Game.Input.GetBindingLabel(SkillGems.ActionFor(i));
+                if (keys[i].text != keyName)
+                {
+                    keys[i].text = keyName;
+                    // [UI 2026-10-30] A long key ("Space") widens its tag (up to the slot) so it stays at the readable floor.
+                    var tag = (RectTransform)keys[i].transform.parent;
+                    tag.sizeDelta = new Vector2(Mathf.Clamp(8f + keyName.Length * 9f, Mathf.Round(slotSize[i] * 0.55f), slotSize[i] - 6f), tag.sizeDelta.y);
+                }
                 icons[i].enabled = shown != null;
                 if (shown != null) icons[i].sprite = Game.Art.Get(CareerMoves.IconKey(shown.icon));
                 ShowSpec(i, gem != null ? prog.SpecOf(gem.id) : '\0');
@@ -224,7 +231,7 @@ namespace DotRPG
                 }
                 if (!open)
                 {
-                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = i==4 ? L.T("각성 시련") : $"Lv.{lockShown[i]}"; }
+                    if (lockShown[i] != Progression.SlotLevel(i)) { lockShown[i] = Progression.SlotLevel(i); lockTexts[i].text = i==4 ? "" : $"Lv.{lockShown[i]}"; } // [UI 2026-10-30] the awakening slot: padlock over the icon, "각성" caption under it (the trial name shrank to 9 px)
                     icons[i].color = new Color(0.45f, 0.45f, 0.52f, 1f);
                     cooldowns[i].fillAmount = 0f;
                     costs[i].text = "";

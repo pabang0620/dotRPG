@@ -150,11 +150,14 @@ namespace DotRPG
             var stripe = Plate(bg.transform, "Category", new Vector2(2, -height + 4), new Vector2(width * unit - 7, 2), Color.clear);
             bg.raycastTarget = true;
             bg.gameObject.AddComponent<PointerRelay>().onClick = _ => ClickKey(code);
-            var title = TextAt(bg.transform, "KeyLabel", label, new Vector2(5, -1), new Vector2(width * unit - 10, 17), 13, Color.white);
-            title.resizeTextForBestFit = true; title.resizeTextMinSize = 8; title.resizeTextMaxSize = label.Length > 4 && width < 1.5f ? 10 : 13;
+            // [UI 2026-10-30] Key and function labels at the 14 px readable floor (were 8~13 px): the boxes use the cap's full
+            // width and height, and a function name too long for its key shows its first characters (the list below has it whole).
+            var title = TextAt(bg.transform, "KeyLabel", label, new Vector2(3, 0), new Vector2(width * unit - 7, 19), 13, Color.white);
+            title.resizeTextForBestFit = true; title.resizeTextMinSize = UIFactory.ReadableFloor; title.resizeTextMaxSize = UIFactory.ReadableFloor;
             title.verticalOverflow = VerticalWrapMode.Truncate;
-            var action = TextAt(bg.transform, "Function", "", new Vector2(4, -18), new Vector2(width * unit - 8, 16), 10, new Color32(197, 214, 235, 255));
-            action.resizeTextForBestFit = true; action.resizeTextMinSize = 8; action.resizeTextMaxSize = 10;
+            var action = TextAt(bg.transform, "Function", "", new Vector2(3, -17), new Vector2(width * unit - 7, 20), 10, new Color32(197, 214, 235, 255));
+            action.resizeTextForBestFit = true; action.resizeTextMinSize = UIFactory.ReadableFloor; action.resizeTextMaxSize = UIFactory.ReadableFloor;
+            action.verticalOverflow = VerticalWrapMode.Truncate;
             keys.Add(new KeyView { key = code, cap = bg, stripe = stripe, label = title, action = action });
         }
         void BuildKeyboard(RectTransform board)
@@ -182,7 +185,7 @@ namespace DotRPG
             Key(board, KeyCode.UpArrow, "↑", 16.5f, 4); Key(board, KeyCode.LeftArrow, "←", 15.5f, 5); Key(board, KeyCode.DownArrow, "↓", 16.5f, 5); Key(board, KeyCode.RightArrow, "→", 17.5f, 5);
             Key(board, KeyCode.Numlock, "Num", 19.5f, 1); Key(board, KeyCode.KeypadDivide, "/", 20.5f, 1); Key(board, KeyCode.KeypadMultiply, "*", 21.5f, 1); Key(board, KeyCode.KeypadMinus, "−", 22.5f, 1);
             for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) { int n = 7 - r * 3 + c; Key(board, KeyCode.Keypad0 + n, n.ToString(), 19.5f + c, r + 2); }
-            Key(board, KeyCode.KeypadPlus, "+", 22.5f, 2); Key(board, KeyCode.KeypadEnter, "Enter", 22.5f, 4);
+            Key(board, KeyCode.KeypadPlus, "+", 22.5f, 2); Key(board, KeyCode.KeypadEnter, "Ent", 22.5f, 4);
             Key(board, KeyCode.Keypad0, "0", 19.5f, 5, 2); Key(board, KeyCode.KeypadPeriod, ".", 21.5f, 5);
         }
         public override void Show()

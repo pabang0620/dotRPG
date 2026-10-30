@@ -49,12 +49,14 @@ namespace DotRPG
             if (hasPity)
             {
                 gaugeFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * Mathf.Clamp01(pity / (float)gaugeMax), 16f);
+                gaugePct.text = Pct(pity, gaugeMax);
                 gaugeText.text = (full ? L.T("<color=#ffd34a><b>선택 가능!</b></color> ") : "") + L.F("선택 게이지 {0} · {1}", pity, GoalText(gaugeId));
             }
             else if (Sealed)
             {
                 // [CASH] 봉인 해제 게이지: 10 opens fill it, the next open is boosted.
                 gaugeFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * (CashClient.NextBoosted ? 1f : Mathf.Clamp01(CashClient.Gauge / 10f)), 16f);
+                gaugePct.text = CashClient.NextBoosted ? "100%" : Pct(CashClient.Gauge, 10);
                 gaugeText.text = CashClient.NextBoosted ? L.T("<color=#ffd34a><b>봉인 해제!</b></color> 다음 1회는 희귀 이상 확률 2배 · 수량 2배")
                     : L.F("봉인 해제 게이지 {0}/10 · 가득 차면 다음 1회 부스터", CashClient.Gauge);
             }
@@ -98,6 +100,7 @@ namespace DotRPG
             hiddenBtn.interactable = !busy;
             if (!show) return;
             hiddenFill.rectTransform.sizeDelta = new Vector2((GaugeW - 4f) * Mathf.Clamp01(have / (float)max), 10f);
+            hiddenPct.text = Pct(have, max);
             hiddenText.text = (have >= min ? L.T("<color=#ffe27a><b>히든 선택 가능!</b></color> ") : "") + L.F("히든 게이지 {0} · {1}", have, GoalText("hidden"));
         }
 
