@@ -1,7 +1,7 @@
 // 시험 서버 전용: 캐릭터를 지정 레벨까지 올린다(경험치 원장에 test_boost로 남긴다).
 // 사용: node scripts/test-level.mjs <캐릭터 이름> <레벨>   (서버 .env의 DATABASE_URL 사용)
 // DEPLOY_STAGE=test 가 명시된 환경(server/.env 포함)이 아니면 실행을 거절한다.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { assertTestStage } from './_stageGuard.mjs';
@@ -9,8 +9,10 @@ import { assertTestStage } from './_stageGuard.mjs';
 // 시험 서버 전용 가드: DEPLOY_STAGE=test 가 명시된 환경에서만 실행한다(맨 앞에서 확인)
 assertTestStage();
 
-const env = Object.fromEntries(
-  readFileSync(new URL('../.env', import.meta.url), 'utf8')
+// server/.env가 없으면(시험 서버는 /opt/dotrpg/.env를 환경변수로 읽어 실행) 환경변수만 쓴다
+const ENV_FILE = new URL('../.env', import.meta.url);
+const env = !existsSync(ENV_FILE) ? {} : Object.fromEntries(
+  readFileSync(ENV_FILE, 'utf8')
     .split(/\r?\n/)
     .filter((l) => /^[A-Z0-9_]+=/.test(l))
     .map((l) => [l.slice(0, l.indexOf('=')), l.slice(l.indexOf('=') + 1)]),
