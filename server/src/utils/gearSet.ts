@@ -13,8 +13,10 @@ export const SET_STEPS: readonly number[] = [2, 3, 5];
 const RARITY_ORDER: readonly EquipmentDef['rarity'][] = ['Common', 'Uncommon', 'Rare', 'Epic', 'Unique', 'Legendary'];
 
 /** [그룹][단계] %. 그룹 0 = 커먼~레어(체력만), 1 에픽, 2 유니크, 3 레전더리 */
-const ATTACK_PCT: readonly (readonly number[])[] = [[0, 0, 0], [0, 5, 5], [0, 6, 6], [0, 7, 7]];
-const HEALTH_PCT: readonly (readonly number[])[] = [[3, 3, 4], [5, 0, 5], [6, 0, 6], [7, 0, 7]];
+const ATTACK_PCT: readonly (readonly number[])[] = [[0, 0, 0], [0, 5, 5], [0, 6, 6], [0, 7, 0]];
+const HEALTH_PCT: readonly (readonly number[])[] = [[3, 3, 4], [5, 0, 5], [6, 0, 6], [7, 0, 0]];
+/** 최종 공격력 %(캐릭터 공격력 전체에 곱한다, 2026-10-30): 레전더리 5부위만 +30 */
+const FINAL_PCT: readonly (readonly number[])[] = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 30]];
 
 function groupOf(lowest: number): number {
   return lowest >= 5 ? 3 : lowest >= 4 ? 2 : lowest >= 3 ? 1 : 0;
@@ -38,6 +40,7 @@ function partOf(category: EquipmentDef['category']): number {
 export interface SetBonus {
   attackPct: number;
   healthPct: number;
+  finalPct: number;
 }
 
 /** 착용 키 전체의 세트 효과 합(단계별로 따로 센 뒤 더한다) */
@@ -58,6 +61,7 @@ export function setBonusOf(eco: EconomyData, wornKeys: readonly string[]): SetBo
   }
   let attackPct = 0;
   let healthPct = 0;
+  let finalPct = 0;
   for (const best of tiers.values()) {
     const counted = best.filter((r) => r >= 0);
     const g = groupOf(Math.min(...counted));
@@ -65,7 +69,8 @@ export function setBonusOf(eco: EconomyData, wornKeys: readonly string[]): SetBo
       if (counted.length < step) return;
       attackPct += (ATTACK_PCT[g] as readonly number[])[i] as number;
       healthPct += (HEALTH_PCT[g] as readonly number[])[i] as number;
+      finalPct += (FINAL_PCT[g] as readonly number[])[i] as number;
     });
   }
-  return { attackPct, healthPct };
+  return { attackPct, healthPct, finalPct };
 }

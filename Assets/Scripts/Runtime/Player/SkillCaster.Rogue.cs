@@ -87,6 +87,9 @@ namespace DotRPG
         /// <summary>연쇄 도약: jump from monster to monster within reach of the cast spot, cutting each once, then come back.</summary>
         IEnumerator Leap(SkillNumbers n)
         {
+            // [ASSASSIN 2026-10-29] After the promotion to 어쌔신: +10% on the cuts and black afterimages (the ninja has NinjaLeap).
+            bool assassin = owner.Data != null && owner.Data.Progression.IsPromoted && owner.Data.Progression.Career == Career.Assassin;
+            if (assassin) n.damage = Mathf.Max(1, Mathf.RoundToInt(n.damage * AssassinLeapMul));
             Vector2 origin = owner.Position, searchFrom = owner.Center;
             var done = new HashSet<EnemyController>();
             EnemyController last = null;
@@ -111,7 +114,7 @@ namespace DotRPG
                 }
                 if (next == null) break;
                 done.Add(next);
-                CareerFx.Ghost(owner, ShadowTint);
+                if (assassin) BlackGhost(); else CareerFx.Ghost(owner, ShadowTint);
                 Vector2 side = owner.Position - next.Position;
                 if (side.sqrMagnitude < .0001f) side = -castAim;
                 Vector2 landing = next.Position + side.normalized * (.3f + .35f * next.Size);
@@ -120,6 +123,7 @@ namespace DotRPG
                 if (next != null && !next.IsDead)
                 {
                     Vector2 dir = (next.Center - owner.Center).normalized;
+                    if (assassin) { BlackGhost(); CareerFx.Clip("f_x", next.Center, dir, 1.25f, 26f, VfxLayer.Top, true, AssassinBlack); } // a black cut under the steel one
                     CareerFx.Clip("f_x", next.Center, dir, .9f, 30f, VfxLayer.Top, true, n.spec != '\0' ? SpecTint(n, RogueGreen) : (Color?)null);
                     CareerCombat.For(owner).Uncopied(() => Hit(next, n, owner.Center, 4f)); // [NINJA] 분신술 does not copy moving skills
                     if (n.spec == 'b') StartCoroutine(LeapTrail(n, next)); // [ROGUE SPEC] 잔영 도약
@@ -130,9 +134,37 @@ namespace DotRPG
             if (done.Count == 0) yield break;
             if (n.spec == 'a' && last != null && !last.IsDead) last.Stagger(LeapHeavyStagger); // [ROGUE SPEC] 그림자 일격 도약
             yield return new WaitForSeconds(LeapReturn);
-            CareerFx.Ghost(owner, ShadowTint);
+            if (assassin) BlackGhost(); else CareerFx.Ghost(owner, ShadowTint);
             if (!owner.NetPuppet && !owner.IsDead) owner.SkillLeapTo(origin, origin + castAim);
             Shake(0.06f, 0.12f);
+        }
+
+        /// <summary>[ASSASSIN 2026-10-29] 연쇄 도약 damage of the 어쌔신 (x1.1 on every cut).</summary>
+        public const float AssassinLeapMul = 1.1f;
+        static readonly Color AssassinBlack = new Color(.04f, .03f, .06f, .85f);
+
+        /// <summary>
+        /// [ASSASSIN 2026-10-29] A black see-through copy of the body left behind, with a thin pale additive rim behind it so
+        /// it still reads on dark ground.
+        /// </summary>
+        void BlackGhost()
+        {
+            var body = owner.GetComponent<CharacterAnimator>()?.Body;
+            if (body == null || body.sprite == null) return;
+            for (int i = 0; i < 2; i++)
+            {
+                bool rim = i == 0;
+                var go = new GameObject(rim ? "AssassinGhostRim" : "AssassinGhost");
+                if (Fx.Root != null) go.transform.SetParent(Fx.Root, false);
+                go.transform.position = body.transform.position;
+                go.transform.localScale = body.transform.lossyScale * (rim ? 1.07f : 1f);
+                var sr = go.AddComponent<SpriteRenderer>();
+                sr.sprite = body.sprite;
+                sr.flipX = body.flipX;
+                if (rim) sr.sharedMaterial = FxMaterials.Additive;
+                sr.sortingOrder = body.sortingOrder - (rim ? 2 : 1);
+                go.AddComponent<GhostFade>().Begin(sr, rim ? new Color(.7f, .72f, .8f, .45f) : new Color(.03f, .02f, .05f, .7f), .4f);
+            }
         }
 
         /// <summary>백어택: from behind a 0.8 s stun (the usual crowd-control rules: repeats halve, bosses x0.3 then immune), else a shallow stab.</summary>

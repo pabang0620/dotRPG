@@ -45,11 +45,12 @@ export interface PowerPolicy {
 export function attackCap(eco: EconomyData, pol: PowerPolicy, level: number, wornKeys: string[]): number {
   const raw = wornKeys.reduce((a, k) => a + gearAttack(eco, k), 0);
   // 세트 효과는 장비 공격력 합에 곱한다(클라이언트는 반올림하므로 올림으로 맞춘다, Docs/PLAN_GEAR_SETS_2026-10-29.md)
-  const setPct = setBonusOf(eco, wornKeys).attackPct;
-  const gear = setPct > 0 ? Math.ceil(raw * (1 + setPct / 100)) : raw;
+  const set = setBonusOf(eco, wornKeys);
+  const gear = set.attackPct > 0 ? Math.ceil(raw * (1 + set.attackPct / 100)) : raw;
+  // 레전더리 5부위 세트의 최종 공격력(+30%)은 공격력 전체에 곱한다
   // 착용 외형(오라·코스튬 스킨)의 공격력 보너스는 클라이언트 설정이라, 가능한 최대치만큼 넓힌다
   // 히든 옵션(공격 속도·치명타)은 정상 장비가 걸리지 않게 그만큼 넓힌다(Docs/PLAN_GEAR_HIDDEN_2026-10-29.md 4절)
-  return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1)) * (1 + (COSMETIC_DAMAGE_MAX + COLLECTION_ATTACK_MAX) / 100) * hiddenAttackMul(wornKeys);
+  return (eco.player.attackDamage + gear) * (1 + pol.powerPassivePerLevel * (level - 1)) * (1 + (COSMETIC_DAMAGE_MAX + COLLECTION_ATTACK_MAX) / 100) * hiddenAttackMul(wornKeys) * (1 + set.finalPct / 100);
 }
 
 /** 챕터 3 확산형 특화가 있는 Lv41+ 캐릭터의 다중 적중 상한(Docs/ch3/SKILL_SPECIALIZATION.md 1절) */

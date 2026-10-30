@@ -7,13 +7,17 @@ namespace DotRPG
 {
     public partial class GachaScreen
     {
-        /// <summary>Opens every card left (one burst for the best of them).</summary>
+        /// <summary>Opens every card left (one burst for the best of them). [GACHA VFX] 유니크 / 레전더리 cards stay
+        /// face-down and open one after another with their clips (no tap needed).</summary>
         void RevealAll()
         {
             if (!Revealing) return;
+            EndIntro();
             bool top = false, epic = false;
+            int from = revealed;
             for (int i = revealed; i < shown.Count; i++)
             {
+                if (ClipTier(shown[i]) > 0) { held[i] = true; continue; }
                 if (IsTop(shown[i])) top = true;
                 else if (IsEpic(shown[i])) epic = true;
                 else continue;
@@ -26,10 +30,13 @@ namespace DotRPG
                 flashColor = top ? new Color(1f, .85f, .45f) : new Color(.78f, .55f, 1f);
                 Game.Audio.PlaySfx(top ? "quest" : "confirm");
                 Game.Camera?.Shake(top ? 0.14f : 0.08f, 0.3f);
-                for (int i = 0; i < shown.Count; i++)
-                    if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
+                for (int i = from; i < shown.Count; i++)
+                    if (held[i]) continue;
+                    else if (IsTop(shown[i])) Burst(i, new Color(1f, .82f, .35f), 20);
                     else if (IsEpic(shown[i])) Burst(i, new Color(.78f, .55f, 1f), 16);
             }
+            for (int i = 0; i < shown.Count; i++)
+                if (held[i]) QueueOpen(i);
             DrawCells();
         }
 
@@ -78,13 +85,26 @@ namespace DotRPG
             if (rateModal != null && rateModal.gameObject.activeSelf && Game.Input.CancelPressed) { CloseRates(); return; }
             if (choiceModal != null && choiceModal.gameObject.activeSelf && Game.Input.CancelPressed) { choiceModal.gameObject.SetActive(false); return; }
             if (resultPage != null && resultPage.gameObject.activeSelf && (Game.Input.CancelPressed || Game.Input.SubmitPressed))
-            { if (Revealing) RevealAll(); else CloseResults(); Animate(); return; }
+            { if (IntroOn) EndIntro(); else if (Revealing) RevealAll(); else CloseResults(); Animate(); return; }
             base.Update();
             if (!gameObject.activeSelf) return;
             Animate();
             UpdateAuto(); // [GACHA 2026-10-29] 자동 뽑기: the next draw once this reveal is over
-            if (!Revealing || Time.unscaledTime < revealAt) return;
+            UpdateIntro(); // [GACHA VFX] the opening clip: tap to skip, 2 s at most
+            if (revealed >= shown.Count || Time.unscaledTime < revealAt) return;
             var r = shown[revealed];
+            if (ClipTier(r) > 0)
+            {
+                // [GACHA VFX] dealt face-down with the same glow for both grades; a tap (or the auto sequence) opens it
+                int at = revealed;
+                held[at] = true;
+                revealed++;
+                revealAt = Time.unscaledTime + Step;
+                Game.Audio.PlaySfx("rank_reveal");
+                if (batchAuto) QueueOpen(at);
+                DrawCells();
+                return;
+            }
             if (Special(r) && waiting != revealed)
             {
                 waiting = revealed; // the card glows and trembles first
@@ -95,6 +115,13 @@ namespace DotRPG
             int cell = CellOf(revealed);
             revealed++;
             revealAt = Time.unscaledTime + (Special(r) ? 0.55f : Step);
+            Announce(cell, r);
+            DrawCells();
+        }
+
+        /// <summary>The flash, sparks, sound and toast of one card turning face up.</summary>
+        void Announce(int cell, StarPullResult r)
+        {
             if (IsTop(r))
             {
                 flashAt = punchAt = Time.unscaledTime;
@@ -124,7 +151,6 @@ namespace DotRPG
             }
             else if (IsGood(r)) { Burst(cell, new Color(.5f, .7f, 1f), 12); Game.Audio.PlaySfx("confirm"); }
             else Game.Audio.PlaySfx("select");
-            DrawCells();
         }
 
         /// <summary>Sparks flying out of a card.</summary>
@@ -170,7 +196,17 @@ namespace DotRPG
                 var c = cells[i];
                 float scale = 1f;
                 c.rt.localRotation = Quaternion.identity;
-                if (i == waiting && i >= revealed && i < shown.Count)
+                if (i < shown.Count && held[i])
+                {
+                    // [GACHA VFX] face-down 유니크 / 레전더리: one gold glow for both; a teased 레전더리 trembles hard
+                    bool hot = teased[i];
+                    float k = 0.5f + 0.5f * Mathf.Sin(t * (hot ? 26f : 6f));
+                    c.halo.color = new Color(1f, .8f, .3f, .55f + .45f * k);
+                    c.bg.color = Color.Lerp(HeadRow, new Color32(150, 108, 30, 255), k);
+                    scale = 1.04f + .04f * k;
+                    c.rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(t * (hot ? 60f : 18f)) * (hot ? 3f : 1.2f));
+                }
+                else if (i == waiting && i >= revealed && i < shown.Count)
                 {
                     float k = 0.5f + 0.5f * Mathf.Sin(t * 26f);
                     bool gold = IsTop(shown[i]);
@@ -221,13 +257,15 @@ namespace DotRPG
                 bool used = i < count;
                 c.bg.gameObject.SetActive(used);
                 c.halo.gameObject.SetActive(c.bg.gameObject.activeSelf);
-                bool on = used && i < revealed;
+                bool on = used && IsOpen(i);
                 c.icon.enabled = on;
                 c.frame.color = Color.clear;
                 if (!on)
                 {
+                    bool wait = used && held[i];
                     c.bg.color = used ? HeadRow : new Color32(20, 28, 42, 160);
-                    c.name.text = used ? "<color=#8c96a8>?</color>" : "";
+                    // a face-down top card says it waits for a tap (two lines fit the name area in every language)
+                    c.name.text = wait ? "<color=#ffd34a><b>" + L.T("눌러서 열기") + "</b></color>" : used ? "<color=#8c96a8>?</color>" : "";
                     c.note.text = "";
                     continue;
                 }

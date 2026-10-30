@@ -69,6 +69,8 @@ namespace DotRPG
         /// <summary>[SET] Summed attack % / HP % of the worn gear sets (Docs/PLAN_GEAR_SETS_2026-10-29.md).</summary>
         public int SetAttackPct { get { GearSets.Totals(slots, out int a, out _); return a; } }
         public int SetHealthPct { get { GearSets.Totals(slots, out _, out int h); return h; } }
+        /// <summary>[SET 2026-10-30] 최종 공격력 % of the sets (legendary 5 parts: +30), on the character's whole attack.</summary>
+        public int SetFinalAttackPct { get { GearSets.Totals(slots, out _, out _, out int f); return f; } }
         /// <summary>[SET] Sets with at least one active step, lowest tier first.</summary>
         public List<GearSets.State> ActiveSets => GearSets.Active(slots);
         public int BlockChance => Mathf.Clamp(Sum(s => s.block), 0, MaxBlock);

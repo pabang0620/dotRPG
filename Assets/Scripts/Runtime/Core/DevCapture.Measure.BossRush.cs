@@ -166,9 +166,9 @@ namespace DotRPG
                     gear += last + Mathf.Max(0, last - prev);
                 }
             }
-            GearSets.Totals(worn, out int setAttack, out _); // [SET] killRules.attackCap: ceil(gear x (1 + set %))
+            GearSets.Totals(worn, out int setAttack, out _, out int setFinal); // [SET] killRules.attackCap: ceil(gear x (1 + set %)) x (1 + final %)
             if (setAttack > 0) gear = Mathf.Ceil(gear * (1f + setAttack / 100f));
-            double attackCap = (ps.attackDamage + gear) * (1 + CapPassivePerLevel * (level - 1)) * (1 + CapCosmeticPercent / 100f);
+            double attackCap = (ps.attackDamage + gear) * (1 + CapPassivePerLevel * (level - 1)) * (1 + CapCosmeticPercent / 100f) * (1 + setFinal / 100.0);
             double dps = attackCap / ps.attackCooldown * CapSkillFactor;
             double t = Math.Max(1, Math.Min(BossRushClient.DefaultAttemptSeconds, seconds));
             return (long)Math.Floor(dps * t * CapSlack);

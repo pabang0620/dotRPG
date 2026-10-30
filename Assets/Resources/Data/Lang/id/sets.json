@@ -5,5 +5,6 @@
  "세트 효과 ({0}/{1})": "Bonus set ({0}/{1})",
  "세트 효과 없음": "Tidak ada bonus set",
  "장비 공격력 +{0}%": "Serangan perlengkapan +{0}%",
- "장비 체력 +{0}%": "HP perlengkapan +{0}%"
+ "장비 체력 +{0}%": "HP perlengkapan +{0}%",
+ "최종 공격력 +{0}%": "Serangan akhir +{0}%"
 }

@@ -72,7 +72,7 @@ namespace DotRPG
             {
                 bool on = s.count >= GearSets.Steps[i];
                 sb.Append(on ? "<color=#8fe28f>" : "<color=#6c7686>");
-                sb.Append(L.F("{0}세트: {1}", GearSets.Steps[i], GearSets.BonusText(GearSets.StepAttack(group, i), GearSets.StepHealth(group, i))));
+                sb.Append(L.F("{0}세트: {1}", GearSets.Steps[i], GearSets.BonusText(GearSets.StepAttack(group, i), GearSets.StepHealth(group, i), GearSets.StepFinal(group, i))));
                 sb.Append("</color>\n");
             }
         }

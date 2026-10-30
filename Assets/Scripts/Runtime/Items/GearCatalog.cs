@@ -187,13 +187,13 @@ namespace DotRPG
         // i18n-names-end
 
         /// <summary>
-        /// [LEGEND] 광역형 (sweep): skill area +30%, damage +8%. 토벌형 (hunter): damage +12%, boss damage +15%, area +6%.
+        /// [LEGEND] 광역형 (sweep): skill area +50% (2026-10-30, was 30), damage +8%. 토벌형 (hunter): damage +12%, boss damage +15%, area +6%.
         /// Value with 1% damage = 1, 1% area = 0.5 (radius grows by the square root), 1% boss damage = 0.5 (bosses are about
         /// half the fighting): 23 vs 22.5, so neither is simply better; the choice is mobs or bosses.
         /// </summary>
         static void Archetype(EquipmentItem item, bool sweep, Kind k)
         {
-            item.aoeBonus = sweep ? 30 : 6;
+            item.aoeBonus = sweep ? 50 : 6; // [2026-10-30] 광역형 30 -> 50
             item.damageBonus = sweep ? 8 : 12;
             item.bossBonus = sweep ? 0 : 15;
             string kind = sweep ? L.T("광역형") : L.T("토벌형");
@@ -315,6 +315,9 @@ namespace DotRPG
             return list;
         }
 
+        /// <summary>[2026-10-30] Skill area % on tops, bottoms and necklaces: unique +5, legendary +10 (Docs/PLAN_GEAR_SETS_2026-10-29.md 7절).</summary>
+        static int ArmourAoe(ItemRarity r) => r == ItemRarity.Unique ? 5 : r == ItemRarity.Legendary ? 10 : 0;
+
         static EquipmentItem Make(Kind k, int t, ItemRarity r, string name)
         {
             float m = GradeMul(r);
@@ -326,19 +329,20 @@ namespace DotRPG
                 case Kind.Staff:
                 case Kind.Dagger:
                     atk = Mathf.RoundToInt(w * m);
-                    if (r == ItemRarity.Unique) aoe = 5; else if (r == ItemRarity.Legendary) aoe = 12;
+                    if (r == ItemRarity.Unique) aoe = 20; else if (r == ItemRarity.Legendary) aoe = 12; // [2026-10-30] unique 5 -> 20 (legendary: Archetype)
                     break;
-                case Kind.Plate: hp = Mathf.RoundToInt(h * m); block = Mathf.RoundToInt(b * BlockMul(r)); break;
-                case Kind.Greaves: hp = Mathf.RoundToInt(h * 0.6f * m); spd = SpeedOf(r); break;
-                case Kind.Robe: hp = Mathf.RoundToInt(h * 0.7f * m); atk = Mathf.RoundToInt(w * 0.25f * m); break;
-                case Kind.Skirt: hp = Mathf.RoundToInt(h * 0.45f * m); spd = SpeedOf(r); break;
+                case Kind.Plate: hp = Mathf.RoundToInt(h * m); block = Mathf.RoundToInt(b * BlockMul(r)); aoe = ArmourAoe(r); break;
+                case Kind.Greaves: hp = Mathf.RoundToInt(h * 0.6f * m); spd = SpeedOf(r); aoe = ArmourAoe(r); break;
+                case Kind.Robe: hp = Mathf.RoundToInt(h * 0.7f * m); atk = Mathf.RoundToInt(w * 0.25f * m); aoe = ArmourAoe(r); break;
+                case Kind.Skirt: hp = Mathf.RoundToInt(h * 0.45f * m); spd = SpeedOf(r); aoe = ArmourAoe(r); break;
                 case Kind.Neck:
                     atk = Mathf.RoundToInt(w * 0.3f * m); hp = Mathf.RoundToInt(h * 0.3f * m);
                     if (r == ItemRarity.Unique) xp = 5; else if (r == ItemRarity.Legendary) xp = 10;
+                    aoe = ArmourAoe(r); // [2026-10-30] skill area on the necklace too
                     break;
                 default:
                     atk = Mathf.RoundToInt(w * 0.35f * m); spd = r >= ItemRarity.Epic ? SpeedOf(r) - 1 : 0;
-                    if (r == ItemRarity.Unique) aoe = 8; else if (r == ItemRarity.Legendary) aoe = 14;
+                    if (r == ItemRarity.Unique) aoe = 10; else if (r == ItemRarity.Legendary) aoe = 20; // [2026-10-30] 8 / 14 -> 10 / 20
                     break;
             }
             int level = TierLevels[t];

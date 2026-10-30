@@ -22,8 +22,10 @@ namespace DotRPG
 
         // [group, step] in %. Common~rare (the hunting kits the playtime was measured with) only get HP, so kill speed and
         // the total playtime stay as measured; epic and above add attack.
-        static readonly int[,] AttackPct = { { 0, 0, 0 }, { 0, 5, 5 }, { 0, 6, 6 }, { 0, 7, 7 } };
-        static readonly int[,] HealthPct = { { 3, 3, 4 }, { 5, 0, 5 }, { 6, 0, 6 }, { 7, 0, 7 } };
+        static readonly int[,] AttackPct = { { 0, 0, 0 }, { 0, 5, 5 }, { 0, 6, 6 }, { 0, 7, 0 } };
+        static readonly int[,] HealthPct = { { 3, 3, 4 }, { 5, 0, 5 }, { 6, 0, 6 }, { 7, 0, 0 } };
+        /// <summary>[2026-10-30] 최종 공격력 %: a multiplier on the character's whole attack. Only the legendary 5-part step (+30).</summary>
+        static readonly int[,] FinalPct = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 30 } };
 
         public static bool HasSet(int levelTier) => levelTier >= MinTier;
 
@@ -32,11 +34,12 @@ namespace DotRPG
 
         public static int StepAttack(Group g, int step) => AttackPct[(int)g, step];
         public static int StepHealth(Group g, int step) => HealthPct[(int)g, step];
+        public static int StepFinal(Group g, int step) => FinalPct[(int)g, step];
 
         /// <summary>One tier's set as worn: parts counted (0..5), their lowest grade and the summed bonus.</summary>
         public struct State
         {
-            public int levelTier, count, attackPct, healthPct;
+            public int levelTier, count, attackPct, healthPct, finalPct;
             public ItemRarity lowest;
             public Group Group => GroupOf(lowest);
         }
@@ -80,6 +83,7 @@ namespace DotRPG
                 if (s.count < Steps[i]) break;
                 s.attackPct += AttackPct[(int)g, i];
                 s.healthPct += HealthPct[(int)g, i];
+                s.finalPct += FinalPct[(int)g, i];
             }
             return s;
         }
@@ -104,13 +108,17 @@ namespace DotRPG
         }
 
         /// <summary>Summed attack % and HP % of every active set in the worn keys.</summary>
-        public static void Totals(IEnumerable<string> wornKeys, out int attackPct, out int healthPct)
+        public static void Totals(IEnumerable<string> wornKeys, out int attackPct, out int healthPct) => Totals(wornKeys, out attackPct, out healthPct, out _);
+
+        /// <summary>Summed gear attack %, gear HP % and 최종 공격력 % (character attack x (1 + final / 100)).</summary>
+        public static void Totals(IEnumerable<string> wornKeys, out int attackPct, out int healthPct, out int finalPct)
         {
-            attackPct = healthPct = 0;
+            attackPct = healthPct = finalPct = 0;
             foreach (var s in Active(wornKeys))
             {
                 attackPct += s.attackPct;
                 healthPct += s.healthPct;
+                finalPct += s.finalPct;
             }
         }
 
@@ -118,9 +126,10 @@ namespace DotRPG
         public static int Apply(int total, int pct) => pct == 0 ? total : UnityEngine.Mathf.RoundToInt(total * (100 + pct) / 100f);
 
         /// <summary>"장비 공격력 +5%, 장비 체력 +5%" for one step of a group (or a summed bonus).</summary>
-        public static string BonusText(int attackPct, int healthPct)
+        public static string BonusText(int attackPct, int healthPct, int finalPct = 0)
         {
             var parts = new List<string>();
+            if (finalPct > 0) parts.Add(L.F("최종 공격력 +{0}%", finalPct));
             if (attackPct > 0) parts.Add(L.F("장비 공격력 +{0}%", attackPct));
             if (healthPct > 0) parts.Add(L.F("장비 체력 +{0}%", healthPct));
             return string.Join(", ", parts);

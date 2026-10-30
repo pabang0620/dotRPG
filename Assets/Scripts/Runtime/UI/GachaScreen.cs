@@ -188,7 +188,13 @@ namespace DotRPG
                 c.icon.rectTransform.anchorMin = new Vector2(0.1f, 0.42f); c.icon.rectTransform.anchorMax = new Vector2(0.9f, 0.94f);
                 c.icon.rectTransform.offsetMin = c.icon.rectTransform.offsetMax = Vector2.zero;
                 int cellIndex = i;
-                GearTooltip.Hook(c.icon, () => cellIndex < w.revealed && cellIndex < w.shown.Count && w.shown[cellIndex].gear ? w.shown[cellIndex].itemId : null);
+                GearTooltip.Hook(c.icon, () => w.IsOpen(cellIndex) && w.shown[cellIndex].gear ? w.shown[cellIndex].itemId : null);
+                // [GACHA VFX] a face-down 유니크 / 레전더리 card opens on a tap (GachaScreen.Vfx.cs)
+                c.bg.raycastTarget = true;
+                var tap = c.bg.gameObject.AddComponent<Button>();
+                tap.transition = Selectable.Transition.None;
+                tap.navigation = new Navigation { mode = Navigation.Mode.None };
+                tap.onClick.AddListener(() => w.TapCard(cellIndex));
                 c.name = Label(c.bg.transform, "Name", "", 16, tl, tl, Vector2.zero, Vector2.zero, TextAnchor.MiddleCenter);
                 c.name.rectTransform.anchorMin = new Vector2(0f, 0.16f); c.name.rectTransform.anchorMax = new Vector2(1f, 0.42f);
                 c.name.rectTransform.offsetMin = new Vector2(3f, 0f); c.name.rectTransform.offsetMax = new Vector2(-3f, 0f);
@@ -254,6 +260,7 @@ namespace DotRPG
             shown = new List<StarPullResult>();
             revealed = 0;
             waiting = -1;
+            ResetVfx(true); // [GACHA VFX] no clip left over, both clips prepared again
             Refresh();
             CashClient.Refresh(); // [CASH] sealed box table and gauge
             if (!StarShopClient.Available) return;
@@ -261,7 +268,7 @@ namespace DotRPG
             Refresh();
         }
 
-        bool Revealing => revealed < shown.Count;
+        bool Revealing => revealed < shown.Count || AnyHeld(); // [GACHA VFX] a face-down card waiting for its tap
 
         void SelectBanner(string id)
         {
@@ -427,12 +434,14 @@ namespace DotRPG
             resultPage.gameObject.SetActive(true);
             resultPage.SetAsLastSibling();
             flash.transform.SetAsLastSibling();
+            StartVfxBatch(); // [GACHA VFX] face-down top cards and the opening clip
         }
 
         void CloseResults()
         {
             if (Revealing) { RevealAll(); return; }
             StopAuto(null); // [GACHA 2026-10-29] closing the results ends 자동 뽑기
+            ResetVfx(false); // [GACHA VFX]
             resultPage.gameObject.SetActive(false);
             shown = new List<StarPullResult>();
             Refresh();

@@ -252,7 +252,7 @@ namespace DotRPG
             if (sets.Count == 0) return "<color=#8a94a6>" + L.T("세트 효과 없음") + "</color>";
             var parts = new List<string>();
             foreach (var s in sets)
-                parts.Add(L.F("세트 Lv.{0} ({1}/{2})", GearCatalog.TierLevels[s.levelTier], s.count, GearSets.Parts) + ": <color=#8fe28f>" + GearSets.BonusText(s.attackPct, s.healthPct) + "</color>");
+                parts.Add(L.F("세트 Lv.{0} ({1}/{2})", GearCatalog.TierLevels[s.levelTier], s.count, GearSets.Parts) + ": <color=#8fe28f>" + GearSets.BonusText(s.attackPct, s.healthPct, s.finalPct) + "</color>");
             return string.Join("   ", parts);
         }
 

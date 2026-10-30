@@ -14,36 +14,36 @@ const kit = (lv: number, g: string) => [`eq_sword_${lv}_${g}`, `eq_plate_${lv}_$
 describe('세트 세기', () => {
   it('Lv.40 에픽 5부위: 공격 +10%, 체력 +10%. 2·3부위 단계가 쌓인다', () => {
     const k = kit(40, 'e');
-    expect(setBonusOf(eco(), k)).toEqual({ attackPct: 10, healthPct: 10 });
-    expect(setBonusOf(eco(), k.slice(0, 4))).toEqual({ attackPct: 5, healthPct: 5 });
-    expect(setBonusOf(eco(), k.slice(0, 2))).toEqual({ attackPct: 0, healthPct: 5 });
-    expect(setBonusOf(eco(), k.slice(0, 1))).toEqual({ attackPct: 0, healthPct: 0 });
+    expect(setBonusOf(eco(), k)).toEqual({ attackPct: 10, healthPct: 10, finalPct: 0 });
+    expect(setBonusOf(eco(), k.slice(0, 4))).toEqual({ attackPct: 5, healthPct: 5, finalPct: 0 });
+    expect(setBonusOf(eco(), k.slice(0, 2))).toEqual({ attackPct: 0, healthPct: 5, finalPct: 0 });
+    expect(setBonusOf(eco(), k.slice(0, 1))).toEqual({ attackPct: 0, healthPct: 0, finalPct: 0 });
   });
 
   it('등급은 섞여도 같은 세트, 크기는 가장 낮은 등급: 레어가 끼면 체력만(사냥 장비의 처치 속도는 그대로)', () => {
-    expect(setBonusOf(eco(), ['eq_sword_40_e+11', 'eq_plate_40_e+10', 'eq_greaves_40_e+10', 'eq_neck_40_r+8', 'eq_ring_40_r+8'])).toEqual({ attackPct: 0, healthPct: 10 });
-    expect(setBonusOf(eco(), kit(50, 'un'))).toEqual({ attackPct: 12, healthPct: 12 });
-    expect(setBonusOf(eco(), kit(50, 'l'))).toEqual({ attackPct: 14, healthPct: 14 });
+    expect(setBonusOf(eco(), ['eq_sword_40_e+11', 'eq_plate_40_e+10', 'eq_greaves_40_e+10', 'eq_neck_40_r+8', 'eq_ring_40_r+8'])).toEqual({ attackPct: 0, healthPct: 10, finalPct: 0 });
+    expect(setBonusOf(eco(), kit(50, 'un'))).toEqual({ attackPct: 12, healthPct: 12, finalPct: 0 });
+    expect(setBonusOf(eco(), kit(50, 'l'))).toEqual({ attackPct: 7, healthPct: 7, finalPct: 30 });
   });
 
   it('반지 두 개는 한 부위, 부위마다 가장 높은 등급을 센다', () => {
-    expect(setBonusOf(eco(), ['eq_sword_40_e', 'eq_ring_40_e', 'eq_ring_40_e'])).toEqual({ attackPct: 0, healthPct: 5 });
+    expect(setBonusOf(eco(), ['eq_sword_40_e', 'eq_ring_40_e', 'eq_ring_40_e'])).toEqual({ attackPct: 0, healthPct: 5, finalPct: 0 });
     // 반지 레어 + 에픽이면 에픽 반지를 센다 -> 에픽 3부위
-    expect(setBonusOf(eco(), ['eq_sword_40_e', 'eq_neck_40_e', 'eq_ring_40_r', 'eq_ring_40_e'])).toEqual({ attackPct: 5, healthPct: 5 });
+    expect(setBonusOf(eco(), ['eq_sword_40_e', 'eq_neck_40_e', 'eq_ring_40_r', 'eq_ring_40_e'])).toEqual({ attackPct: 5, healthPct: 5, finalPct: 0 });
   });
 
   it('Lv.1~15 단계는 세트가 없다', () => {
     for (const lv of [1, 10, 15]) {
       const k = lv === 1 ? ['eq_sword_1_r', 'eq_plate_1_r', 'eq_greaves_1_r', 'eq_neck_1_r', 'eq_ring_1_r'] : kit(lv, 'e');
-      expect(setBonusOf(eco(), k)).toEqual({ attackPct: 0, healthPct: 0 });
+      expect(setBonusOf(eco(), k)).toEqual({ attackPct: 0, healthPct: 0, finalPct: 0 });
     }
   });
 
   it('계승(^k)·히든(~x) 키는 그 장비의 단계로 센다, 단계가 다른 세트는 따로 더한다', () => {
     const k = ['eq_sword_50_e+12^1~d', 'eq_plate_50_e+10^1~h', 'eq_greaves_50_e', 'eq_neck_50_e', 'eq_ring_50_e'];
-    expect(setBonusOf(eco(), k)).toEqual({ attackPct: 10, healthPct: 10 });
+    expect(setBonusOf(eco(), k)).toEqual({ attackPct: 10, healthPct: 10, finalPct: 0 });
     // Lv.40 2부위(체력 +5) + Lv.50 3부위(공격 +5, 체력 +5)
-    expect(setBonusOf(eco(), ['eq_sword_40_e', 'eq_plate_40_e', 'eq_greaves_50_e', 'eq_neck_50_e', 'eq_ring_50_e'])).toEqual({ attackPct: 5, healthPct: 10 });
+    expect(setBonusOf(eco(), ['eq_sword_40_e', 'eq_plate_40_e', 'eq_greaves_50_e', 'eq_neck_50_e', 'eq_ring_50_e'])).toEqual({ attackPct: 5, healthPct: 10, finalPct: 0 });
   });
 });
 
@@ -80,5 +80,29 @@ describe('화력 상한·전투력', () => {
     expect(Math.abs(computePower('warrior', 40, full, 0) - expected)).toBeLessThanOrEqual(1);
     // 4부위 세트(공격 +5, 체력 +5)보다 5부위가 크다
     expect(computePower('warrior', 40, full, 0)).toBeGreaterThan(computePower('warrior', 40, mixed, 0));
+  });
+});
+
+describe('레전더리 5부위: 최종 공격력 +30%', () => {
+  it('2·3부위 단계는 그대로(체력 +7, 장비 공격 +7), 5부위는 최종 공격력 +30%. 하나라도 레전더리가 아니면 없다', () => {
+    const k = kit(40, 'l');
+    expect(setBonusOf(eco(), k.slice(0, 4))).toEqual({ attackPct: 7, healthPct: 7, finalPct: 0 });
+    expect(setBonusOf(eco(), [...k.slice(0, 4), 'eq_ring_40_un'])).toEqual({ attackPct: 12, healthPct: 12, finalPct: 0 });
+    // 토벌형 무기·계승·히든 키도 레전더리 부위로 센다
+    expect(setBonusOf(eco(), ['eq_sword_50_lb+10^1~d', ...kit(50, 'l').slice(1)])).toEqual({ attackPct: 7, healthPct: 7, finalPct: 30 });
+  });
+
+  it('화력 상한은 공격력 전체 x1.3만큼 넓어지고, 전투력도 공격 항이 x1.3', () => {
+    const pol = () => getConfig().policy;
+    const k = kit(40, 'l').map((x) => `${x}+10`);
+    const raw = k.reduce((a, x) => a + gearAttack(eco(), x), 0);
+    const one = attackCap(eco(), pol(), 40, [k[3] as string]) / (eco().player.attackDamage + gearAttack(eco(), k[3] as string));
+    const client = (eco().player.attackDamage + Math.round(raw * 1.07)) * 1.3; // C# BaseAttack x (1 + 30%)
+    const cap = attackCap(eco(), pol(), 40, k);
+    expect(cap).toBeGreaterThanOrEqual(client * one - 1e-6);
+    expect(cap / ((eco().player.attackDamage + Math.ceil(raw * 1.07)) * one)).toBeCloseTo(1.3, 9);
+    const p = eco().player.power;
+    const four = [...k.slice(0, 4), 'eq_ring_40_un+10'];
+    expect(computePower('warrior', 40, k, 0)).toBeGreaterThan(computePower('warrior', 40, four, 0) + raw * 0.2 * p.attackWeight);
   });
 });

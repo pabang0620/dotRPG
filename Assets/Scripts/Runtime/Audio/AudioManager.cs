@@ -72,6 +72,15 @@ namespace DotRPG
         }
         bool musicMuted;
 
+        /// <summary>[GACHA VFX] Lowers the music for a few seconds under a fanfare, then brings it back over half a second.</summary>
+        public void Duck(float seconds)
+        {
+            duckUntil = Mathf.Max(duckUntil, Time.unscaledTime + seconds);
+            ApplyMusicVolumes();
+        }
+        float duckUntil = -10f;
+        const float DuckLevel = 0.3f, DuckRelease = 0.5f;
+
         public void SetVolumes(float musicVol, float sfxVol)
         {
             musicVolume = musicVol;
@@ -146,11 +155,12 @@ namespace DotRPG
 
         void ApplyMusicVolumes()
         {
+            float duck = Mathf.Lerp(DuckLevel, 1f, Mathf.Clamp01((Time.unscaledTime - duckUntil) / DuckRelease));
             for (int i = 0; i < musicSources.Length; i++)
             {
                 var src = musicSources[i];
                 if (src == null) continue;
-                src.volume = musicMuted ? 0f : Mathf.Sin(musicFade[i] * Mathf.PI * 0.5f) * musicVolume * MusicHeadroom;
+                src.volume = musicMuted ? 0f : Mathf.Sin(musicFade[i] * Mathf.PI * 0.5f) * musicVolume * MusicHeadroom * duck;
             }
         }
 

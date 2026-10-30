@@ -38,7 +38,7 @@ export function computePower(
   }
   // 세트 효과: 장비 공격력 합·체력 합에 % (Docs/PLAN_GEAR_SETS_2026-10-29.md, C# Equipment.AttackBonus·MaxHealthBonus)
   const set = setBonusOf(eco, wornKeys);
-  const attack = baseAttack + gearAtk * (1 + set.attackPct / 100);
+  const attack = (baseAttack + gearAtk * (1 + set.attackPct / 100)) * (1 + set.finalPct / 100);
   const health = baseHealth + gearHp * (1 + set.healthPct / 100);
   const mana = p.baseMana + (level - 1) * p.mpPerLevel;
   return Math.max(

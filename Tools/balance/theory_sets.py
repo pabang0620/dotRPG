@@ -24,8 +24,10 @@ SETS = {
     "low": {2: (0, 3), 3: (0, 3), 5: (0, 4)},
     "e": {2: (0, 5), 3: (5, 0), 5: (5, 5)},
     "un": {2: (0, 6), 3: (6, 0), 5: (6, 6)},
-    "l": {2: (0, 7), 3: (7, 0), 5: (7, 7)},
+    "l": {2: (0, 7), 3: (7, 0), 5: (0, 0)},
 }
+# 최종 공격력 %(캐릭터 공격력 전체에 곱한다, 2026-10-30): 레전더리 5부위만
+FINAL = {"l": 30}
 
 
 def stat(key, plus, field):
@@ -77,7 +79,7 @@ def main():
         for name, (group, pieces) in KITS.items():
             ga, gh = kit(level, pieces)
             sa, sh = totals(group, 5)
-            dmg = (10 + ga * (1 + sa / 100)) / (10 + ga) - 1
+            dmg = (10 + ga * (1 + sa / 100)) * (1 + FINAL.get(group, 0) / 100) / (10 + ga) - 1
             hp_total = (player_hp(level) + gh) * 1.1
             hp_gain = gh * sh / 100 * 1.1 / hp_total
             worst[name] = max(worst.get(name, 0), dmg)
@@ -93,5 +95,40 @@ def main():
         print(f"사냥 무리 처치 시간 단축({name}): {faster * 100:.1f}%")
 
 
+# ---------- 스킬 범위(aoeBonus, 2026-10-30) ----------
+# 반지름 = 기본 x sqrt(1 + 범위% / 100)(CharacterStatsCalc.Skill). 맞는 수 = clamp(0.12 x pi x 반지름^2, 1, 6)
+# (GemAutoSetup.Targets, 무리 6마리·밀도 0.12/m2, 회전 베기 3.2m). 사냥 시간 단축은 전투 몫(5.7 / 9.7초)에만, 범위 스킬이 피해 전부라고 본 상한.
+AOE_OLD = {"weapon_un": 5, "weapon_l": 30, "weapon_lb": 6, "ring_un": 8, "ring_l": 14, "neck_un": 0, "neck_l": 0, "armour_un": 0, "armour_l": 0}
+AOE_NEW = {"weapon_un": 20, "weapon_l": 50, "weapon_lb": 6, "ring_un": 10, "ring_l": 20, "neck_un": 5, "neck_l": 10, "armour_un": 5, "armour_l": 10}
+
+
+def kit_aoe(t, grade, weapon=None):
+    w = t["weapon_" + (weapon or grade)]
+    return w + 2 * t["ring_" + grade] + t["neck_" + grade] + 2 * t["armour_" + grade]
+
+
+def targets(area_pct, radius=3.2):
+    import math
+    return max(1.0, min(6.0, 0.12 * math.pi * radius * radius * (1 + area_pct / 100)))
+
+
+def aoe_report():
+    pack, travel = 3 * 60 / 18.5, 4.0
+    print("\n| 한 벌 | 범위 전 / 후 | 맞는 수 전 / 후 | 사냥 시간 단축(상한) |")
+    print("|---|---|---|---|")
+    rows = [("유니크", "un", None), ("레전더리 광역형", "l", "l"), ("레전더리 토벌형", "l", "lb"),
+            ("유니크 무기 + 반지 2(Lv27~39 요일 던전)", None, None)]
+    for name, g, w in rows:
+        if g is None:
+            old, new = AOE_OLD["weapon_un"] + 2 * AOE_OLD["ring_un"], AOE_NEW["weapon_un"] + 2 * AOE_NEW["ring_un"]
+        else:
+            old, new = kit_aoe(AOE_OLD, g, w), kit_aoe(AOE_NEW, g, w)
+        e0, e1 = targets(old), targets(new)
+        combat = pack - travel
+        faster = 1 - (travel + combat * e0 / e1) / pack
+        print(f"| {name} | {old}% / {new}% | {e0:.2f} / {e1:.2f} | {faster * 100:.1f}% |")
+
+
 if __name__ == "__main__":
     main()
+    aoe_report()

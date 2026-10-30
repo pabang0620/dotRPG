@@ -114,6 +114,6 @@ namespace DotRPG
         }
 
         // Closing the window or leaving the scene stops it (the object is disabled or destroyed).
-        void OnDisable() => StopAuto(null);
+        void OnDisable() { StopAuto(null); ResetVfx(false); } // [GACHA VFX] a clip would freeze on a hidden window
     }
 }

@@ -95,6 +95,9 @@ namespace DotRPG
         }
 
         /// <summary>회귀의 방패: the thrown shield hits on the way out and back, and shields every ally it touches.</summary>
+        /// <summary>[VFX 2026-10-29] World width of the thrown shield picture (as big as 풍마 수리검's).</summary>
+        const float ShieldThrowWidth = 1.9f;
+
         IEnumerator ShieldThrow(Run c)
         {
             Pose(.2f, 1);
@@ -104,10 +107,17 @@ namespace DotRPG
             // [VFX] A clearly drawn shield spinning in flight (the clip when the art is missing), a teal trail, a gold clang per hit.
             // [CH3 SPEC] A 거대 방패: one big shield at 3.5x that plants 2 s of cover where it turns. B 방패 산개: 0.75x and it
             // bounces once onto a monster near its far point before coming back.
-            float big = c.n.spec == 'a' ? 1.7f : 1.15f;
+            // [VFX 2026-10-29] Drawn like 풍마 수리검 (n_fuma, radius x 2.6 wide): one big spinning disc of the shield art, about
+            // twice the hit corridor (.75 each side) wide; 거대 방패 A x1.4. Was a 1.15x (A 1.7x) sprite. Hits use the corridor only.
+            float size = ShieldThrowWidth * (c.n.spec == 'a' ? 1.4f : 1f);
+            var shieldPic = Game.Art.Get(CareerFx.ShieldSprite);
+            float big = size / Mathf.Max(.05f, shieldPic != null ? shieldPic.bounds.size.x : 1f);
             int wallDamage = c.n.spec == 'a' ? c.n.damage * 7 / 2 : c.n.spec == 'b' ? Mathf.Max(1, c.n.damage * 3 / 4) : c.n.damage;
-            SkillFx shieldArt = CareerFx.ShieldArt ? SkillFx.Spawn(CareerFx.ShieldSprite, start, c.n.spec != '\0' ? Tint(c, Color.white) : Color.white, leg * 2f + .2f, SkillFx.TopOrder + 3).Scale(big, big).Spin(-900f).Fade(FxFade.None) : null;
-            var fx = shieldArt == null ? CareerFx.Clip("g_spin", start, Vector2.zero, 1.1f, 28f, VfxLayer.Top, false, null, false, 10f, true) : null;
+            SkillFx shieldArt = CareerFx.ShieldArt ? SkillFx.Spawn(CareerFx.ShieldSprite, start, c.n.spec != '\0' ? Tint(c, Color.white) : Color.white, leg * 2f + .2f, SkillFx.TopOrder + 3).Scale(big, big).Spin(-1080f).Fade(FxFade.None) : null;
+            // [VFX 2026-10-29] Like the ninja's stars: a bright additive copy spinning behind the shield and a glowing trail.
+            SkillFx shieldHalo = shieldArt != null ? SkillFx.Spawn(CareerFx.ShieldSprite, start, new Color(1f, 1f, 1f, .5f), leg * 2f + .2f, SkillFx.TopOrder + 2).Additive().Scale(big * 1.3f, big * 1.3f).Spin(-1080f).Fade(FxFade.None) : null;
+            float trailIn = 0f;
+            var fx = shieldArt == null ? CareerFx.Clip("g_spin", start, Vector2.zero, size, 28f, VfxLayer.Top, false, null, false, 10f, true) : null;
             var shielded = new HashSet<PlayerController> { owner };
             GiveShield(c, owner, WallShield, c.s.duration);
             // A slow flight (1.1 s there and back) keeps several shields out together; ranks throw faster (SkillCaster).
@@ -121,11 +131,18 @@ namespace DotRPG
                 Vector2 previous = pass == 0 ? start : far;
                 for (float t = 0; t < leg; t += Time.deltaTime)
                 {
-                    if (!Live(c)) { fx?.Stop(); if (shieldArt != null) shieldArt.Kill(); yield break; }
+                    if (!Live(c)) { fx?.Stop(); if (shieldArt != null) shieldArt.Kill(); if (shieldHalo != null) shieldHalo.Kill(); yield break; }
                     float u = Mathf.Clamp01((t + Time.deltaTime) / leg);
                     Vector2 at = pass == 0 ? Vector2.Lerp(start, far, 1 - (1 - u) * (1 - u)) : Vector2.Lerp(far, owner.Center, u * u);
                     fx?.Place(at);
                     if (shieldArt != null) shieldArt.transform.position = at;
+                    if (shieldHalo != null) shieldHalo.transform.position = at;
+                    trailIn -= Time.deltaTime;
+                    if (trailIn <= 0f)
+                    {
+                        trailIn = .025f;
+                        SkillFx.Spawn("fx_glow", at, new Color(.7f, 1f, .95f, .6f), .2f, SkillFx.TopOrder + 1).Additive().Scale(size * .9f, size * .25f);
+                    }
                     CareerFx.DashTrail(at, at + Vector2.down * .4f, (at - previous).sqrMagnitude > .0001f ? (at - previous).normalized : c.dir, CareerFx.Teal);
                     foreach (var e in Corridor(previous, at, .75f))
                     {
@@ -135,7 +152,8 @@ namespace DotRPG
                         if (Strike(c, e, wallDamage, previous, 6f, 1, "c_shield"))
                         {
                             Stun(c, e, .3f);
-                            CareerFx.Clip("g_clang", e.Center, Vector2.zero, .8f, 30f, VfxLayer.Top, false, GGold);
+                            CareerFx.Clip("g_clang", e.Center, Vector2.zero, 1.25f, 30f, VfxLayer.Top, false, GGold); // [VFX 2026-10-29] was .8
+                            SkillVisuals.Flash(e.Center, new Color(1f, .92f, .6f, .65f), 1.3f, .12f);
                         }
                     }
                     foreach (var p in Allies(at, .9f)) if (shielded.Add(p)) GiveShield(c, p, WallShield, c.s.duration);
@@ -152,20 +170,22 @@ namespace DotRPG
                         Vector2 from = far;
                         for (float t = 0; t < .22f; t += Time.deltaTime)
                         {
-                            if (!Live(c)) { fx?.Stop(); if (shieldArt != null) shieldArt.Kill(); yield break; }
+                            if (!Live(c)) { fx?.Stop(); if (shieldArt != null) shieldArt.Kill(); if (shieldHalo != null) shieldHalo.Kill(); yield break; }
                             Vector2 at = Vector2.Lerp(from, bounce.Center, Mathf.Clamp01((t + Time.deltaTime) / .22f));
                             fx?.Place(at);
                             if (shieldArt != null) shieldArt.transform.position = at;
+                            if (shieldHalo != null) shieldHalo.transform.position = at;
                             yield return null;
                         }
-                        if (Strike(c, bounce, wallDamage, from, 6f, 1, "c_shield")) CareerFx.Clip("g_clang", bounce.Center, Vector2.zero, .8f, 30f, VfxLayer.Top, false, SkillSpecs.ColorB);
+                        if (Strike(c, bounce, wallDamage, from, 6f, 1, "c_shield")) CareerFx.Clip("g_clang", bounce.Center, Vector2.zero, 1.25f, 30f, VfxLayer.Top, false, SkillSpecs.ColorB);
                         far = bounce.Center;
                     }
                 }
             }
             fx?.Stop();
             if (shieldArt != null) shieldArt.Kill();
-            if (Live(c)) { CareerFx.Clip("g_clang", owner.Center + c.dir * .3f, Vector2.zero, 1.2f, 30f); Sound("c_shield", .5f); }
+            if (shieldHalo != null) shieldHalo.Kill();
+            if (Live(c)) { CareerFx.Clip("g_clang", owner.Center + c.dir * .3f, Vector2.zero, 1.5f, 30f); Sound("c_shield", .5f); } // [VFX 2026-10-29] was 1.2
             }
         }
 
@@ -282,10 +302,10 @@ namespace DotRPG
                 SkillFx.Spawn(SkillFx.Pick("fxi_aegis", "fx_aegis"), at + c.dir * .3f, Color.white, .3f, SkillFx.TopOrder + 4)
                     .Move(c.dir * 5f, 18f).Scale(.42f, .58f).Fade(FxFade.Late);
                 CareerFx.Clip("g_clang", hit, Vector2.zero, 1.25f, 30f, VfxLayer.Top, false);
-                CareerFx.Clip("impact", hit + Vector2.down * .35f, Vector2.zero, .6f, 28f, VfxLayer.Ground, false, CareerFx.Teal);
+                CareerFx.Clip("impact", hit + Vector2.down * .35f, Vector2.zero, .85f, 28f, VfxLayer.Ground, false, CareerFx.Teal); // [VFX 2026-10-29] was .6
                 SkillFx.Spawn("fx_ring", hit, new Color(.5f, 1f, .95f, .8f), .25f, SkillFx.TopOrder + 2).Scale(.2f, 1.1f).Fade(FxFade.Quick);
             }
-            else CareerFx.Clip("g_bash", at, c.dir, 1.15f, 26f);
+            else CareerFx.Clip("g_bash", at, c.dir, 1.4f, 26f); // [VFX 2026-10-29] was 1.15
             // [VFX] The blow's 110 degree cone: a wide gold arc to the full reach and dust thrown along its edges.
             CareerFx.Slash(at, c.dir, c.n.range, GGold, 0f, false, .2f);
             for (int k = 0; k < 7; k++)

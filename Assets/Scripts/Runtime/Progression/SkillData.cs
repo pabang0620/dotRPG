@@ -126,7 +126,7 @@ namespace DotRPG
             // (CareerSkill.MainHunterMpShare); 1.7 -> 1.0 per monster keeps Lv6-14 hunting in the plan's band (theory_skills.py).
             // Raid +15% (2.6 -> 2.99). Scarecrow (new, the A key's default, usable from Lv12): plan 2.2.
             Active("stab", L.T("급소 찌르기"), CharacterClass.Rogue, 0, L.T("눈앞의 적 하나를 깊이 찌른다. 충격파가 없는 대신 파쇄 일격보다 세다.")).With(g => { g.damageMult = 2.9f; g.cooldown = 1.6f; g.range = 1.8f; g.radius = 0.5f; g.manaCost = 4; }),
-            Active("leap", L.T("연쇄 도약"), CharacterClass.Rogue, 1, L.T("사정거리 안의 몬스터를 타고 타고 벤다. 다 때리면 시전 위치로 돌아온다.")).With(g => { g.damageMult = 1.0f; g.cooldown = 0.5f; g.range = 5f; g.radius = 5f; g.manaCost = 4; }),
+            Active("leap", L.T("연쇄 도약"), CharacterClass.Rogue, 1, L.T("사정거리 안의 몬스터를 타고 타고 벤다. 다 때리면 시전 위치로 돌아온다.\n어쌔신: 피해 +10%, 검은 잔상")).With(g => { g.damageMult = 1.0f; g.cooldown = 0.5f; g.range = 5f; g.radius = 5f; g.manaCost = 4; }),
             Active("backstab", L.T("백어택"), CharacterClass.Rogue, 2, L.T("등 뒤에서 쓰면 심장을 뜯어 0.8초 경직시킨다. 등 뒤가 아니면 얕게 찌른다.")).With(g => { g.damageMult = 0.975f; g.cooldown = 4f; g.range = 1.6f; g.radius = 0.5f; g.stun = 0.8f; g.manaCost = 6; }),
             Active("raid", L.T("그림자 습격"), CharacterClass.Rogue, 3, L.T("가장 가까운 적의 등 뒤로 순간이동해 벤다. 도착 뒤 1초 동안 그 적에게 쓰는 백어택은 등 뒤 판정이 된다.")).With(g => { g.damageMult = 2.99f; g.cooldown = 4.5f; g.range = 6f; g.radius = 0.5f; g.manaCost = 9; }),
             Active("dance", L.T("천인난무"), CharacterClass.Rogue, 4, L.T("주변의 적을 12번 마구 난도질한다.")).With(g => { g.damageMult = 2.2f; g.cooldown = 24f; g.range = 3.5f; g.radius = 1.2f; g.hits = 12; g.manaCost = 30; }),
@@ -276,7 +276,8 @@ namespace DotRPG
         {
             var info = CharacterClassInfo.Get(cls);
             int baseDmg = info.ranged ? info.damage : Game.Config.playerStats.attackDamage;
-            return (baseDmg + Eq.AttackBonus) * data.DamageScale;
+            // [SET 2026-10-30] 최종 공격력 (legendary 5-part set) multiplies the whole attack, skills included.
+            return (baseDmg + Eq.AttackBonus) * data.DamageScale * (1f + Eq.SetFinalAttackPct / 100f);
         }
 
         /// <summary>Class base damage + weapon/gear attack, then % increased damage.</summary>
